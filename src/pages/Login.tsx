@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, HeartPulse } from "lucide-react";
 
 const Login = () => {
   const { user, signIn, signUp, adminLogin } = useAuth();
@@ -100,7 +101,10 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-fitness-green">FitFlow</h1>
+          <div className="flex items-center justify-center mb-2">
+            <HeartPulse size={32} className="text-fitness-green mr-2" />
+            <h1 className="text-3xl font-bold text-fitness-green">Exercita</h1>
+          </div>
           <p className="text-muted-foreground">Your personal fitness companion</p>
         </div>
       
