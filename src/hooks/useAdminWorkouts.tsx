@@ -129,13 +129,13 @@ export function useAdminWorkouts() {
     },
   });
 
-  // Fetch users for assigning workouts
+  // Fetch simplified user data for assigning workouts
   const usersQuery = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name')
+        .select('*')
         .order('first_name');
       
       if (error) {

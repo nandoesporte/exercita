@@ -49,7 +49,7 @@ const CreateWorkout = () => {
             onSubmit={handleCreateWorkout} 
             isLoading={isCreating}
             categories={categories}
-            users={users || []}
+            users={users}
           />
         )}
       </div>
