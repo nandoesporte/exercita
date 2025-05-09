@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,11 +24,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
+      async (_event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
@@ -64,6 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      console.log(`Checking admin status for user: ${userId}`);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('is_admin')
@@ -77,7 +80,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       console.log("Admin status check result:", data);
-      setIsAdmin(data?.is_admin || false);
+      const adminStatus = data?.is_admin || false;
+      setIsAdmin(adminStatus);
+      
+      if (adminStatus) {
+        console.log("User has admin privileges!");
+      } else {
+        console.log("User does not have admin privileges");
+      }
     } catch (error) {
       console.error('Exception checking admin status:', error);
       setIsAdmin(false);

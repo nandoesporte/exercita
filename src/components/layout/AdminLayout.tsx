@@ -1,12 +1,23 @@
 
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  
+  // Add extra protection to make sure only admins can access this layout
+  useEffect(() => {
+    if (!isAdmin) {
+      console.log('Non-admin trying to access admin layout, redirecting to home');
+      navigate('/', { replace: true });
+    }
+  }, [isAdmin, navigate]);
 
   return (
     <div className="flex h-screen bg-background">

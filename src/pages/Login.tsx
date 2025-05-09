@@ -1,6 +1,5 @@
-
-import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,12 @@ const Login = () => {
   const { user, signIn, signUp, adminLogin } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
   const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const needsAdminAccess = searchParams.get('adminAccess') === 'required';
+  
+  // Show admin login automatically if redirected from admin page
+  const [showAdminLogin, setShowAdminLogin] = useState(needsAdminAccess);
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -26,7 +31,13 @@ const Login = () => {
 
   // Admin login state
   const [adminPassword, setAdminPassword] = useState("");
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  
+  useEffect(() => {
+    // If redirected from admin page with adminAccess=required, show a message
+    if (needsAdminAccess) {
+      setShowAdminLogin(true);
+    }
+  }, [needsAdminAccess]);
   
   // If user is already logged in, redirect to home page
   if (user) {
@@ -97,7 +108,9 @@ const Login = () => {
           <CardHeader>
             <CardTitle>Welcome</CardTitle>
             <CardDescription>
-              Sign in to your account or create a new one to get started
+              {needsAdminAccess 
+                ? "Admin access is required. Please login and enter admin password."
+                : "Sign in to your account or create a new one to get started"}
             </CardDescription>
           </CardHeader>
           

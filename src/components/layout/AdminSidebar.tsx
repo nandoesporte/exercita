@@ -5,9 +5,11 @@ import {
   LayoutDashboard, Users, Dumbbell, CalendarDays, FileText, Settings,
   BarChart, LogOut
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const { signOut } = useAuth();
 
   const navItems = [
     { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
@@ -18,6 +20,11 @@ const AdminSidebar = () => {
     { icon: BarChart, path: '/admin/analytics', label: 'Analytics' },
     { icon: Settings, path: '/admin/settings', label: 'Settings' },
   ];
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await signOut();
+  };
 
   return (
     <aside className="hidden md:flex flex-col bg-card border-r border-border h-screen w-64 p-4">
@@ -47,13 +54,13 @@ const AdminSidebar = () => {
       </nav>
 
       <div className="border-t border-border pt-4 mt-4">
-        <Link
-          to="/login"
-          className="flex items-center gap-3 px-3 py-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 w-full text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
         >
           <LogOut size={20} />
           <span>Logout</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );

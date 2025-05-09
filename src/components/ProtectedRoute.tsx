@@ -25,9 +25,16 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
 
   // For admin routes, check admin status
   if (adminOnly && !isAdmin) {
-    // Add console.log for debugging
-    console.log("Access denied: User is not an admin", { user, isAdmin });
-    return <Navigate to="/" replace />;
+    // Add more descriptive console.log for debugging
+    console.log("Access denied: User is not an admin", { 
+      userId: user.id, 
+      isAdmin, 
+      email: user.email,
+      metadata: user.user_metadata 
+    });
+    
+    // Redirect to admin login instead of homepage
+    return <Navigate to="/login?adminAccess=required" replace />;
   }
 
   // If we reach here, user is authenticated and has proper permissions
