@@ -3,7 +3,11 @@ import React from 'react';
 import Header from '@/components/layout/Header';
 import { History as HistoryIcon, Calendar, Clock, Dumbbell, Star, Flame } from 'lucide-react';
 import { format } from 'date-fns';
-import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
+import { useWorkoutHistory, WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
+
+interface GroupedWorkouts {
+  [monthYear: string]: WorkoutHistoryItem[];
+}
 
 const History = () => {
   const { data: workoutHistory, isLoading, error } = useWorkoutHistory();
@@ -31,7 +35,7 @@ const History = () => {
   }
 
   // Group workouts by month
-  const groupedByMonth = workoutHistory?.reduce((acc, workout) => {
+  const groupedByMonth: GroupedWorkouts = workoutHistory?.reduce((acc: GroupedWorkouts, workout) => {
     const date = new Date(workout.completed_at);
     const monthYear = format(date, 'MMMM yyyy');
     
@@ -41,7 +45,7 @@ const History = () => {
     
     acc[monthYear].push(workout);
     return acc;
-  }, {});
+  }, {}) || {};
 
   const renderEmptyState = () => (
     <div className="text-center py-10">
