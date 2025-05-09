@@ -18,14 +18,19 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
     );
   }
 
+  // Redirect to login if no user
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
+  // For admin routes, check admin status
   if (adminOnly && !isAdmin) {
+    // Add console.log for debugging
+    console.log("Access denied: User is not an admin", { user, isAdmin });
     return <Navigate to="/" replace />;
   }
 
+  // If we reach here, user is authenticated and has proper permissions
   return <>{children}</>;
 };
 

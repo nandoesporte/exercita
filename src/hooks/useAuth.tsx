@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Defer checking admin status to avoid deadlocks
         if (currentSession?.user) {
+          console.log("Auth state change detected, checking admin status");
           setTimeout(() => {
             checkAdminStatus(currentSession.user.id);
           }, 0);
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
+        console.log("Initial session found, checking admin status");
         checkAdminStatus(currentSession.user.id);
       }
       
@@ -68,10 +70,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
       
-      if (error) throw error;
-      setIsAdmin(data.is_admin || false);
+      if (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+        return;
+      }
+      
+      console.log("Admin status check result:", data);
+      setIsAdmin(data?.is_admin || false);
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('Exception checking admin status:', error);
       setIsAdmin(false);
     }
   };
@@ -121,12 +129,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // If there is a logged-in user, make them an admin
       if (user) {
+        console.log("Setting admin status for user:", user.id);
         const { error } = await supabase
           .from('profiles')
           .update({ is_admin: true })
           .eq('id', user.id);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error setting admin status:", error);
+          throw error;
+        }
         
         setIsAdmin(true);
         toast.success('Admin access granted!');
@@ -145,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      setIsAdmin(false); // Clear admin status on logout
       navigate('/login');
       toast.success('Logged out successfully');
     } catch (error: any) {
