@@ -3,15 +3,20 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { 
-  Clock, Dumbbell, BarChart, Play, BookOpen, Calendar
+  Clock, Dumbbell, BarChart, Play, Calendar, Info
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
 
+// Import Shadcn Tabs components
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ExerciseDetail from '@/components/ExerciseDetail';
+
 const WorkoutDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedTab, setSelectedTab] = useState('exercises');
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   
   const { data: workout, isLoading, error } = useWorkout(id);
   
@@ -51,13 +56,32 @@ const WorkoutDetail = () => {
   }
 
   const handleStartWorkout = () => {
-    // For now just show a toast, we'll implement this feature later
     toast.info("This feature is coming soon!");
   }
 
   const handleScheduleWorkout = () => {
-    // For now just show a toast, we'll implement this feature later
     toast.info("Scheduling feature is coming soon!");
+  }
+
+  const handleExerciseClick = (exerciseId: string) => {
+    setSelectedExercise(exerciseId);
+  }
+
+  const handleBackToExercises = () => {
+    setSelectedExercise(null);
+  }
+
+  // If an exercise is selected, show its detail view
+  if (selectedExercise) {
+    const workoutExercise = workout.workout_exercises?.find(we => we.id === selectedExercise);
+    if (workoutExercise) {
+      return (
+        <ExerciseDetail 
+          workoutExercise={workoutExercise}
+          onBack={handleBackToExercises}
+        />
+      );
+    }
   }
 
   return (
@@ -91,55 +115,59 @@ const WorkoutDetail = () => {
           </div>
         </div>
         
-        {/* Tabs */}
-        <div className="flex border-b border-border">
-          <button
-            className={`px-4 py-3 text-sm font-medium ${
-              activeTab === 'overview' 
-                ? 'border-b-2 border-fitness-green text-fitness-green' 
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => setActiveTab('overview')}
-          >
-            Overview
-          </button>
-          <button
-            className={`px-4 py-3 text-sm font-medium ${
-              activeTab === 'exercises' 
-                ? 'border-b-2 border-fitness-green text-fitness-green' 
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => setActiveTab('exercises')}
-          >
-            Exercises
-          </button>
-        </div>
-        
-        {/* Tab Content */}
-        <div className="p-4">
-          {activeTab === 'overview' ? (
-            <div className="space-y-6 animate-fade-in">
-              <div>
-                <h2 className="text-lg font-semibold mb-2">Description</h2>
-                <p className="text-muted-foreground">{workout.description || 'No description available.'}</p>
-              </div>
+        {/* Tabs using Shadcn UI Tabs */}
+        <div className="mt-4">
+          <Tabs defaultValue="exercises" value={selectedTab} onValueChange={setSelectedTab}>
+            <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0">
+              <TabsTrigger 
+                value="exercises" 
+                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
+              >
+                Exercises
+              </TabsTrigger>
+              <TabsTrigger 
+                value="overview" 
+                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
+              >
+                Overview
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="exercises" className="p-4 animate-fade-in">
+              <h2 className="text-lg font-semibold mb-4">Exercise List</h2>
               
-              <div>
-                <h2 className="text-lg font-semibold mb-3">Category</h2>
-                <div className="flex flex-wrap gap-2">
-                  <span 
-                    className="px-3 py-1 rounded-full text-sm"
-                    style={{ 
-                      backgroundColor: workout.category?.color || '#00CB7E',
-                      color: 'white'
-                    }}
-                  >
-                    {workout.category?.name || 'Uncategorized'}
-                  </span>
+              {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
+                <div className="space-y-3">
+                  {workout.workout_exercises
+                    .sort((a, b) => a.order_position - b.order_position)
+                    .map((workoutExercise, index) => (
+                      <button 
+                        key={workoutExercise.id}
+                        onClick={() => handleExerciseClick(workoutExercise.id)}
+                        className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
+                      >
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-green/20 flex items-center justify-center text-fitness-green font-medium">
+                          {index + 1}
+                        </div>
+                        <div className="ml-3 flex-grow">
+                          <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
+                          <div className="text-sm text-muted-foreground">
+                            {workoutExercise.sets} sets • {workoutExercise.reps ? `${workoutExercise.reps} reps` : `${workoutExercise.duration} sec`}
+                          </div>
+                        </div>
+                        <div className="text-fitness-green">
+                          <Info size={18} />
+                        </div>
+                      </button>
+                    ))
+                  }
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
+              ) : (
+                <p className="text-muted-foreground">No exercises have been added to this workout yet.</p>
+              )}
+
+              {/* Action Buttons at the bottom */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
                 <button
                   onClick={handleScheduleWorkout}
                   className="fitness-btn-secondary px-4 py-3 flex items-center justify-center gap-2"
@@ -155,41 +183,32 @@ const WorkoutDetail = () => {
                   <span>Start Workout</span>
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="animate-fade-in">
-              <h2 className="text-lg font-semibold mb-4">Exercise List</h2>
-              
-              {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
-                <div className="space-y-3">
-                  {workout.workout_exercises
-                    .sort((a, b) => a.order_position - b.order_position)
-                    .map((workoutExercise, index) => (
-                      <div key={workoutExercise.id} className="flex items-center p-3 border rounded-lg">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-green/20 flex items-center justify-center text-fitness-green font-medium">
-                          {index + 1}
-                        </div>
-                        <div className="ml-3 flex-grow">
-                          <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
-                          <div className="text-sm text-muted-foreground">
-                            {workoutExercise.sets} sets • {workoutExercise.reps ? `${workoutExercise.reps} reps` : `${workoutExercise.duration} sec`}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => toast.info(`Exercise details coming soon!`)}
-                          className="p-2 text-fitness-green hover:bg-fitness-green/10 rounded-full"
-                        >
-                          <BookOpen size={18} />
-                        </button>
-                      </div>
-                    ))
-                  }
+            </TabsContent>
+            
+            <TabsContent value="overview" className="p-4 animate-fade-in">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold mb-2">Description</h2>
+                  <p className="text-muted-foreground">{workout.description || 'No description available.'}</p>
                 </div>
-              ) : (
-                <p className="text-muted-foreground">No exercises have been added to this workout yet.</p>
-              )}
-            </div>
-          )}
+                
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Category</h2>
+                  <div className="flex flex-wrap gap-2">
+                    <span 
+                      className="px-3 py-1 rounded-full text-sm"
+                      style={{ 
+                        backgroundColor: workout.category?.color || '#00CB7E',
+                        color: 'white'
+                      }}
+                    >
+                      {workout.category?.name || 'Uncategorized'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </>
