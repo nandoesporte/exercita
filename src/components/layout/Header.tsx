@@ -2,6 +2,7 @@
 import React from 'react';
 import { Bell, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderProps {
   title?: string;
@@ -18,6 +19,8 @@ const Header: React.FC<HeaderProps> = ({
   showBack = false,
   onBackClick
 }) => {
+  const isMobile = useIsMobile();
+
   return (
     <header className="sticky top-0 z-40 w-full bg-fitness-dark backdrop-blur-sm border-b border-fitness-darkGray/50">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -44,8 +47,30 @@ const Header: React.FC<HeaderProps> = ({
               </svg>
             </button>
           )}
-          {title && <h1 className="text-xl font-bold text-white">{title}</h1>}
+          {!isMobile && title && <h1 className="text-xl font-bold text-white">{title}</h1>}
         </div>
+        
+        {/* App Logo for Mobile (centered) */}
+        <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-fitness-orange flex items-center justify-center">
+              <span className="text-white font-bold text-sm">E</span>
+            </div>
+            <span className="font-bold text-xl text-white">Exercita</span>
+          </Link>
+        </div>
+
+        {/* App Logo for Desktop (left aligned) */}
+        {!isMobile && (
+          <div className="flex-1 flex justify-center">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-fitness-orange flex items-center justify-center">
+                <span className="text-white font-bold text-sm">E</span>
+              </div>
+              <span className="font-bold text-xl text-white">Exercita</span>
+            </Link>
+          </div>
+        )}
 
         <div className="flex items-center gap-4">
           {showSearch && (
