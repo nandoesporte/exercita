@@ -24,6 +24,7 @@ import Dashboard from "@/pages/admin/Dashboard";
 import WorkoutManagement from "@/pages/admin/WorkoutManagement";
 import CreateWorkout from "@/pages/admin/CreateWorkout";
 import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
+import ExerciseManagement from "@/pages/admin/ExerciseManagement";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => {
             <Route path="workouts" element={<WorkoutManagement />} />
             <Route path="workouts/new" element={<CreateWorkout />} />
             <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
+            <Route path="exercises" element={<ExerciseManagement />} />
           </Route>
           
           {/* 404 */}
