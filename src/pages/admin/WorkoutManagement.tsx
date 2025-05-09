@@ -1,160 +1,163 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, Edit, Trash2, Plus, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Plus, Search, Trash2, PenSquare, Dumbbell
+} from 'lucide-react';
 import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
-import { toast } from 'sonner';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const WorkoutManagement = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { workouts, isLoading, error, deleteWorkout, isDeleting } = useAdminWorkouts();
+  const navigate = useNavigate();
+  const { workouts, isLoading, deleteWorkout } = useAdminWorkouts();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   
-  // Filter workouts based on search query
-  const filteredWorkouts = workouts.filter((workout) => 
-    workout.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    workout.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    workout.category?.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredWorkouts = workouts.filter(workout => 
+    workout.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteWorkout = (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
-      deleteWorkout(id);
+  const handleCreateNew = () => {
+    navigate('/admin/workouts/new');
+  };
+
+  const handleEdit = (id: string) => {
+    // For future implementation
+    console.log('Edit workout:', id);
+  };
+
+  const handleEditExercises = (id: string) => {
+    navigate(`/admin/workouts/${id}/exercises`);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteId) {
+      deleteWorkout(deleteId);
+      setDeleteId(null);
     }
   };
 
-  if (error) {
-    toast.error("Failed to load workouts");
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Workout Management</h1>
-        <Link 
-          to="/admin/workouts/new" 
-          className="bg-fitness-green text-white px-4 py-2 rounded-lg hover:bg-fitness-darkGreen transition-colors flex items-center gap-2"
-        >
-          <Plus size={16} />
-          <span>Add Workout</span>
-        </Link>
-      </div>
-      
-      {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Search workouts..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-fitness-green"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-muted transition-colors">
-          <Filter size={16} />
-          <span>Filter</span>
-        </button>
-      </div>
-      
-      {/* Workouts Table */}
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10">
-                    <div className="flex justify-center items-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-fitness-green mr-2" />
-                      <span>Loading workouts...</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : filteredWorkouts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                    No workouts found. Try a different search term.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredWorkouts.map((workout) => (
-                  <TableRow key={workout.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium">{workout.title}</TableCell>
-                    <TableCell className="capitalize">{workout.level}</TableCell>
-                    <TableCell>
-                      <span 
-                        className="px-2 py-1 text-xs rounded-full" 
-                        style={{ 
-                          backgroundColor: workout.category?.color ? `${workout.category.color}20` : '#e5e5e5',
-                          color: workout.category?.color || '#666' 
-                        }}
-                      >
-                        {workout.category?.name || 'Uncategorized'}
-                      </span>
-                    </TableCell>
-                    <TableCell>{workout.duration} min</TableCell>
-                    <TableCell>
-                      {workout.created_at ? (
-                        formatDistanceToNow(new Date(workout.created_at), { addSuffix: true })
-                      ) : (
-                        'Unknown'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Link 
-                          to={`/admin/workouts/edit/${workout.id}`} 
-                          className="p-1 hover:bg-fitness-green/10 rounded text-fitness-green"
-                        >
-                          <Edit size={16} />
-                        </Link>
-                        <button 
-                          className="p-1 hover:bg-destructive/10 rounded text-destructive"
-                          onClick={() => handleDeleteWorkout(workout.id, workout.title)}
-                          disabled={isDeleting}
-                        >
-                          {isDeleting ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Trash2 size={16} />
-                          )}
-                        </button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-      
-      {/* Pagination - Will be implemented with real data pagination later */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredWorkouts.length} of {workouts.length} workouts
-        </p>
+        <h1 className="text-2xl font-bold">Workout Management</h1>
+        <Button onClick={handleCreateNew}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create New
+        </Button>
       </div>
+      
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Input 
+          placeholder="Search workouts..." 
+          className="pl-10"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-sm text-muted-foreground">Loading workouts...</p>
+          </div>
+        ) : filteredWorkouts.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4 font-medium">Title</th>
+                  <th className="text-left py-3 px-4 font-medium">Level</th>
+                  <th className="text-left py-3 px-4 font-medium">Duration</th>
+                  <th className="text-left py-3 px-4 font-medium">Category</th>
+                  <th className="text-right py-3 px-4 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredWorkouts.map((workout) => (
+                  <tr key={workout.id} className="border-b hover:bg-muted/50">
+                    <td className="py-3 px-4">{workout.title}</td>
+                    <td className="py-3 px-4 capitalize">{workout.level}</td>
+                    <td className="py-3 px-4">{workout.duration} min</td>
+                    <td className="py-3 px-4">{workout.category?.name || 'Uncategorized'}</td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditExercises(workout.id)}
+                        >
+                          <Dumbbell className="h-4 w-4" />
+                          <span className="sr-only">Edit Exercises</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(workout.id)}
+                        >
+                          <PenSquare className="h-4 w-4" />
+                          <span className="sr-only">Edit</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteClick(workout.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">No workouts found</p>
+            <Button variant="link" onClick={handleCreateNew}>Create your first workout</Button>
+          </div>
+        )}
+      </div>
+      
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the 
+              selected workout and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
