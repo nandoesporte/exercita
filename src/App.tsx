@@ -25,44 +25,47 @@ import WorkoutManagement from "@/pages/admin/WorkoutManagement";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        
-        {/* User Routes */}
-        <Route element={
-          <ProtectedRoute>
-            <UserLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/" element={<Index />} />
-          <Route path="/workouts" element={<Workouts />} />
-          <Route path="/workout/:id" element={<WorkoutDetail />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute adminOnly>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<Dashboard />} />
-          <Route path="/admin/workouts" element={<WorkoutManagement />} />
-          {/* Add other admin routes here */}
-        </Route>
-        
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log("App component rendering");
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* User Routes */}
+          <Route element={
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="/" element={<Index />} />
+            <Route path="/workouts" element={<Workouts />} />
+            <Route path="/workout/:id" element={<WorkoutDetail />} />
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute adminOnly>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="workouts" element={<WorkoutManagement />} />
+          </Route>
+          
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

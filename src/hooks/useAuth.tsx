@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -26,11 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log("AuthProvider initializing");
+
   useEffect(() => {
+    console.log("AuthProvider useEffect running");
+    
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
-        console.log("Auth state change detected", { currentSession });
+      (event, currentSession) => {
+        console.log("Auth state change detected", { event, user: currentSession?.user?.email });
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
@@ -51,19 +54,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log("Checking for existing session");
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Initial session check result:", { currentSession });
+        console.log("Initial session check result:", { 
+          hasSession: !!currentSession,
+          email: currentSession?.user?.email
+        });
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
           console.log("Initial session found, checking admin status");
-          checkAdminStatus(currentSession.user.id);
+          await checkAdminStatus(currentSession.user.id);
         }
       } catch (error) {
         console.error("Error checking session:", error);
       } finally {
         setLoading(false);
+        console.log("AuthProvider loading complete");
       }
     };
 
@@ -185,6 +192,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.error(error.message || 'Error logging out');
     }
   };
+
+  console.log("AuthProvider rendering with state:", { 
+    hasUser: !!user,
+    isAdmin,
+    loading,
+    email: user?.email
+  });
 
   return (
     <AuthContext.Provider value={{ user, session, loading, isAdmin, signUp, signIn, adminLogin, signOut }}>

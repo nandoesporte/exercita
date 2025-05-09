@@ -1,5 +1,5 @@
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -9,6 +9,15 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
+  const location = useLocation();
+
+  console.log("ProtectedRoute check:", { 
+    path: location.pathname,
+    user: !!user, 
+    isAdmin, 
+    adminOnly,
+    loading
+  });
 
   if (loading) {
     return (
@@ -20,6 +29,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
 
   // Redirect to login if no user
   if (!user) {
+    console.log("No user, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
@@ -38,6 +48,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
   }
 
   // If we reach here, user is authenticated and has proper permissions
+  console.log("Access granted to protected route");
   return <>{children}</>;
 };
 
