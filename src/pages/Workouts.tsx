@@ -3,82 +3,36 @@ import React, { useState } from 'react';
 import Header from '@/components/layout/Header';
 import { WorkoutCard } from '@/components/ui/workout-card';
 import { Search } from 'lucide-react';
+import { useWorkouts, useWorkoutCategories } from '@/hooks/useWorkouts';
+import { Database } from '@/integrations/supabase/types';
 
-// Mock data
-const workouts = [
-  {
-    id: '1',
-    title: 'Full Body Workout',
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80',
-    duration: '45 min',
-    level: 'Intermediate',
-    calories: 350,
-  },
-  {
-    id: '2',
-    title: 'HIIT Cardio',
-    image: 'https://images.unsplash.com/photo-1434682881908-b43d0467b798?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80',
-    duration: '30 min',
-    level: 'Advanced',
-    calories: 400,
-  },
-  {
-    id: '3',
-    title: 'Core Strength',
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80',
-    duration: '25 min',
-    level: 'Beginner',
-    calories: 200,
-  },
-  {
-    id: '4',
-    title: 'Upper Body Focus',
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80',
-    duration: '35 min',
-    level: 'Intermediate',
-    calories: 280,
-  },
-  {
-    id: '5',
-    title: 'Lower Body Blast',
-    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80',
-    duration: '40 min',
-    level: 'Intermediate',
-    calories: 320,
-  },
-  {
-    id: '6',
-    title: 'Yoga Flow',
-    image: 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80',
-    duration: '50 min',
-    level: 'All Levels',
-    calories: 180,
-  },
-];
-
-// Filter categories
-const categories = [
-  'All',
-  'Beginner',
-  'Intermediate',
-  'Advanced',
-  'Quick',
-  'Cardio',
-  'Strength',
-];
+type Workout = Database['public']['Tables']['workouts']['Row'] & {
+  category?: Database['public']['Tables']['workout_categories']['Row'] | null;
+};
 
 const Workouts = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
+  const { data: workouts, isLoading: isLoadingWorkouts } = useWorkouts();
+  const { data: categories, isLoading: isLoadingCategories } = useWorkoutCategories();
+  
+  // Combine built-in filters with category filters
+  const filterCategories = ['All', 'Beginner', 'Intermediate', 'Advanced', 'Quick'];
+  const allFilters = filterCategories.concat(
+    categories?.map(c => c.name) || []
+  ).filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
+  
   // Filter workouts based on active filter and search query
-  const filteredWorkouts = workouts.filter((workout) => {
-    const matchesFilter = activeFilter === 'All' || 
-                          workout.level === activeFilter ||
-                          (activeFilter === 'Quick' && parseInt(workout.duration) < 30);
+  const filteredWorkouts = workouts?.filter((workout) => {
+    const matchesFilter = 
+      activeFilter === 'All' || 
+      workout.level === activeFilter.toLowerCase() ||
+      (activeFilter === 'Quick' && workout.duration < 30) ||
+      (workout.category && workout.category.name === activeFilter);
                           
     const matchesSearch = searchQuery === '' ||
-                         workout.title.toLowerCase().includes(searchQuery.toLowerCase());
+      workout.title.toLowerCase().includes(searchQuery.toLowerCase());
                          
     return matchesFilter && matchesSearch;
   });
@@ -103,7 +57,7 @@ const Workouts = () => {
           
           {/* Filters */}
           <div className="flex overflow-x-auto gap-2 pb-3 mb-6 hide-scrollbar">
-            {categories.map((category) => (
+            {allFilters.map((category) => (
               <button
                 key={category}
                 className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium ${
@@ -118,14 +72,30 @@ const Workouts = () => {
             ))}
           </div>
           
+          {/* Loading state */}
+          {isLoadingWorkouts && (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading workouts...</p>
+            </div>
+          )}
+          
           {/* Workouts Grid */}
-          {filteredWorkouts.length > 0 ? (
+          {!isLoadingWorkouts && filteredWorkouts && filteredWorkouts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredWorkouts.map((workout) => (
-                <WorkoutCard key={workout.id} {...workout} />
+                <WorkoutCard 
+                  key={workout.id} 
+                  id={workout.id}
+                  title={workout.title}
+                  image={workout.image_url || ''}
+                  duration={`${workout.duration} min`}
+                  level={workout.level}
+                  calories={workout.calories || 0}
+                />
               ))}
             </div>
-          ) : (
+          ) : !isLoadingWorkouts && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No workouts found. Try another search.</p>
             </div>

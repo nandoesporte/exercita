@@ -6,18 +6,43 @@ import {
   CreditCard, HelpCircle, Bell, UserPlus
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-// Mock user data
-const userData = {
-  name: 'Alex Johnson',
-  email: 'alex.johnson@example.com',
-  avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-  memberSince: 'May 2025',
-  workoutsCompleted: 42,
-  favoriteWorkout: 'HIIT Training',
-};
+import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/hooks/useAuth';
+import { format } from 'date-fns';
 
 const Profile = () => {
+  const { profile, isLoading } = useProfile();
+  const { signOut, user } = useAuth();
+  
+  const formatDate = (date: Date | null) => {
+    if (!date) return '';
+    return format(date, 'MMMM yyyy');
+  };
+
+  const userData = {
+    name: profile?.first_name && profile?.last_name 
+      ? `${profile.first_name} ${profile.last_name}` 
+      : user?.email || 'User',
+    email: user?.email || '',
+    avatar: profile?.avatar_url || 'https://randomuser.me/api/portraits/men/32.jpg',
+    memberSince: user?.created_at 
+      ? formatDate(new Date(user.created_at)) 
+      : 'Unknown',
+    workoutsCompleted: 0, // This could be implemented with a count query
+    favoriteWorkout: 'Unknown', // This could be implemented with a query
+  };
+  
+  if (isLoading) {
+    return (
+      <>
+        <Header title="Profile" />
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Header title="Profile" />
@@ -50,9 +75,9 @@ const Profile = () => {
             </div>
             <div className="fitness-card p-4 text-center">
               <div className="text-2xl font-bold text-fitness-green">
-                3,450
+                {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
               </div>
-              <p className="text-sm">Total calories burned</p>
+              <p className="text-sm">Current weight</p>
             </div>
           </div>
           
@@ -130,13 +155,13 @@ const Profile = () => {
               <span>Help Center</span>
             </Link>
             
-            <Link
-              to="/login"
-              className="flex items-center px-4 py-3 text-destructive hover:bg-destructive/10 rounded-lg mt-4"
+            <button
+              onClick={signOut}
+              className="w-full flex items-center px-4 py-3 text-destructive hover:bg-destructive/10 rounded-lg mt-4"
             >
               <LogOut size={20} className="mr-3" />
               <span>Log Out</span>
-            </Link>
+            </button>
           </div>
         </section>
       </main>
