@@ -9,7 +9,7 @@ const UserLayout = () => {
     <div className="flex flex-col min-h-screen bg-fitness-dark text-white">
       <Header />
       
-      <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 pb-20 md:pb-8">
+      <main className="flex-1 container max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-8">
         <Outlet />
       </main>
       

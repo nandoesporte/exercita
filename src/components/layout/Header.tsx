@@ -19,13 +19,13 @@ const Header: React.FC<HeaderProps> = ({
   onBackClick
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-40 w-full bg-fitness-dark backdrop-blur-sm border-b border-fitness-darkGray/50">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {showBack && (
             <button 
               onClick={onBackClick} 
-              className="p-2 rounded-full hover:bg-muted"
+              className="p-2 rounded-full hover:bg-fitness-darkGray/60"
             >
               <svg 
                 width="24" 
@@ -44,17 +44,17 @@ const Header: React.FC<HeaderProps> = ({
               </svg>
             </button>
           )}
-          {title && <h1 className="text-xl font-bold">{title}</h1>}
+          {title && <h1 className="text-xl font-bold text-white">{title}</h1>}
         </div>
 
         <div className="flex items-center gap-4">
           {showSearch && (
-            <Link to="/search" className="p-2 rounded-full hover:bg-muted">
+            <Link to="/search" className="p-2 rounded-full hover:bg-fitness-darkGray/60 text-white">
               <Search className="h-5 w-5" />
             </Link>
           )}
           {showNotifications && (
-            <Link to="/notifications" className="p-2 rounded-full hover:bg-muted">
+            <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 text-white">
               <Bell className="h-5 w-5" />
             </Link>
           )}
