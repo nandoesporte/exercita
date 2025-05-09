@@ -1,76 +1,51 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, Edit, Trash2, Plus } from 'lucide-react';
-
-// Mock workouts data
-const workoutsData = [
-  {
-    id: '1',
-    title: 'Full Body Workout',
-    level: 'Intermediate',
-    duration: '45 min',
-    exercises: 8,
-    createdAt: '2025-05-01',
-  },
-  {
-    id: '2',
-    title: 'HIIT Cardio',
-    level: 'Advanced',
-    duration: '30 min',
-    exercises: 6,
-    createdAt: '2025-05-02',
-  },
-  {
-    id: '3',
-    title: 'Core Strength',
-    level: 'Beginner',
-    duration: '25 min',
-    exercises: 5,
-    createdAt: '2025-05-03',
-  },
-  {
-    id: '4',
-    title: 'Upper Body Focus',
-    level: 'Intermediate',
-    duration: '35 min',
-    exercises: 7,
-    createdAt: '2025-05-04',
-  },
-  {
-    id: '5',
-    title: 'Lower Body Blast',
-    level: 'Intermediate',
-    duration: '40 min',
-    exercises: 6,
-    createdAt: '2025-05-05',
-  },
-  {
-    id: '6',
-    title: 'Yoga Flow',
-    level: 'All Levels',
-    duration: '50 min',
-    exercises: 10,
-    createdAt: '2025-05-06',
-  },
-];
+import { Search, Filter, Edit, Trash2, Plus, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
+import { toast } from 'sonner';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 
 const WorkoutManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { workouts, isLoading, error, deleteWorkout, isDeleting } = useAdminWorkouts();
   
   // Filter workouts based on search query
-  const filteredWorkouts = workoutsData.filter((workout) => 
+  const filteredWorkouts = workouts.filter((workout) => 
     workout.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    workout.level.toLowerCase().includes(searchQuery.toLowerCase())
+    workout.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    workout.category?.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleDeleteWorkout = (id: string, title: string) => {
+    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+      deleteWorkout(id);
+    }
+  };
+
+  if (error) {
+    toast.error("Failed to load workouts");
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Workout Management</h1>
-        <button className="bg-fitness-green text-white px-4 py-2 rounded-lg hover:bg-fitness-darkGreen transition-colors flex items-center gap-2">
+        <Link 
+          to="/admin/workouts/new" 
+          className="bg-fitness-green text-white px-4 py-2 rounded-lg hover:bg-fitness-darkGreen transition-colors flex items-center gap-2"
+        >
           <Plus size={16} />
           <span>Add Workout</span>
-        </button>
+        </Link>
       </div>
       
       {/* Search and Filter */}
@@ -94,63 +69,91 @@ const WorkoutManagement = () => {
       {/* Workouts Table */}
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-muted">
-                <th className="text-left py-3 px-4">Title</th>
-                <th className="text-left py-3 px-4">Level</th>
-                <th className="text-left py-3 px-4">Duration</th>
-                <th className="text-left py-3 px-4">Exercises</th>
-                <th className="text-left py-3 px-4">Created</th>
-                <th className="text-left py-3 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredWorkouts.map((workout) => (
-                <tr key={workout.id} className="border-t border-border hover:bg-muted/50">
-                  <td className="py-3 px-4">{workout.title}</td>
-                  <td className="py-3 px-4">{workout.level}</td>
-                  <td className="py-3 px-4">{workout.duration}</td>
-                  <td className="py-3 px-4">{workout.exercises}</td>
-                  <td className="py-3 px-4">{workout.createdAt}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1 hover:bg-fitness-green/10 rounded text-fitness-green">
-                        <Edit size={16} />
-                      </button>
-                      <button className="p-1 hover:bg-destructive/10 rounded text-destructive">
-                        <Trash2 size={16} />
-                      </button>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Duration</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10">
+                    <div className="flex justify-center items-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-fitness-green mr-2" />
+                      <span>Loading workouts...</span>
                     </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredWorkouts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                  </TableCell>
+                </TableRow>
+              ) : filteredWorkouts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                     No workouts found. Try a different search term.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredWorkouts.map((workout) => (
+                  <TableRow key={workout.id} className="hover:bg-muted/50">
+                    <TableCell className="font-medium">{workout.title}</TableCell>
+                    <TableCell className="capitalize">{workout.level}</TableCell>
+                    <TableCell>
+                      <span 
+                        className="px-2 py-1 text-xs rounded-full" 
+                        style={{ 
+                          backgroundColor: workout.category?.color ? `${workout.category.color}20` : '#e5e5e5',
+                          color: workout.category?.color || '#666' 
+                        }}
+                      >
+                        {workout.category?.name || 'Uncategorized'}
+                      </span>
+                    </TableCell>
+                    <TableCell>{workout.duration} min</TableCell>
+                    <TableCell>
+                      {workout.created_at ? (
+                        formatDistanceToNow(new Date(workout.created_at), { addSuffix: true })
+                      ) : (
+                        'Unknown'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Link 
+                          to={`/admin/workouts/edit/${workout.id}`} 
+                          className="p-1 hover:bg-fitness-green/10 rounded text-fitness-green"
+                        >
+                          <Edit size={16} />
+                        </Link>
+                        <button 
+                          className="p-1 hover:bg-destructive/10 rounded text-destructive"
+                          onClick={() => handleDeleteWorkout(workout.id, workout.title)}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
       
-      {/* Pagination */}
+      {/* Pagination - Will be implemented with real data pagination later */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Showing {filteredWorkouts.length} of {workoutsData.length} workouts</p>
-        <div className="flex gap-2">
-          <button className="px-3 py-1 border rounded hover:bg-muted transition-colors" disabled>
-            Previous
-          </button>
-          <button className="px-3 py-1 bg-fitness-green text-white rounded hover:bg-fitness-darkGreen transition-colors">
-            1
-          </button>
-          <button className="px-3 py-1 border rounded hover:bg-muted transition-colors">
-            Next
-          </button>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Showing {filteredWorkouts.length} of {workouts.length} workouts
+        </p>
       </div>
     </div>
   );
