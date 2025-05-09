@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Dumbbell, Calendar, User } from 'lucide-react';
+import { Home, Dumbbell, History, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const MobileNavbar = () => {
@@ -10,7 +10,7 @@ const MobileNavbar = () => {
   const navItems = [
     { icon: Home, path: '/', label: 'Início' },
     { icon: Dumbbell, path: '/workouts', label: 'Treinos' },
-    { icon: Calendar, path: '/appointments', label: 'Agenda' },
+    { icon: History, path: '/history', label: 'Histórico' },
     { icon: User, path: '/profile', label: 'Perfil' },
   ];
 

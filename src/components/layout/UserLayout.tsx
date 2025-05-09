@@ -15,8 +15,8 @@ const UserLayout = () => {
         return 'Perfil';
       case '/workouts':
         return 'Treinos';
-      case '/appointments':
-        return 'Agenda';
+      case '/history':
+        return 'Histórico';
       case '/':
         return '';
       default:

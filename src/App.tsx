@@ -14,7 +14,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import Index from "@/pages/Index";
 import Workouts from "@/pages/Workouts";
 import WorkoutDetail from "@/pages/WorkoutDetail";
-import Appointments from "@/pages/Appointments";
+import History from "@/pages/History";
 import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
@@ -49,7 +49,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/workouts" element={<Workouts />} />
             <Route path="/workout/:id" element={<WorkoutDetail />} />
-            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/history" element={<History />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
           

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 // Import Shadcn Tabs components
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -18,6 +19,7 @@ const WorkoutDetail = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('exercises');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { data: workout, isLoading, error } = useWorkout(id);
   
@@ -56,8 +58,47 @@ const WorkoutDetail = () => {
     );
   }
 
-  const handleWorkoutCompleted = () => {
-    toast.success("Treino marcado como concluído!");
+  const handleWorkoutCompleted = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user.user) {
+        toast.error("Você precisa estar logado para registrar um treino.");
+        return;
+      }
+      
+      // Record the workout in history
+      const { error } = await supabase
+        .from('user_workout_history')
+        .insert({
+          user_id: user.user.id,
+          workout_id: workout.id,
+          completed_at: new Date().toISOString(),
+          duration: workout.duration,
+          calories_burned: workout.calories
+        });
+      
+      if (error) {
+        console.error("Error recording workout:", error);
+        toast.error("Erro ao registrar treino.");
+        return;
+      }
+      
+      toast.success("Treino marcado como concluído!");
+      
+      // Navigate to history page after short delay
+      setTimeout(() => {
+        navigate('/history');
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error completing workout:", error);
+      toast.error("Erro ao registrar treino.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const handleExerciseClick = (exerciseId: string) => {
@@ -167,9 +208,14 @@ const WorkoutDetail = () => {
               <div className="mt-6">
                 <Button
                   onClick={handleWorkoutCompleted}
+                  disabled={isSubmitting}
                   className="w-full fitness-btn-primary px-4 py-3 flex items-center justify-center gap-2"
                 >
-                  <Check size={18} />
+                  {isSubmitting ? (
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  ) : (
+                    <Check size={18} />
+                  )}
                   <span>Treino Concluído!</span>
                 </Button>
               </div>
