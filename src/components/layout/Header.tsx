@@ -22,13 +22,13 @@ const Header: React.FC<HeaderProps> = ({
   const isMobile = useIsMobile();
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-fitness-dark backdrop-blur-sm border-b border-fitness-darkGray/50">
+    <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {showBack && (
             <button 
               onClick={onBackClick} 
-              className="p-2 rounded-full hover:bg-fitness-darkGray/60"
+              className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
             >
               <svg 
                 width="24" 
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* App Logo for Mobile (centered) */}
         <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-fitness-orange flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
               <span className="text-white font-bold text-sm">E</span>
             </div>
             <span className="font-bold text-xl text-white">Exercita</span>
@@ -64,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({
         {!isMobile && (
           <div className="flex-1 flex justify-center">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-fitness-orange flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
                 <span className="text-white font-bold text-sm">E</span>
               </div>
               <span className="font-bold text-xl text-white">Exercita</span>
@@ -74,13 +74,14 @@ const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center gap-4">
           {showSearch && (
-            <Link to="/search" className="p-2 rounded-full hover:bg-fitness-darkGray/60 text-white">
+            <Link to="/search" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
               <Search className="h-5 w-5" />
             </Link>
           )}
           {showNotifications && (
-            <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 text-white">
+            <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
               <Bell className="h-5 w-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-fitness-orange rounded-full"></span>
             </Link>
           )}
         </div>

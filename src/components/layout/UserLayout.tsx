@@ -12,11 +12,11 @@ const UserLayout = () => {
   const getHeaderTitle = () => {
     switch (currentPath) {
       case '/profile':
-        return 'Profile';
+        return 'Perfil';
       case '/workouts':
-        return 'Workouts';
+        return 'Treinos';
       case '/appointments':
-        return 'Schedule';
+        return 'Agenda';
       case '/':
         return '';
       default:
@@ -28,7 +28,7 @@ const UserLayout = () => {
     <div className="flex flex-col min-h-screen bg-fitness-dark text-white">
       <Header showSearch={true} title={getHeaderTitle()} />
       
-      <main className="flex-1 container max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-8">
+      <main className="flex-1 container max-w-7xl mx-auto px-4 py-3 pb-20 md:pb-8 animate-fade-in">
         <Outlet />
       </main>
       

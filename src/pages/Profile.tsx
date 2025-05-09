@@ -2,12 +2,13 @@
 import React from 'react';
 import { 
   User, Settings, Calendar, Clock, Heart, LogOut,
-  CreditCard, HelpCircle, Bell, UserPlus
+  CreditCard, HelpCircle, Bell, UserPlus, ChevronRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Profile = () => {
   const { profile, isLoading } = useProfile();
@@ -44,116 +45,142 @@ const Profile = () => {
       <section className="mobile-section">
         {/* User Info */}
         <div className="flex items-center mb-8">
-          <div className="h-20 w-20 rounded-full overflow-hidden mr-4">
-            <img
-              src={userData.avatar}
-              alt={userData.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
+          <Avatar className="h-20 w-20 mr-4 border-2 border-fitness-orange">
+            <AvatarImage src={userData.avatar} alt={userData.name} className="object-cover" />
+            <AvatarFallback className="bg-fitness-darkGray text-xl">
+              {userData.name.substring(0, 1)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h2 className="text-xl font-bold">{userData.name}</h2>
             <p className="text-muted-foreground">{userData.email}</p>
-            <p className="text-sm mt-1">Member since {userData.memberSince}</p>
+            <p className="text-sm mt-1">Membro desde {userData.memberSince}</p>
           </div>
         </div>
         
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="fitness-card p-4 text-center">
+          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg">
             <div className="text-2xl font-bold text-fitness-orange">
               {userData.workoutsCompleted}
             </div>
-            <p className="text-sm">Workouts completed</p>
+            <p className="text-sm text-gray-300">Treinos completados</p>
           </div>
-          <div className="fitness-card p-4 text-center">
+          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg">
             <div className="text-2xl font-bold text-fitness-orange">
               {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
             </div>
-            <p className="text-sm">Current weight</p>
+            <p className="text-sm text-gray-300">Peso atual</p>
           </div>
         </div>
         
         {/* Menu Items */}
-        <div className="space-y-1">
+        <div className="space-y-2 rounded-xl overflow-hidden bg-fitness-darkGray divide-y divide-gray-700/50">
           <Link
             to="/account"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <User size={20} className="mr-3 text-muted-foreground" />
-            <span>Account Information</span>
+            <div className="flex items-center">
+              <User size={20} className="mr-3 text-fitness-orange" />
+              <span>Informações da Conta</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/settings"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <Settings size={20} className="mr-3 text-muted-foreground" />
-            <span>Settings</span>
+            <div className="flex items-center">
+              <Settings size={20} className="mr-3 text-fitness-orange" />
+              <span>Configurações</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/workout-history"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <Calendar size={20} className="mr-3 text-muted-foreground" />
-            <span>Workout History</span>
+            <div className="flex items-center">
+              <Calendar size={20} className="mr-3 text-fitness-orange" />
+              <span>Histórico de Treinos</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/health-stats"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <Heart size={20} className="mr-3 text-muted-foreground" />
-            <span>Health Stats</span>
+            <div className="flex items-center">
+              <Heart size={20} className="mr-3 text-fitness-orange" />
+              <span>Estatísticas de Saúde</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/reminders"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <Clock size={20} className="mr-3 text-muted-foreground" />
-            <span>Reminders</span>
+            <div className="flex items-center">
+              <Clock size={20} className="mr-3 text-fitness-orange" />
+              <span>Lembretes</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/notifications"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <Bell size={20} className="mr-3 text-muted-foreground" />
-            <span>Notification Preferences</span>
+            <div className="flex items-center">
+              <Bell size={20} className="mr-3 text-fitness-orange" />
+              <span>Preferências de Notificações</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/payment"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <CreditCard size={20} className="mr-3 text-muted-foreground" />
-            <span>Payment Methods</span>
+            <div className="flex items-center">
+              <CreditCard size={20} className="mr-3 text-fitness-orange" />
+              <span>Métodos de Pagamento</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/invite"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <UserPlus size={20} className="mr-3 text-muted-foreground" />
-            <span>Invite Friends</span>
+            <div className="flex items-center">
+              <UserPlus size={20} className="mr-3 text-fitness-orange" />
+              <span>Convidar Amigos</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <Link
             to="/help"
-            className="flex items-center px-4 py-3 hover:bg-muted rounded-lg"
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
           >
-            <HelpCircle size={20} className="mr-3 text-muted-foreground" />
-            <span>Help Center</span>
+            <div className="flex items-center">
+              <HelpCircle size={20} className="mr-3 text-fitness-orange" />
+              <span>Central de Ajuda</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400" />
           </Link>
           
           <button
             onClick={signOut}
-            className="w-full flex items-center px-4 py-3 text-destructive hover:bg-destructive/10 rounded-lg mt-4"
+            className="w-full flex items-center px-4 py-4 text-red-400 hover:bg-red-900/20 active:bg-red-900/30 transition-colors mt-4"
           >
             <LogOut size={20} className="mr-3" />
-            <span>Log Out</span>
+            <span>Sair</span>
           </button>
         </div>
       </section>
