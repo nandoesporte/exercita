@@ -8,6 +8,17 @@ export type AdminWorkout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
 };
 
+export type WorkoutFormData = {
+  title: string;
+  description?: string;
+  duration: number;
+  level: Database['public']['Enums']['difficulty_level'];
+  category_id?: string | null;
+  image_url?: string | null;
+  calories?: number | null;
+  user_id?: string | null; // Added user_id for assigning workouts
+};
+
 export function useAdminWorkouts() {
   const queryClient = useQueryClient();
   
@@ -33,6 +44,53 @@ export function useAdminWorkouts() {
       
       return data as AdminWorkout[];
     },
+  });
+
+  const createWorkout = useMutation({
+    mutationFn: async (formData: WorkoutFormData) => {
+      // First insert the workout
+      const { data: workout, error: workoutError } = await supabase
+        .from('workouts')
+        .insert({
+          title: formData.title,
+          description: formData.description || null,
+          duration: formData.duration,
+          level: formData.level,
+          category_id: formData.category_id || null,
+          image_url: formData.image_url || null,
+          calories: formData.calories || null,
+        })
+        .select('id')
+        .single();
+      
+      if (workoutError) {
+        throw new Error(`Error creating workout: ${workoutError.message}`);
+      }
+
+      // If a user_id was provided, create an entry in user_workout_history
+      if (formData.user_id && workout) {
+        const { error: historyError } = await supabase
+          .from('user_workout_history')
+          .insert({
+            user_id: formData.user_id,
+            workout_id: workout.id,
+            completed_at: null, // Not completed yet
+          });
+        
+        if (historyError) {
+          throw new Error(`Error assigning workout to user: ${historyError.message}`);
+        }
+      }
+      
+      return workout;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
+      toast.success('Workout created successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create workout');
+    }
   });
 
   const deleteWorkout = useMutation({
@@ -70,14 +128,35 @@ export function useAdminWorkouts() {
       return data;
     },
   });
+
+  // Fetch users for assigning workouts
+  const usersQuery = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .order('first_name');
+      
+      if (error) {
+        throw new Error(`Error fetching users: ${error.message}`);
+      }
+      
+      return data;
+    },
+  });
   
   return {
     workouts: workoutsQuery.data || [],
     isLoading: workoutsQuery.isLoading,
     error: workoutsQuery.error,
+    createWorkout: createWorkout.mutate,
+    isCreating: createWorkout.isPending,
     deleteWorkout: deleteWorkout.mutate,
     isDeleting: deleteWorkout.isPending,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
+    users: usersQuery.data || [],
+    areUsersLoading: usersQuery.isLoading,
   };
 }
