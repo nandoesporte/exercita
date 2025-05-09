@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, BadgeDollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-              <span className="text-white font-bold text-sm">E</span>
+              <BadgeDollarSign className="text-white h-5 w-5" />
             </div>
             <span className="font-bold text-xl text-white">Exercita</span>
           </Link>
@@ -65,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex-1 flex justify-center">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-                <span className="text-white font-bold text-sm">E</span>
+                <BadgeDollarSign className="text-white h-5 w-5" />
               </div>
               <span className="font-bold text-xl text-white">Exercita</span>
             </Link>
