@@ -70,6 +70,8 @@ export default {
 					darkGray: '#2A2F3C',
 					gray: '#8E9196',
 					lightGray: '#F2F2F2',
+					orange: '#F97316',
+					lightOrange: '#FEC6A1',
 				}
 			},
 			borderRadius: {
