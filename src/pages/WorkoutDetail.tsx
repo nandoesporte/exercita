@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { 
-  Clock, Dumbbell, BarChart, Play, Calendar, Info
+  Clock, Dumbbell, BarChart, Info, Check
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 // Import Shadcn Tabs components
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ExerciseDetail from '@/components/ExerciseDetail';
+import { Button } from '@/components/ui/button';
 
 const WorkoutDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,12 +56,8 @@ const WorkoutDetail = () => {
     );
   }
 
-  const handleStartWorkout = () => {
-    toast.info("This feature is coming soon!");
-  }
-
-  const handleScheduleWorkout = () => {
-    toast.info("Scheduling feature is coming soon!");
+  const handleWorkoutCompleted = () => {
+    toast.success("Workout marked as completed!");
   }
 
   const handleExerciseClick = (exerciseId: string) => {
@@ -166,22 +163,15 @@ const WorkoutDetail = () => {
                 <p className="text-muted-foreground">No exercises have been added to this workout yet.</p>
               )}
 
-              {/* Action Buttons at the bottom */}
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                <button
-                  onClick={handleScheduleWorkout}
-                  className="fitness-btn-secondary px-4 py-3 flex items-center justify-center gap-2"
+              {/* Single "Workout Completed" Button */}
+              <div className="mt-6">
+                <Button
+                  onClick={handleWorkoutCompleted}
+                  className="w-full fitness-btn-primary px-4 py-3 flex items-center justify-center gap-2"
                 >
-                  <Calendar size={18} />
-                  <span>Schedule</span>
-                </button>
-                <button
-                  onClick={handleStartWorkout}
-                  className="fitness-btn-primary px-4 py-3 flex items-center justify-center gap-2"
-                >
-                  <Play size={18} />
-                  <span>Start Workout</span>
-                </button>
+                  <Check size={18} />
+                  <span>Workout Completed!</span>
+                </Button>
               </div>
             </TabsContent>
             
