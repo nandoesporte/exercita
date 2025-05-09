@@ -64,7 +64,7 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
     .order("completed_at", { ascending: false });
   
   if (error) {
-    console.error("Error fetching workout history:", error);
+    console.error("Erro ao buscar histórico de treinos:", error);
     throw new Error("Falha ao carregar histórico de treinos");
   }
   

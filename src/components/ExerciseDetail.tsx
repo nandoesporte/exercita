@@ -38,20 +38,20 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
         <div className="mt-6 space-y-6">
           {/* Exercise Instructions */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">Instructions</h2>
+            <h2 className="text-lg font-semibold mb-2">Instruções</h2>
             <p className="text-muted-foreground">
-              {exercise.description || 'No instructions available for this exercise.'}
+              {exercise.description || 'Nenhuma instrução disponível para este exercício.'}
             </p>
           </div>
           
           {/* Exercise Parameters */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">Parameters</h2>
+            <h2 className="text-lg font-semibold mb-3">Parâmetros</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Dumbbell size={16} />
-                  <span className="text-sm">Sets</span>
+                  <span className="text-sm">Séries</span>
                 </div>
                 <p className="text-xl font-bold">{sets}</p>
               </div>
@@ -60,7 +60,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Dumbbell size={16} />
-                    <span className="text-sm">Reps</span>
+                    <span className="text-sm">Repetições</span>
                   </div>
                   <p className="text-xl font-bold">{reps}</p>
                 </div>
@@ -68,9 +68,9 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
-                    <span className="text-sm">Duration</span>
+                    <span className="text-sm">Duração</span>
                   </div>
-                  <p className="text-xl font-bold">{duration} sec</p>
+                  <p className="text-xl font-bold">{duration} seg</p>
                 </div>
               )}
               
@@ -78,9 +78,9 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
-                    <span className="text-sm">Rest</span>
+                    <span className="text-sm">Descanso</span>
                   </div>
-                  <p className="text-xl font-bold">{rest} sec</p>
+                  <p className="text-xl font-bold">{rest} seg</p>
                 </div>
               )}
             </div>
@@ -89,12 +89,12 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
           {/* Video if available */}
           {exercise.video_url && (
             <div>
-              <h2 className="text-lg font-semibold mb-3">Video Guide</h2>
+              <h2 className="text-lg font-semibold mb-3">Guia em Vídeo</h2>
               <div className="aspect-video rounded-lg overflow-hidden">
                 <iframe 
                   src={exercise.video_url} 
                   className="w-full h-full"
-                  title={`${exercise.name} video guide`}
+                  title={`${exercise.name} guia em vídeo`}
                   allowFullScreen
                 ></iframe>
               </div>
@@ -108,7 +108,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
               className="fitness-btn-secondary w-full flex items-center justify-center gap-2 py-3"
             >
               <ArrowLeft size={18} />
-              <span>Back to Exercise List</span>
+              <span>Voltar para Lista de Exercícios</span>
             </button>
           </div>
         </div>
