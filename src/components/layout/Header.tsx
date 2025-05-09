@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Bell, Search, BadgeDollarSign } from 'lucide-react';
+import { Bell, Search, BadgeDollarSign, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface HeaderProps {
   title?: string;
@@ -20,6 +22,16 @@ const Header: React.FC<HeaderProps> = ({
   onBackClick
 }) => {
   const isMobile = useIsMobile();
+  const { profile } = useProfile();
+  
+  const getInitials = () => {
+    if (!profile) return 'U';
+    
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
@@ -84,6 +96,22 @@ const Header: React.FC<HeaderProps> = ({
               <span className="absolute top-2 right-2 w-2 h-2 bg-fitness-orange rounded-full"></span>
             </Link>
           )}
+          
+          {/* Profile Icon */}
+          <Link 
+            to="/profile" 
+            className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+          >
+            <Avatar className="h-8 w-8 border-2 border-fitness-orange">
+              <AvatarImage 
+                src={profile?.avatar_url || ''} 
+                alt={`${profile?.first_name || 'User'}'s profile`} 
+              />
+              <AvatarFallback className="bg-fitness-dark text-white">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
         </div>
       </div>
     </header>
