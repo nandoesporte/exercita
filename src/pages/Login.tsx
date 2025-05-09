@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertTriangle } from "lucide-react";
 
 const Login = () => {
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, adminLogin } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
   const [isLoading, setIsLoading] = useState(false);
   
@@ -22,6 +23,10 @@ const Login = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Admin login state
+  const [adminPassword, setAdminPassword] = useState("");
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   
   // If user is already logged in, redirect to home page
   if (user) {
@@ -62,6 +67,19 @@ const Login = () => {
       setLoginEmail(registerEmail);
     } catch (error) {
       console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      await adminLogin(adminPassword);
+    } catch (error) {
+      console.error("Admin login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +142,45 @@ const Login = () => {
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? "Signing in..." : "Sign in"}
                     </Button>
+
+                    <div className="text-center">
+                      <button 
+                        type="button" 
+                        onClick={() => setShowAdminLogin(!showAdminLogin)}
+                        className="text-sm text-fitness-green hover:underline"
+                      >
+                        {showAdminLogin ? "Hide Admin Login" : "Admin Login"}
+                      </button>
+                    </div>
+
+                    {showAdminLogin && (
+                      <div className="mt-4 border border-gray-200 rounded-md p-4">
+                        <form onSubmit={handleAdminLogin}>
+                          <div className="space-y-4">
+                            <div className="flex items-center text-amber-600 mb-2">
+                              <AlertTriangle size={16} className="mr-2" />
+                              <span className="text-sm">Admin access only</span>
+                            </div>
+                            <div>
+                              <label htmlFor="admin-password" className="block text-sm font-medium mb-1">
+                                Admin Password
+                              </label>
+                              <Input
+                                id="admin-password"
+                                type="password"
+                                value={adminPassword}
+                                onChange={(e) => setAdminPassword(e.target.value)}
+                                placeholder="Admin password"
+                                required
+                              />
+                            </div>
+                            <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
+                              {isLoading ? "Verifying..." : "Access Admin"}
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
                   </div>
                 </form>
               </TabsContent>

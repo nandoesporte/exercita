@@ -12,6 +12,7 @@ type AuthContextType = {
   isAdmin: boolean;
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  adminLogin: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -111,6 +112,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const adminLogin = async (password: string) => {
+    try {
+      // Check if the password matches the admin password
+      if (password !== 'Nando045+-') {
+        throw new Error('Invalid admin password');
+      }
+
+      // If there is a logged-in user, make them an admin
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ is_admin: true })
+          .eq('id', user.id);
+          
+        if (error) throw error;
+        
+        setIsAdmin(true);
+        toast.success('Admin access granted!');
+        navigate('/admin');
+        return;
+      }
+      
+      // If no user is logged in, show an error
+      throw new Error('You must be logged in to become an admin');
+    } catch (error: any) {
+      toast.error(error.message || 'Error granting admin access');
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -122,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, signUp, signIn, adminLogin, signOut }}>
       {children}
     </AuthContext.Provider>
   );

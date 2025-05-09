@@ -11,7 +11,6 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
   const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
-    // You can add a loading spinner or skeleton here
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
