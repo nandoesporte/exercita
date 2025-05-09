@@ -10,7 +10,7 @@ interface CategoryCardProps {
   color?: string;
 }
 
-export function CategoryCard({ id, name, icon, count, color = '#00CB7E' }: CategoryCardProps) {
+export function CategoryCard({ id, name, icon, count, color = '#F97316' }: CategoryCardProps) {
   return (
     <Link
       to={`/category/${id}`}
@@ -21,7 +21,7 @@ export function CategoryCard({ id, name, icon, count, color = '#00CB7E' }: Categ
         {icon}
       </div>
       <div>
-        <h3 className="font-semibold text-foreground group-hover:text-fitness-green transition-colors">{name}</h3>
+        <h3 className="font-semibold text-foreground group-hover:text-fitness-orange transition-colors">{name}</h3>
         <p className="text-sm text-muted-foreground">{count} exercises</p>
       </div>
     </Link>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -37,7 +38,7 @@ const Index = () => {
     <div className="space-y-6 pb-16">
       {/* Seção de Boas-vindas */}
       <section className="text-center mb-8 pt-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-fitness-green mb-2">
+        <h1 className="text-3xl md:text-4xl font-bold text-fitness-orange mb-2">
           {greeting}, {profile?.first_name || 'Atleta'}!
         </h1>
         <p className="text-xl text-gray-200">
@@ -57,7 +58,7 @@ const Index = () => {
               </div>
               
               <div className="flex items-center">
-                <span className="bg-fitness-green text-black px-4 py-1 rounded-full text-sm font-semibold flex items-center">
+                <span className="bg-fitness-orange text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
                   <Activity size={16} className="mr-1" /> PREMIUM
                 </span>
               </div>
@@ -69,7 +70,7 @@ const Index = () => {
                 {recommendedWorkout?.title || 'Ganho Muscular (Intermediário)'}
               </h3>
               <div className="flex justify-between mt-1">
-                <Link to="/workouts" className="text-sm text-gray-300 hover:text-fitness-green">
+                <Link to="/workouts" className="text-sm text-gray-300 hover:text-fitness-orange">
                   Ver mais <span>&gt;</span>
                 </Link>
               </div>
@@ -131,7 +132,7 @@ const Index = () => {
                   
                   {/* Botão Iniciar Treino */}
                   <Button 
-                    className="w-full mt-6 bg-fitness-green hover:bg-fitness-green/90 text-black text-lg font-semibold h-14 rounded-xl"
+                    className="w-full mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
                     asChild
                   >
                     <Link to={`/workout/${recommendedWorkout?.id || ''}`}>Iniciar Treino</Link>
@@ -147,7 +148,7 @@ const Index = () => {
       <section className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Treinos Recomendados</h2>
-          <Link to="/workouts" className="text-fitness-green text-sm">Ver todos</Link>
+          <Link to="/workouts" className="text-fitness-orange text-sm">Ver todos</Link>
         </div>
         
         <Carousel
@@ -221,8 +222,8 @@ const Index = () => {
               className="flex items-center justify-between p-3 hover:bg-fitness-dark rounded-lg transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="bg-fitness-green h-10 w-10 rounded-full flex items-center justify-center">
-                  <MapPin className="text-black" size={20} />
+                <div className="bg-fitness-orange h-10 w-10 rounded-full flex items-center justify-center">
+                  <MapPin className="text-white" size={20} />
                 </div>
                 <div>
                   <h3 className="font-bold">Encontrar Minha Academia</h3>
