@@ -29,7 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, currentSession) => {
+      (_event, currentSession) => {
+        console.log("Auth state change detected", { currentSession });
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
@@ -46,17 +47,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        console.log("Initial session found, checking admin status");
-        checkAdminStatus(currentSession.user.id);
+    const initSession = async () => {
+      try {
+        console.log("Checking for existing session");
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log("Initial session check result:", { currentSession });
+        
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          console.log("Initial session found, checking admin status");
+          checkAdminStatus(currentSession.user.id);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
-    });
+    };
+
+    initSession();
 
     return () => {
       subscription?.unsubscribe();
