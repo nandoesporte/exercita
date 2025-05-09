@@ -41,15 +41,15 @@ const WorkoutDetail = () => {
       <>
         <Header showBack onBackClick={handleBackClick} />
         <div className="container p-4 text-center">
-          <h2 className="text-xl font-bold mb-2">Workout not found</h2>
+          <h2 className="text-xl font-bold mb-2">Treino não encontrado</h2>
           <p className="text-muted-foreground mb-4">
-            The workout you're looking for doesn't exist or has been removed.
+            O treino que você está procurando não existe ou foi removido.
           </p>
           <Link 
             to="/workouts" 
             className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-fitness-green hover:bg-fitness-green/90"
           >
-            Browse Workouts
+            Explorar Treinos
           </Link>
         </div>
       </>
@@ -57,7 +57,7 @@ const WorkoutDetail = () => {
   }
 
   const handleWorkoutCompleted = () => {
-    toast.success("Workout marked as completed!");
+    toast.success("Treino marcado como concluído!");
   }
 
   const handleExerciseClick = (exerciseId: string) => {
@@ -120,18 +120,18 @@ const WorkoutDetail = () => {
                 value="exercises" 
                 className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
               >
-                Exercises
+                Exercícios
               </TabsTrigger>
               <TabsTrigger 
                 value="overview" 
                 className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
               >
-                Overview
+                Visão Geral
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="exercises" className="p-4 animate-fade-in">
-              <h2 className="text-lg font-semibold mb-4">Exercise List</h2>
+              <h2 className="text-lg font-semibold mb-4">Lista de Exercícios</h2>
               
               {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <div className="space-y-3">
@@ -149,7 +149,7 @@ const WorkoutDetail = () => {
                         <div className="ml-3 flex-grow">
                           <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
                           <div className="text-sm text-muted-foreground">
-                            {workoutExercise.sets} sets • {workoutExercise.reps ? `${workoutExercise.reps} reps` : `${workoutExercise.duration} sec`}
+                            {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
                           </div>
                         </div>
                         <div className="text-fitness-green">
@@ -160,7 +160,7 @@ const WorkoutDetail = () => {
                   }
                 </div>
               ) : (
-                <p className="text-muted-foreground">No exercises have been added to this workout yet.</p>
+                <p className="text-muted-foreground">Nenhum exercício foi adicionado a este treino ainda.</p>
               )}
 
               {/* Single "Workout Completed" Button */}
@@ -170,7 +170,7 @@ const WorkoutDetail = () => {
                   className="w-full fitness-btn-primary px-4 py-3 flex items-center justify-center gap-2"
                 >
                   <Check size={18} />
-                  <span>Workout Completed!</span>
+                  <span>Treino Concluído!</span>
                 </Button>
               </div>
             </TabsContent>
@@ -178,12 +178,12 @@ const WorkoutDetail = () => {
             <TabsContent value="overview" className="p-4 animate-fade-in">
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold mb-2">Description</h2>
-                  <p className="text-muted-foreground">{workout.description || 'No description available.'}</p>
+                  <h2 className="text-lg font-semibold mb-2">Descrição</h2>
+                  <p className="text-muted-foreground">{workout.description || 'Nenhuma descrição disponível.'}</p>
                 </div>
                 
                 <div>
-                  <h2 className="text-lg font-semibold mb-3">Category</h2>
+                  <h2 className="text-lg font-semibold mb-3">Categoria</h2>
                   <div className="flex flex-wrap gap-2">
                     <span 
                       className="px-3 py-1 rounded-full text-sm"
@@ -192,7 +192,7 @@ const WorkoutDetail = () => {
                         color: 'white'
                       }}
                     >
-                      {workout.category?.name || 'Uncategorized'}
+                      {workout.category?.name || 'Sem categoria'}
                     </span>
                   </div>
                 </div>

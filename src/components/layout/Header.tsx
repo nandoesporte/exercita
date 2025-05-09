@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({
             <Avatar className="h-8 w-8 border-2 border-fitness-orange">
               <AvatarImage 
                 src={profile?.avatar_url || ''} 
-                alt={`${profile?.first_name || 'User'}'s profile`} 
+                alt={`${profile?.first_name || 'Usuário'}'s profile`} 
               />
               <AvatarFallback className="bg-fitness-dark text-white">
                 {getInitials()}

@@ -8,7 +8,7 @@ const MobileNavbar = () => {
   const location = useLocation();
   
   const navItems = [
-    { icon: Home, path: '/', label: 'Home' },
+    { icon: Home, path: '/', label: 'Início' },
     { icon: Dumbbell, path: '/workouts', label: 'Treinos' },
     { icon: Calendar, path: '/appointments', label: 'Agenda' },
     { icon: User, path: '/profile', label: 'Perfil' },

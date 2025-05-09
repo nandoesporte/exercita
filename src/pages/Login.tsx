@@ -62,7 +62,7 @@ const Login = () => {
     e.preventDefault();
     
     if (registerPassword !== confirmPassword) {
-      alert("Passwords do not match");
+      alert("As senhas não coincidem");
       return;
     }
     
@@ -105,24 +105,24 @@ const Login = () => {
             <HeartPulse size={32} className="text-fitness-green mr-2" />
             <h1 className="text-3xl font-bold text-fitness-green">Exercita</h1>
           </div>
-          <p className="text-muted-foreground">Your personal fitness companion</p>
+          <p className="text-muted-foreground">Seu companheiro de fitness pessoal</p>
         </div>
       
         <Card>
           <CardHeader>
-            <CardTitle>Welcome</CardTitle>
+            <CardTitle>Bem-vindo</CardTitle>
             <CardDescription>
               {needsAdminAccess 
-                ? "Admin access is required. Please login and enter admin password."
-                : "Sign in to your account or create a new one to get started"}
+                ? "Acesso administrativo necessário. Por favor, faça login e digite a senha de administrador."
+                : "Entre na sua conta ou crie uma nova para começar"}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
+                <TabsTrigger value="login">Entrar</TabsTrigger>
+                <TabsTrigger value="register">Registrar</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -137,14 +137,14 @@ const Login = () => {
                         type="email"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
-                        placeholder="name@example.com"
+                        placeholder="nome@exemplo.com"
                         required
                       />
                     </div>
                     
                     <div>
                       <label htmlFor="login-password" className="block text-sm font-medium mb-1">
-                        Password
+                        Senha
                       </label>
                       <Input
                         id="login-password"
@@ -157,7 +157,7 @@ const Login = () => {
                     </div>
                     
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Signing in..." : "Sign in"}
+                      {isLoading ? "Entrando..." : "Entrar"}
                     </Button>
 
                     <div className="text-center">
@@ -166,7 +166,7 @@ const Login = () => {
                         onClick={() => setShowAdminLogin(!showAdminLogin)}
                         className="text-sm text-fitness-green hover:underline"
                       >
-                        {showAdminLogin ? "Hide Admin Login" : "Admin Login"}
+                        {showAdminLogin ? "Ocultar Login Admin" : "Login Admin"}
                       </button>
                     </div>
 
@@ -176,23 +176,23 @@ const Login = () => {
                           <div className="space-y-4">
                             <div className="flex items-center text-amber-600 mb-2">
                               <AlertTriangle size={16} className="mr-2" />
-                              <span className="text-sm">Admin access only</span>
+                              <span className="text-sm">Acesso administrativo apenas</span>
                             </div>
                             <div>
                               <label htmlFor="admin-password" className="block text-sm font-medium mb-1">
-                                Admin Password
+                                Senha de Administrador
                               </label>
                               <Input
                                 id="admin-password"
                                 type="password"
                                 value={adminPassword}
                                 onChange={(e) => setAdminPassword(e.target.value)}
-                                placeholder="Admin password"
+                                placeholder="Senha de administrador"
                                 required
                               />
                             </div>
                             <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
-                              {isLoading ? "Verifying..." : "Access Admin"}
+                              {isLoading ? "Verificando..." : "Acessar Admin"}
                             </Button>
                           </div>
                         </form>
@@ -208,26 +208,26 @@ const Login = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="first-name" className="block text-sm font-medium mb-1">
-                          First Name
+                          Nome
                         </label>
                         <Input
                           id="first-name"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
-                          placeholder="John"
+                          placeholder="João"
                           required
                         />
                       </div>
                       
                       <div>
                         <label htmlFor="last-name" className="block text-sm font-medium mb-1">
-                          Last Name
+                          Sobrenome
                         </label>
                         <Input
                           id="last-name"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
-                          placeholder="Doe"
+                          placeholder="Silva"
                           required
                         />
                       </div>
@@ -242,14 +242,14 @@ const Login = () => {
                         type="email"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
-                        placeholder="name@example.com"
+                        placeholder="nome@exemplo.com"
                         required
                       />
                     </div>
                     
                     <div>
                       <label htmlFor="register-password" className="block text-sm font-medium mb-1">
-                        Password
+                        Senha
                       </label>
                       <Input
                         id="register-password"
@@ -263,7 +263,7 @@ const Login = () => {
                     
                     <div>
                       <label htmlFor="confirm-password" className="block text-sm font-medium mb-1">
-                        Confirm Password
+                        Confirmar Senha
                       </label>
                       <Input
                         id="confirm-password"
@@ -276,7 +276,7 @@ const Login = () => {
                     </div>
                     
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Creating account..." : "Create account"}
+                      {isLoading ? "Criando conta..." : "Criar conta"}
                     </Button>
                   </div>
                 </form>
@@ -287,7 +287,7 @@ const Login = () => {
           <CardFooter className="flex justify-center">
             <p className="text-center text-sm text-muted-foreground">
               <Link to="/" className="text-fitness-green hover:underline">
-                Return to home
+                Voltar à página inicial
               </Link>
             </p>
           </CardFooter>
