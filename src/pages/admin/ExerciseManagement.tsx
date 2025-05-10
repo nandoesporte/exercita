@@ -1,16 +1,19 @@
 
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, AlertCircle } from 'lucide-react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import ExerciseForm from '@/components/admin/ExerciseForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from 'sonner';
 
 const ExerciseManagement = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
+  const [storageReady, setStorageReady] = useState<boolean | null>(null);
   
   const { 
     exercises, 
@@ -22,8 +25,26 @@ const ExerciseManagement = () => {
     isUpdating,
     deleteExercise,
     isDeleting,
-    categories
+    categories,
+    checkStorageBucket
   } = useAdminExercises();
+
+  useEffect(() => {
+    const verifyStorage = async () => {
+      try {
+        const result = await checkStorageBucket();
+        setStorageReady(result);
+        if (!result) {
+          toast.error("Storage configuration issue detected. Some features may not work properly.");
+        }
+      } catch (e) {
+        console.error("Error checking storage:", e);
+        setStorageReady(false);
+      }
+    };
+    
+    verifyStorage();
+  }, [checkStorageBucket]);
 
   const handleCreate = () => {
     setIsCreateDialogOpen(true);
@@ -96,6 +117,15 @@ const ExerciseManagement = () => {
           Create Exercise
         </Button>
       </div>
+
+      {storageReady === false && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Storage is not properly configured. Image uploads may not work correctly. Please check your console for more details.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <DataTable 
         columns={columns} 
