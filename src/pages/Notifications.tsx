@@ -4,7 +4,7 @@ import { ArrowLeft, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const Notifications = () => {
   const handleToggle = (type: string, enabled: boolean) => {

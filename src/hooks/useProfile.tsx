@@ -16,7 +16,7 @@ export function useProfile() {
   const profileQuery = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      if (!user) throw new Error('User must be logged in');
+      if (!user) throw new Error('Usuário precisa estar logado');
       
       const { data, error } = await supabase
         .from('profiles')
@@ -25,7 +25,7 @@ export function useProfile() {
         .single();
       
       if (error) {
-        throw new Error(`Error fetching profile: ${error.message}`);
+        throw new Error(`Erro ao buscar perfil: ${error.message}`);
       }
       
       return data as Profile;
@@ -35,9 +35,9 @@ export function useProfile() {
   
   const updateProfile = useMutation({
     mutationFn: async (profileData: ProfileUpdate) => {
-      if (!user) throw new Error('User must be logged in');
+      if (!user) throw new Error('Usuário precisa estar logado');
       
-      console.log('Updating profile with data:', profileData);
+      console.log('Atualizando perfil com dados:', profileData);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -46,11 +46,11 @@ export function useProfile() {
         .select();
       
       if (error) {
-        console.error('Error updating profile:', error);
-        throw new Error(`Error updating profile: ${error.message}`);
+        console.error('Erro ao atualizar perfil:', error);
+        throw new Error(`Erro ao atualizar perfil: ${error.message}`);
       }
       
-      console.log('Profile updated successfully:', data);
+      console.log('Perfil atualizado com sucesso:', data);
       return data;
     },
     onSuccess: () => {
@@ -58,21 +58,21 @@ export function useProfile() {
       toast.success('Perfil atualizado com sucesso');
     },
     onError: (error: Error) => {
-      console.error('Profile update error:', error);
+      console.error('Erro na atualização do perfil:', error);
       toast.error(error.message || 'Falha ao atualizar o perfil');
     }
   });
   
-  // New function to upload profile image
+  // Função para upload de imagem de perfil
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!user) throw new Error('User must be logged in');
+      if (!user) throw new Error('Usuário precisa estar logado');
       
-      // Generate a unique file path with user ID as prefix
+      // Gera um caminho único de arquivo com ID do usuário como prefixo
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
       
-      // Upload file to storage
+      // Upload do arquivo para o armazenamento
       const { error: uploadError } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
@@ -81,24 +81,24 @@ export function useProfile() {
         });
       
       if (uploadError) {
-        throw new Error(`Error uploading image: ${uploadError.message}`);
+        throw new Error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
       }
       
-      // Get the public URL for the uploaded file
+      // Obtém a URL pública para o arquivo carregado
       const { data: urlData } = supabase.storage
         .from('profile_images')
         .getPublicUrl(filePath);
       
       const avatarUrl = urlData.publicUrl;
       
-      // Update profile with new avatar URL
+      // Atualiza o perfil com a nova URL do avatar
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
         .eq('id', user.id);
       
       if (updateError) {
-        throw new Error(`Error updating profile with new avatar: ${updateError.message}`);
+        throw new Error(`Erro ao atualizar perfil com novo avatar: ${updateError.message}`);
       }
       
       return avatarUrl;
