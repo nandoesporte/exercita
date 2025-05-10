@@ -55,6 +55,7 @@ interface ExerciseFormProps {
 const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: ExerciseFormProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [gifPreview, setGifPreview] = useState<string | null>(initialData?.image_url || null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,22 +69,29 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    if (uploadError) {
+      toast.error("Please fix upload errors before submitting");
+      return;
+    }
     onSubmit(values as ExerciseFormData);
   };
 
   const handleGifUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    setUploadError(null);
     
     if (!file) return;
     
     // Validate file type
     if (!file.type.includes('gif') && !file.type.includes('image')) {
+      setUploadError("Please upload a GIF or image file");
       toast.error("Please upload a GIF or image file");
       return;
     }
     
     try {
       setIsUploading(true);
+      console.log("Starting file upload to Supabase...");
       
       // Generate unique filename
       const fileExt = file.name.split('.').pop();
@@ -96,22 +104,29 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
         .upload(filePath, file);
       
       if (uploadError) {
+        console.error("Upload error:", uploadError);
+        setUploadError(`Upload error: ${uploadError.message}`);
         throw uploadError;
       }
+      
+      console.log("File uploaded successfully, getting public URL...");
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('exercises')
         .getPublicUrl(filePath);
       
+      console.log("Public URL obtained:", publicUrl);
+      
       // Update form
       form.setValue('image_url', publicUrl);
       setGifPreview(publicUrl);
       toast.success("GIF uploaded successfully");
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading GIF:', error);
-      toast.error("Failed to upload GIF");
+      setUploadError(error.message || "Failed to upload GIF");
+      toast.error("Failed to upload GIF: " + (error.message || "Unknown error"));
     } finally {
       setIsUploading(false);
     }
@@ -226,19 +241,28 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
                   </div>
                 </div>
                 
-                {gifPreview && (
+                {uploadError && (
+                  <div className="text-sm text-destructive mt-2 p-2 border border-destructive/50 rounded-md bg-destructive/10">
+                    {uploadError}
+                  </div>
+                )}
+                
+                {gifPreview && !uploadError && (
                   <div className="border rounded-md p-2 mt-2">
                     <p className="text-sm text-muted-foreground mb-2">Preview:</p>
                     <img 
                       src={gifPreview} 
                       alt="Exercise preview" 
                       className="max-h-40 object-contain mx-auto"
+                      onError={() => {
+                        setUploadError("Failed to load image preview. The URL might be invalid.");
+                      }}
                     />
                   </div>
                 )}
                 
                 <FormDescription>
-                  Upload a GIF demonstrating the exercise or enter a URL
+                  Upload a GIF demonstrating the exercise or enter a URL. Supported formats: GIF, PNG, JPG.
                 </FormDescription>
                 <FormMessage />
               </div>
@@ -267,7 +291,11 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
           )}
         />
 
-        <Button type="submit" disabled={isLoading || isUploading} className="w-full">
+        <Button 
+          type="submit" 
+          disabled={isLoading || isUploading || !!uploadError} 
+          className="w-full"
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
