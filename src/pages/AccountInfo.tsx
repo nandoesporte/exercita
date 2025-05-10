@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -156,7 +155,7 @@ const AccountInfo = () => {
                   <FormControl>
                     <Input
                       placeholder="Seu nome"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                       {...field}
                     />
                   </FormControl>
@@ -174,7 +173,7 @@ const AccountInfo = () => {
                   <FormControl>
                     <Input
                       placeholder="Seu sobrenome"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                       {...field}
                     />
                   </FormControl>
@@ -194,7 +193,7 @@ const AccountInfo = () => {
                   <FormControl>
                     <Input
                       placeholder="dd/mm/aaaa"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                       {...field}
                     />
                   </FormControl>
@@ -214,7 +213,7 @@ const AccountInfo = () => {
                     onValueChange={field.onChange}
                   >
                     <select 
-                      className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-black"
+                      className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
                     >
                       <option value="">Selecione</option>
                       <option value="male">Masculino</option>
@@ -240,7 +239,7 @@ const AccountInfo = () => {
                     <Input
                       type="number"
                       placeholder="70"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                       {...field}
                     />
                   </FormControl>
@@ -259,7 +258,7 @@ const AccountInfo = () => {
                     <Input
                       type="number"
                       placeholder="175"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                       {...field}
                     />
                   </FormControl>
@@ -280,7 +279,7 @@ const AccountInfo = () => {
                   onValueChange={field.onChange}
                 >
                   <select 
-                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-black"
+                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
                   >
                     <option value="">Selecione</option>
                     <option value="lose_weight">Perder peso</option>

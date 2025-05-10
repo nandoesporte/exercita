@@ -91,7 +91,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-fitness-dark text-foreground;
   }
 }
 
@@ -131,6 +131,11 @@
   
   .press-animation {
     @apply active:scale-95 transition-transform;
+  }
+
+  /* Formulário e inputs */
+  .form-input {
+    @apply bg-fitness-darkGray border-fitness-darkGray/50 text-white rounded-lg;
   }
 }
 
