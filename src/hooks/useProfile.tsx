@@ -37,21 +37,29 @@ export function useProfile() {
     mutationFn: async (profileData: ProfileUpdate) => {
       if (!user) throw new Error('User must be logged in');
       
-      const { error } = await supabase
+      console.log('Updating profile with data:', profileData);
+      
+      const { data, error } = await supabase
         .from('profiles')
         .update(profileData)
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select();
       
       if (error) {
+        console.error('Error updating profile:', error);
         throw new Error(`Error updating profile: ${error.message}`);
       }
+      
+      console.log('Profile updated successfully:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      toast.success('Profile updated successfully');
+      toast.success('Perfil atualizado com sucesso');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update profile');
+      console.error('Profile update error:', error);
+      toast.error(error.message || 'Falha ao atualizar o perfil');
     }
   });
   
@@ -97,10 +105,10 @@ export function useProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      toast.success('Profile picture updated successfully');
+      toast.success('Foto de perfil atualizada com sucesso');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update profile picture');
+      toast.error(error.message || 'Falha ao atualizar foto de perfil');
     }
   });
   

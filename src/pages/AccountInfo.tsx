@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -91,28 +92,34 @@ const AccountInfo = () => {
   
   useEffect(() => {
     if (profile) {
+      console.log('Loading profile data into form:', profile);
       form.reset({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
         birthdate: formatDateForDisplay(profile.birthdate),
         gender: profile.gender || '',
-        weight: profile.weight ? profile.weight.toString() : '',
-        height: profile.height ? profile.height.toString() : '',
+        weight: profile.weight ? String(profile.weight) : '',
+        height: profile.height ? String(profile.height) : '',
         fitness_goal: profile.fitness_goal || '',
       });
     }
   }, [profile, form]);
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Você precisa estar logado para salvar alterações');
+      return;
+    }
     
     setIsSaving(true);
+    console.log('Form values to submit:', values);
     
     try {
       // Format and validate the date before sending to the backend
       const birthdate = formatDateForBackend(values.birthdate);
+      console.log('Formatted birthdate:', birthdate);
       
-      await updateProfile({
+      const profileData = {
         first_name: values.first_name,
         last_name: values.last_name,
         birthdate,
@@ -120,9 +127,15 @@ const AccountInfo = () => {
         weight: values.weight ? parseFloat(values.weight) : null,
         height: values.height ? parseFloat(values.height) : null,
         fitness_goal: values.fitness_goal || null,
-      });
+      };
       
-      navigate('/profile');
+      console.log('Submitting profile update:', profileData);
+      await updateProfile(profileData);
+      
+      // No need to navigate away immediately - the success toast will show
+      setTimeout(() => {
+        navigate('/profile');
+      }, 1000);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Ocorreu um erro ao salvar as informações');
