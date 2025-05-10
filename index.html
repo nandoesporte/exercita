@@ -8,6 +8,22 @@
     <meta name="description" content="Seu companheiro personalizado de fitness com treinos, acompanhamento de exercícios e monitoramento de saúde em um único aplicativo." />
     <meta name="author" content="Exercita" />
 
+    <!-- PWA meta tags -->
+    <meta name="theme-color" content="#F97316" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Exercita" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple touch icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-152x152.png" />
+
+    <!-- Open Graph tags -->
     <meta property="og:title" content="Exercita - Seu Companheiro de Fitness" />
     <meta property="og:description" content="Seu companheiro personalizado de fitness com treinos, acompanhamento de exercícios e monitoramento de saúde em um único aplicativo." />
     <meta property="og:type" content="website" />
@@ -17,7 +33,7 @@
     <meta name="twitter:site" content="@exercita" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <link rel="icon" href="/public/lovable-uploads/9de18deb-691c-457f-af33-cd32cf6c27d7.png" />
+    <link rel="icon" href="/icons/icon-192x192.png" />
   </head>
 
   <body>
@@ -25,5 +41,19 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- PWA registration script -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/serviceWorker.js')
+            .then(function(registration) {
+              console.log('ServiceWorker registrado com sucesso:', registration.scope);
+            })
+            .catch(function(error) {
+              console.log('Falha ao registrar o ServiceWorker:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
