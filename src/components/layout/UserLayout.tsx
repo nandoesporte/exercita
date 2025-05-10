@@ -8,6 +8,9 @@ const UserLayout = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   
+  // Hide the title on workout detail pages since they have their own
+  const isWorkoutDetailPage = currentPath.startsWith('/workout/');
+  
   // Determine the header title based on the current route
   const getHeaderTitle = () => {
     switch (true) {
@@ -18,7 +21,7 @@ const UserLayout = () => {
       case currentPath === '/history':
         return 'Histórico';
       case currentPath.startsWith('/workout/'):
-        return 'Detalhes do Treino';
+        return ''; // Return empty title for workout detail pages
       case currentPath === '/':
         return 'Início';
       default:

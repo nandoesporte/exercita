@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Bell, HeartPulse, UserRound } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +23,10 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const { profile } = useProfile();
+  const location = useLocation();
+  
+  // Check if we're on a workout detail page to hide the title
+  const isWorkoutDetailPage = location.pathname.startsWith('/workout/');
   
   const getInitials = () => {
     if (!profile) return 'U';
@@ -59,7 +63,10 @@ const Header: React.FC<HeaderProps> = ({
               </svg>
             </button>
           )}
-          {!isMobile && title && <h1 className="text-xl font-bold text-white">{title}</h1>}
+          {/* Only show the title if not on a workout detail page */}
+          {!isMobile && title && !isWorkoutDetailPage && (
+            <h1 className="text-xl font-bold text-white">{title}</h1>
+          )}
         </div>
         
         {/* App Logo for Mobile (centered) */}
