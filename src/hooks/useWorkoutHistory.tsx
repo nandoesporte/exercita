@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type WorkoutHistoryItem = {
@@ -72,8 +72,11 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
 };
 
 export const useWorkoutHistory = () => {
+  const queryClient = useQueryClient();
+  
   return useQuery({
     queryKey: ["workoutHistory"],
     queryFn: fetchWorkoutHistory,
+    refetchOnWindowFocus: false,
   });
 };
