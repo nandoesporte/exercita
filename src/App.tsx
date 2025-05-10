@@ -19,6 +19,17 @@ import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 
+// Profile related pages
+import AccountInfo from "@/pages/AccountInfo";
+import Settings from "@/pages/Settings";
+import WorkoutHistory from "@/pages/WorkoutHistory";
+import HealthStats from "@/pages/HealthStats";
+import Reminders from "@/pages/Reminders";
+import Notifications from "@/pages/Notifications";
+import PaymentMethods from "@/pages/PaymentMethods";
+import InviteFriends from "@/pages/InviteFriends";
+import HelpCenter from "@/pages/HelpCenter";
+
 // Admin pages
 import Dashboard from "@/pages/admin/Dashboard";
 import WorkoutManagement from "@/pages/admin/WorkoutManagement";
@@ -50,6 +61,17 @@ const App = () => {
           <Route path="/workout/:id" element={<WorkoutDetail />} />
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
+          
+          {/* Profile related pages */}
+          <Route path="/account" element={<AccountInfo />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/workout-history" element={<WorkoutHistory />} />
+          <Route path="/health-stats" element={<HealthStats />} />
+          <Route path="/reminders" element={<Reminders />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/payment" element={<PaymentMethods />} />
+          <Route path="/invite" element={<InviteFriends />} />
+          <Route path="/help" element={<HelpCenter />} />
         </Route>
         
         {/* Admin Routes */}
