@@ -5,6 +5,9 @@ import { Database } from '@/integrations/supabase/types';
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
+  workout_exercises?: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
+    exercise: Database['public']['Tables']['exercises']['Row'];
+  }>;
 };
 
 export function useWorkouts() {
@@ -20,6 +23,21 @@ export function useWorkouts() {
             name,
             icon,
             color
+          ),
+          workout_exercises (
+            id,
+            sets,
+            reps,
+            duration,
+            rest,
+            order_position,
+            exercise:exercise_id (
+              id,
+              name,
+              description,
+              image_url,
+              video_url
+            )
           )
         `)
         .order('created_at', { ascending: false });

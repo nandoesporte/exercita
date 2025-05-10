@@ -1,10 +1,9 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { 
@@ -19,12 +18,11 @@ import { WorkoutCard } from '@/components/ui/workout-card';
 const Index = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { data: workouts } = useWorkouts();
-  const [workoutLevel, setWorkoutLevel] = useState('intermediate');
+  const { data: workouts, isLoading } = useWorkouts();
   
   // Obter o treino recomendado com base no nível de condicionamento físico do usuário ou no primeiro treino em destaque
   const recommendedWorkout = workouts?.find(workout => 
-    workout.level === (profile?.fitness_goal?.toLowerCase() || workoutLevel)
+    workout.level === (profile?.fitness_goal?.toLowerCase() || 'intermediate')
   ) || workouts?.[0];
   
   // Horário atual para saudação personalizada
@@ -33,6 +31,9 @@ const Index = () => {
   if (hour < 12) greeting = "Bom dia";
   else if (hour < 18) greeting = "Boa tarde";
   else greeting = "Boa noite";
+
+  // Determine target muscles based on the workout
+  const targetMuscles = recommendedWorkout?.category?.name || "Corpo completo";
   
   return (
     <div className="space-y-6 pb-16">
@@ -54,7 +55,6 @@ const Index = () => {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-bold">Academia</h2>
-                <ChevronDown size={20} />
               </div>
               
               <div className="flex items-center">
@@ -67,7 +67,7 @@ const Index = () => {
             {/* Detalhes do Treino */}
             <div>
               <h3 className="text-xl font-bold">
-                {recommendedWorkout?.title || 'Ganho Muscular (Intermediário)'}
+                {recommendedWorkout?.title || 'Treino Personalizado'}
               </h3>
               <div className="flex justify-between mt-1">
                 <Link to="/workouts" className="text-sm text-gray-300 hover:text-fitness-orange">
@@ -75,58 +75,43 @@ const Index = () => {
                 </Link>
               </div>
               
-              {/* Parâmetros do Treino */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                <div className="bg-fitness-dark p-3 rounded-md flex items-center gap-2 min-w-[100px]">
-                  <span>Dia</span>
-                  <div className="flex items-center ml-auto">
-                    <span className="font-bold">3</span>
-                    <ChevronDown size={16} className="ml-1" />
-                  </div>
-                </div>
-                
-                <div className="bg-fitness-dark p-3 rounded-md flex items-center gap-2 min-w-[140px]">
-                  <span>Duração</span>
-                  <div className="flex items-center ml-auto">
-                    <span className="font-bold">Normal</span>
-                    <ChevronDown size={16} className="ml-1" />
-                  </div>
-                </div>
-                
-                <div className="bg-fitness-dark p-3 rounded-md flex items-center min-w-[100px]">
-                  <span>Condição</span>
-                </div>
-              </div>
+              {/* Não exibir os parâmetros dias, duração e condição - escondido conforme solicitado */}
               
               {/* Áreas Alvo */}
               <div className="mt-4">
                 <div className="bg-fitness-dark p-4 rounded-md">
                   <div className="mb-2">
                     <span className="font-bold">Alvo</span>
-                    <span className="ml-2 text-gray-300">Perna, Core, Cardio</span>
+                    <span className="ml-2 text-gray-300">{targetMuscles}</span>
                   </div>
                   
-                  {/* Estatísticas do Treino */}
+                  {/* Estatísticas do Treino - usando dados reais */}
                   <div className="flex justify-between mt-4">
                     <div className="text-center">
                       <div className="flex justify-center mb-2">
                         <Dumbbell size={28} className="text-gray-300" />
                       </div>
-                      <div className="text-lg font-bold">7 exercícios</div>
+                      <div className="text-lg font-bold">
+                        {recommendedWorkout?.workout_exercises?.length || 0} exercícios
+                      </div>
                     </div>
                     
                     <div className="text-center">
                       <div className="flex justify-center mb-2">
                         <Clock size={28} className="text-gray-300" />
                       </div>
-                      <div className="text-lg font-bold">25 séries</div>
+                      <div className="text-lg font-bold">
+                        {recommendedWorkout?.duration || 0} min
+                      </div>
                     </div>
                     
                     <div className="text-center">
                       <div className="flex justify-center mb-2">
                         <Activity size={28} className="text-gray-300" />
                       </div>
-                      <div className="text-lg font-bold">377kcal</div>
+                      <div className="text-lg font-bold">
+                        {recommendedWorkout?.calories || 0} kcal
+                      </div>
                     </div>
                   </div>
                   
@@ -134,8 +119,11 @@ const Index = () => {
                   <Button 
                     className="w-full mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
                     asChild
+                    disabled={isLoading || !recommendedWorkout}
                   >
-                    <Link to={`/workout/${recommendedWorkout?.id || ''}`}>Iniciar Treino</Link>
+                    <Link to={`/workout/${recommendedWorkout?.id || ''}`}>
+                      {isLoading ? 'Carregando...' : 'Iniciar Treino'}
+                    </Link>
                   </Button>
                 </div>
               </div>
