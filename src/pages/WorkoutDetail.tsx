@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -236,19 +235,19 @@ const WorkoutDetail = () => {
           </div>
         </div>
         
-        {/* Tabs using Shadcn UI Tabs */}
+        {/* Tabs using Shadcn UI Tabs - Updated with more modern and rounded styling */}
         <div className="mt-4">
           <Tabs defaultValue="exercises" value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0">
+            <TabsList className="w-full justify-start bg-fitness-darkGray/30 p-1 rounded-xl overflow-hidden">
               <TabsTrigger 
                 value="exercises" 
-                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-orange data-[state=active]:text-fitness-orange rounded-none data-[state=active]:shadow-none"
+                className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-fitness-orange data-[state=active]:text-white data-[state=active]:shadow-md"
               >
                 Exercícios
               </TabsTrigger>
               <TabsTrigger 
                 value="overview" 
-                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-orange data-[state=active]:text-fitness-orange rounded-none data-[state=active]:shadow-none"
+                className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-fitness-orange data-[state=active]:text-white data-[state=active]:shadow-md"
               >
                 Visão Geral
               </TabsTrigger>
