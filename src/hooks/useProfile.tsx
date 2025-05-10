@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { v4 as uuidv4 } from '@supabase/supabase-js/dist/module/lib/helpers';
+import { v4 as uuidv4 } from 'uuid';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
