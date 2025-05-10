@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Download, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isPwaInstalled } from '@/utils/pwaUtils';
@@ -18,38 +18,45 @@ interface PWAInstallPromptProps {
 
 const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const promptRef = useRef<BeforeInstallPromptEvent | null>(
+    window.deferredPromptEvent || null
+  );
 
   useEffect(() => {
     // Check if already installed
     if (isPwaInstalled()) {
-      setIsVisible(false);
-      onClose();
+      console.log('PWA already installed, not showing prompt');
+      handleClose();
       return;
     }
 
     // Check if install prompt is available
-    if (!window.deferredPromptEvent) {
+    if (!promptRef.current) {
       console.log('No install prompt available');
-      setIsVisible(false);
-      onClose();
+      handleClose();
       return;
     }
     
     console.log('Install prompt is available and showing');
-  }, [onClose]);
+
+    // Cleanup function
+    return () => {
+      console.log('PWAInstallPrompt unmounting');
+    };
+  }, []);
 
   const handleInstall = async () => {
-    if (!window.deferredPromptEvent) {
+    if (!promptRef.current) {
       toast.error('Não foi possível instalar o aplicativo');
       return;
     }
 
     try {
       // Show the install prompt
-      await window.deferredPromptEvent.prompt();
+      await promptRef.current.prompt();
       
       // Wait for user choice
-      const choiceResult = await window.deferredPromptEvent.userChoice;
+      const choiceResult = await promptRef.current.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
@@ -57,9 +64,6 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ onClose }) => {
       } else {
         console.log('User dismissed the install prompt');
       }
-      
-      // Clear the prompt
-      window.deferredPromptEvent = null;
       
       // Close the prompt component
       handleClose();

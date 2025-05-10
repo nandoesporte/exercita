@@ -23,8 +23,18 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
  * @returns boolean
  */
 export const isPwaInstalled = (): boolean => {
-  return window.matchMedia('(display-mode: standalone)').matches || 
-         (window.navigator as any).standalone === true;
+  // First check the display-mode media query
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  
+  // Then check for iOS "standalone" property
+  const isIOSInstalled = (window.navigator as any).standalone === true;
+  
+  // Finally check if the app was launched from the home screen
+  const isFromHomeScreen = window.location.search.includes('source=pwa');
+  
+  console.log('PWA status:', { isStandalone, isIOSInstalled, isFromHomeScreen });
+  
+  return isStandalone || isIOSInstalled || isFromHomeScreen;
 };
 
 /**
@@ -65,20 +75,22 @@ export const removeConnectivityListeners = (
  * Registra o evento beforeinstallprompt
  */
 export const registerInstallPrompt = (): void => {
-  // Check if already registered
-  if (window.deferredPromptEvent) {
-    console.log('Install prompt already registered');
-    return;
+  // First ensure we don't have duplicate event listeners
+  try {
+    window.removeEventListener('beforeinstallprompt', (e: any) => {
+      console.log('Removed old beforeinstallprompt listener');
+    });
+  } catch (err) {
+    console.log('No beforeinstallprompt listener to remove');
   }
 
-  console.log('Registering beforeinstallprompt event listener');
-  
+  // Add the event listener
   window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Store the event so it can be triggered later
-    window.deferredPromptEvent = e as any;
-    console.log('beforeinstallprompt event fired and stored');
+    window.deferredPromptEvent = e;
+    console.log('beforeinstallprompt event captured and stored');
   });
 
   // Detect if the app was installed

@@ -11,6 +11,13 @@ import { toast } from 'sonner'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
+// Add type declaration for the global deferredPromptEvent
+declare global {
+  interface Window {
+    deferredPromptEvent: any;
+  }
+}
+
 // Componente raiz que envolve a aplicação
 const Main = () => {
   // Initialize PWA install prompt
@@ -21,7 +28,16 @@ const Main = () => {
     // Log when PWA is installed
     window.addEventListener('appinstalled', () => {
       console.log('PWA was installed successfully');
+      // Clear the deferred prompt when installed
+      window.deferredPromptEvent = null;
     });
+
+    // Make sure to clean up event listener on unmount
+    return () => {
+      window.removeEventListener('appinstalled', () => {
+        console.log('Cleaned up appinstalled event listener');
+      });
+    };
   }, []);
 
   // Adiciona listener para status online/offline
@@ -35,10 +51,10 @@ const Main = () => {
 
   // Registra os listeners quando o componente é montado
   React.useEffect(() => {
-    registerConnectivityListeners(
-      () => handleOfflineStatus(), // Online callback
-      () => handleOfflineStatus()  // Offline callback
-    );
+    const onlineCallback = () => handleOfflineStatus();
+    const offlineCallback = () => handleOfflineStatus();
+    
+    registerConnectivityListeners(onlineCallback, offlineCallback);
 
     // Verifica o status inicial
     if (!navigator.onLine) {
@@ -46,7 +62,9 @@ const Main = () => {
     }
 
     return () => {
-      // Os listeners são removidos automaticamente pelo utilitário
+      // Os listeners são removidos corretamente
+      window.removeEventListener('online', onlineCallback);
+      window.removeEventListener('offline', offlineCallback);
     };
   }, []);
 

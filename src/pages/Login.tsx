@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,7 +36,7 @@ const Login = () => {
   const [adminPassword, setAdminPassword] = useState("");
   
   // PWA installation prompt
-  const { showInstallPrompt, closePrompt, showPrompt, canInstall } = usePWAInstall();
+  const { canInstall, showPrompt, closePrompt } = usePWAInstall();
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
   
   // Track successful login to show PWA prompt
@@ -53,9 +54,9 @@ const Login = () => {
     if (loginSuccess && canInstall) {
       // Small delay to ensure the navigation completes first
       const timer = setTimeout(() => {
+        console.log('Attempting to show PWA prompt after successful login');
         setShowPWAPrompt(true);
-        console.log('Showing PWA install prompt after login');
-      }, 1000);
+      }, 1500);
       
       return () => clearTimeout(timer);
     }
@@ -120,6 +121,11 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClosePWAPrompt = () => {
+    console.log('Closing PWA prompt');
+    setShowPWAPrompt(false);
   };
   
   return (
@@ -324,7 +330,7 @@ const Login = () => {
         </Card>
         
         {/* PWA Installation Prompt */}
-        {showPWAPrompt && <PWAInstallPrompt onClose={() => setShowPWAPrompt(false)} />}
+        {showPWAPrompt && <PWAInstallPrompt onClose={handleClosePWAPrompt} />}
       </div>
     </div>
   );

@@ -8,32 +8,39 @@ export const usePWAInstall = () => {
   const [canInstall, setCanInstall] = useState(false);
   
   useEffect(() => {
-    // Check if the PWA is already installed
-    const isInstalled = isPwaInstalled();
-    
-    // Check if user dismissed it recently (using localStorage)
-    const dismissedRecently = localStorage.getItem('pwa_prompt_dismissed');
-    const dismissedTime = dismissedRecently ? new Date(dismissedRecently) : null;
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    
-    // Check if install prompt is available
-    const hasInstallPrompt = !!window.deferredPromptEvent;
-    setCanInstall(hasInstallPrompt && !isInstalled);
-    
-    // Only show if not installed and not dismissed recently
-    if (!isInstalled && (!dismissedTime || dismissedTime < oneDayAgo)) {
-      setUserDismissed(false);
-    } else {
-      setUserDismissed(true);
-    }
+    // Only run this once on mount
+    const checkInstallStatus = () => {
+      // Check if the PWA is already installed
+      const isInstalled = isPwaInstalled();
+      
+      // Check if user dismissed it recently (using localStorage)
+      const dismissedRecently = localStorage.getItem('pwa_prompt_dismissed');
+      const dismissedTime = dismissedRecently ? new Date(dismissedRecently) : null;
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      
+      // Check if install prompt is available
+      const hasInstallPrompt = !!window.deferredPromptEvent;
+      setCanInstall(hasInstallPrompt && !isInstalled);
+      
+      // Only show if not installed and not dismissed recently
+      if (!isInstalled && (!dismissedTime || dismissedTime < oneDayAgo)) {
+        setUserDismissed(false);
+      } else {
+        setUserDismissed(true);
+      }
+    };
+
+    checkInstallStatus();
   }, []);
 
   const showPrompt = () => {
-    if (!isPwaInstalled() && !userDismissed && window.deferredPromptEvent) {
+    if (canInstall && !userDismissed) {
+      console.log('Showing PWA install prompt, canInstall:', canInstall, 'userDismissed:', userDismissed);
       setShowInstallPrompt(true);
       return true;
     }
+    console.log('Not showing PWA prompt, conditions not met', { canInstall, userDismissed });
     return false;
   };
 
