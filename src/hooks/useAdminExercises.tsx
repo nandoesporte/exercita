@@ -169,52 +169,21 @@ export function useAdminExercises() {
   // Updated storage bucket check function using the specialized storage client
   const checkStorageBucket = async (): Promise<boolean> => {
     try {
-      // First check with the specialized storage client
+      console.log("Checking storage bucket configuration...");
+      
+      // Directly use the verifyStorageAccess function from storageClient
       const isAccessible = await verifyStorageAccess();
       
       if (isAccessible) {
-        console.log("Exercise storage bucket verified with specialized access");
+        console.log("Exercise storage bucket verified successfully");
         return true;
       }
       
-      // Fallback - try to access with the regular client
-      const { data: bucketData, error: getBucketError } = await supabase.storage.getBucket('exercises');
-      
-      if (!getBucketError && bucketData) {
-        console.log("Exercise storage bucket found");
-        return true;
-      }
-      
-      console.log("Storage bucket error:", getBucketError?.message);
-      
-      // Attempt to create the bucket if it doesn't exist
-      if (getBucketError && getBucketError.message.includes('not found')) {
-        try {
-          const { data: newBucket, error: createError } = await storageClient.storage.createBucket('exercises', {
-            public: true,
-            fileSizeLimit: 5242880 // 5MB limit
-          });
-          
-          if (!createError && newBucket) {
-            console.log("Successfully created exercises bucket");
-            toast.success("Storage bucket created successfully");
-            return true;
-          }
-          
-          console.error("Failed to create bucket:", createError?.message);
-          toast.error(`Storage bucket creation failed: ${createError?.message}`);
-          return false;
-        } catch (createErr: any) {
-          console.error("Error creating bucket:", createErr);
-          toast.error("Failed to create storage bucket. You may need admin permissions.");
-          return false;
-        }
-      }
-      
-      toast.error("Storage configuration issue: " + (getBucketError?.message || "Unknown error"));
+      console.log("Storage bucket verification failed");
+      toast.error("Storage configuration issue detected. Please check the console for more details.");
       return false;
     } catch (error: any) {
-      console.error("Unexpected error checking/creating storage bucket:", error);
+      console.error("Unexpected error checking storage bucket:", error);
       toast.error("Storage configuration error: " + error.message);
       return false;
     }
@@ -232,7 +201,9 @@ export function useAdminExercises() {
       // Generate unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = fileName;
+      
+      console.log(`Attempting to upload file ${fileName} to exercises bucket`);
       
       // Upload file to Supabase Storage with exponential backoff retry
       let attempts = 0;
@@ -265,7 +236,7 @@ export function useAdminExercises() {
           
           console.log("Upload successful, public URL:", publicUrl);
           return publicUrl;
-        } catch (uploadError) {
+        } catch (uploadError: any) {
           lastError = uploadError;
           console.error(`Upload attempt ${attempts + 1} exception:`, uploadError);
           attempts++;
