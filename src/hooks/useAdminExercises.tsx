@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { storageClient, verifyStorageAccess } from '@/integrations/supabase/storageClient';
+import { storageClient, verifyStorageAccess, uploadExerciseFile } from '@/integrations/supabase/storageClient';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -198,53 +198,8 @@ export function useAdminExercises() {
         throw new Error("Storage bucket not available or not properly configured.");
       }
       
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = fileName;
-      
-      console.log(`Attempting to upload file ${fileName} to exercises bucket`);
-      
-      // Upload file to Supabase Storage with exponential backoff retry
-      let attempts = 0;
-      const maxAttempts = 3;
-      let lastError = null;
-      
-      while (attempts < maxAttempts) {
-        try {
-          console.log(`Upload attempt ${attempts + 1} using specialized storage client`);
-          
-          const { data, error } = await storageClient.storage
-            .from('exercises')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: attempts > 0 // Try upsert on retry attempts
-            });
-          
-          if (error) {
-            lastError = error;
-            console.error(`Upload attempt ${attempts + 1} failed:`, error);
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts))); // Exponential backoff
-            continue;
-          }
-          
-          // Get public URL
-          const { data: { publicUrl } } = storageClient.storage
-            .from('exercises')
-            .getPublicUrl(filePath);
-          
-          console.log("Upload successful, public URL:", publicUrl);
-          return publicUrl;
-        } catch (uploadError: any) {
-          lastError = uploadError;
-          console.error(`Upload attempt ${attempts + 1} exception:`, uploadError);
-          attempts++;
-          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts))); // Exponential backoff
-        }
-      }
-      
-      throw lastError || new Error("Upload failed after multiple attempts");
+      // Use the new uploadExerciseFile function
+      return await uploadExerciseFile(file);
     } catch (error: any) {
       console.error("File upload error:", error);
       throw error;
