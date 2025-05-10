@@ -14,6 +14,7 @@ const AdminSidebar = () => {
   const navItems = [
     { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
     { icon: Users, path: '/admin/users', label: 'Users' },
+    { icon: Dumbbell, path: '/admin/exercises', label: 'Exercises' },
     { icon: Dumbbell, path: '/admin/workouts', label: 'Workouts' },
     { icon: CalendarDays, path: '/admin/appointments', label: 'Appointments' },
     { icon: FileText, path: '/admin/blog', label: 'Blog' },

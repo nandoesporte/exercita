@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { ExerciseFormData } from '@/hooks/useAdminExercises';
 import { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   Form,
@@ -26,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from 'sonner';
 
 // Define form schema with Zod
 const formSchema = z.object({
@@ -50,6 +53,9 @@ interface ExerciseFormProps {
 }
 
 const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: ExerciseFormProps) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [gifPreview, setGifPreview] = useState<string | null>(initialData?.image_url || null);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,6 +69,52 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values as ExerciseFormData);
+  };
+
+  const handleGifUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.includes('gif') && !file.type.includes('image')) {
+      toast.error("Please upload a GIF or image file");
+      return;
+    }
+    
+    try {
+      setIsUploading(true);
+      
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `exercises/${fileName}`;
+      
+      // Upload file to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('exercises')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('exercises')
+        .getPublicUrl(filePath);
+      
+      // Update form
+      form.setValue('image_url', publicUrl);
+      setGifPreview(publicUrl);
+      toast.success("GIF uploaded successfully");
+      
+    } catch (error) {
+      console.error('Error uploading GIF:', error);
+      toast.error("Failed to upload GIF");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -133,18 +185,63 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
           name="image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL (optional)</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="https://example.com/image.jpg" 
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormDescription>
-                Enter a URL for the exercise image
-              </FormDescription>
-              <FormMessage />
+              <FormLabel>Exercise GIF/Image</FormLabel>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <FormControl>
+                    <Input 
+                      type="text"
+                      placeholder="https://example.com/image.gif" 
+                      {...field}
+                      value={field.value || ""}
+                      className={isUploading ? "opacity-50" : ""}
+                    />
+                  </FormControl>
+                  <div className="relative">
+                    <Input
+                      type="file"
+                      accept="image/gif,image/*"
+                      id="gif-upload"
+                      onChange={handleGifUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      disabled={isUploading}
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload GIF
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                {gifPreview && (
+                  <div className="border rounded-md p-2 mt-2">
+                    <p className="text-sm text-muted-foreground mb-2">Preview:</p>
+                    <img 
+                      src={gifPreview} 
+                      alt="Exercise preview" 
+                      className="max-h-40 object-contain mx-auto"
+                    />
+                  </div>
+                )}
+                
+                <FormDescription>
+                  Upload a GIF demonstrating the exercise or enter a URL
+                </FormDescription>
+                <FormMessage />
+              </div>
             </FormItem>
           )}
         />
@@ -170,7 +267,7 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
           )}
         />
 
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <Button type="submit" disabled={isLoading || isUploading} className="w-full">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
