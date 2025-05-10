@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -165,29 +166,48 @@ export function useAdminExercises() {
     },
   });
 
-  // Improved storage bucket check function
+  // Improved storage bucket check function with auto-creation attempt
   const checkStorageBucket = async (): Promise<boolean> => {
     try {
-      // Just check if the bucket exists without trying to create it
-      const { data, error } = await supabase.storage.getBucket('exercises');
+      // First, check if the bucket exists
+      const { data: bucketData, error: getBucketError } = await supabase.storage.getBucket('exercises');
       
-      if (error) {
-        console.log("Storage bucket error:", error.message);
-        return false;
-      }
-      
-      if (data) {
+      if (!getBucketError && bucketData) {
         console.log("Exercise storage bucket found");
         return true;
       }
       
-      // Don't try to create the bucket here, just inform the user
-      console.log("Exercise storage bucket not found");
-      toast.error("Storage bucket 'exercises' not found. Please check your Supabase configuration.");
+      console.log("Storage bucket error:", getBucketError?.message);
+      
+      // Attempt to create the bucket if it doesn't exist
+      if (getBucketError && getBucketError.message.includes('not found')) {
+        try {
+          const { data: newBucket, error: createError } = await supabase.storage.createBucket('exercises', {
+            public: true,
+            fileSizeLimit: 5242880 // 5MB limit
+          });
+          
+          if (!createError && newBucket) {
+            console.log("Successfully created exercises bucket");
+            toast.success("Storage bucket created successfully");
+            return true;
+          }
+          
+          console.error("Failed to create bucket:", createError?.message);
+          toast.error(`Storage bucket creation failed: ${createError?.message}`);
+          return false;
+        } catch (createErr: any) {
+          console.error("Error creating bucket:", createErr);
+          toast.error("Failed to create storage bucket. You may need admin permissions.");
+          return false;
+        }
+      }
+      
+      toast.error("Storage configuration issue: " + (getBucketError?.message || "Unknown error"));
       return false;
-    } catch (error) {
-      console.error("Unexpected error checking storage bucket:", error);
-      toast.error("Storage configuration error");
+    } catch (error: any) {
+      console.error("Unexpected error checking/creating storage bucket:", error);
+      toast.error("Storage configuration error: " + error.message);
       return false;
     }
   };

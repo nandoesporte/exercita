@@ -37,7 +37,7 @@ const ExerciseManagement = () => {
         const result = await checkStorageBucket();
         setStorageReady(result);
         if (!result) {
-          toast.error("Storage configuration issue detected. Some features may not work properly.");
+          toast.error("Storage configuration issue detected. Please check the console for more details.");
         }
       } catch (e) {
         console.error("Error checking storage:", e);
@@ -80,7 +80,7 @@ const ExerciseManagement = () => {
       if (result) {
         toast.success("Storage is now properly configured!");
       } else {
-        toast.error("Storage configuration issues persist.");
+        toast.error("Storage configuration issues persist. Please check the console for details.");
       }
     } catch (e) {
       console.error("Error rechecking storage:", e);
