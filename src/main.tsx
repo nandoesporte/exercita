@@ -43,7 +43,7 @@ const Main = () => {
       <BrowserRouter>
         <TooltipProvider>
           <AuthProvider>
-            <Toaster position="top-center" />
+            <Toaster position="bottom-center" richColors closeButton />
             <App />
           </AuthProvider>
         </TooltipProvider>
