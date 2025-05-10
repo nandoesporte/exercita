@@ -60,3 +60,23 @@ export const removeConnectivityListeners = (
   window.removeEventListener('online', onlineCallback);
   window.removeEventListener('offline', offlineCallback);
 };
+
+/**
+ * Registra o evento beforeinstallprompt
+ */
+export const registerInstallPrompt = (): void => {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Store the event so it can be triggered later
+    window.deferredPromptEvent = e as any;
+    console.log('beforeinstallprompt event fired and stored');
+  });
+
+  // Detect if the app was installed
+  window.addEventListener('appinstalled', () => {
+    // Clear the deferredPrompt
+    window.deferredPromptEvent = null;
+    console.log('PWA was installed');
+  });
+};

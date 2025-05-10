@@ -10,6 +10,7 @@ const urlsToCache = [
 
 // Instalação do Service Worker
 self.addEventListener("install", (event) => {
+  console.log("Service Worker installing...");
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Cache aberto");
@@ -20,6 +21,7 @@ self.addEventListener("install", (event) => {
 
 // Ativação do Service Worker
 self.addEventListener("activate", (event) => {
+  console.log("Service Worker activating...");
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -95,3 +97,9 @@ self.addEventListener('notificationclick', (event) => {
     );
   }
 });
+
+// Evento para quando a aplicação é instalada como PWA
+self.addEventListener('appinstalled', (event) => {
+  console.log('PWA has been installed');
+});
+

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle } from "lucide-react";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 const Login = () => {
   const { user, signIn, signUp, adminLogin } = useAuth();
@@ -33,6 +35,10 @@ const Login = () => {
   // Admin login state
   const [adminPassword, setAdminPassword] = useState("");
   
+  // PWA installation prompt
+  const { showInstallPrompt, closePrompt } = usePWAInstall();
+  const [showPWAPrompt, setShowPWAPrompt] = useState(false);
+  
   useEffect(() => {
     // If redirected from admin page with adminAccess=required, show a message
     if (needsAdminAccess) {
@@ -51,6 +57,8 @@ const Login = () => {
     
     try {
       await signIn(loginEmail, loginPassword);
+      // Show PWA install prompt after successful login
+      setShowPWAPrompt(true);
     } catch (error) {
       console.error("Login error:", error);
     } finally {
@@ -90,6 +98,8 @@ const Login = () => {
     
     try {
       await adminLogin(adminPassword);
+      // Show PWA install prompt after successful login
+      setShowPWAPrompt(true);
     } catch (error) {
       console.error("Admin login error:", error);
     } finally {
@@ -297,6 +307,9 @@ const Login = () => {
             </p>
           </CardFooter>
         </Card>
+        
+        {/* PWA Installation Prompt */}
+        {showPWAPrompt && <PWAInstallPrompt onClose={() => setShowPWAPrompt(false)} />}
       </div>
     </div>
   );

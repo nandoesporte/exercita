@@ -6,13 +6,18 @@ import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from 'sonner'
-// Fix the import - we need to import toast from sonner
+// Fix the import - use sonner's toast
 import { toast } from 'sonner'
-import { registerConnectivityListeners } from '@/utils/pwaUtils'
+import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 // Componente raiz que envolve a aplicação
 const Main = () => {
+  // Initialize PWA install prompt
+  React.useEffect(() => {
+    registerInstallPrompt();
+  }, []);
+
   // Adiciona listener para status online/offline
   const handleOfflineStatus = () => {
     if (!navigator.onLine) {
