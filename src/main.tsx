@@ -1,10 +1,13 @@
 
+import React, { useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from 'sonner'
+import { toast } from '@/components/ui/sonner'
+import { registerConnectivityListeners } from '@/utils/pwaUtils'
 
 // Componente raiz que envolve a aplicação
 const Main = () => {
@@ -18,9 +21,11 @@ const Main = () => {
   };
 
   // Registra os listeners quando o componente é montado
-  React.useEffect(() => {
-    window.addEventListener('online', handleOfflineStatus);
-    window.addEventListener('offline', handleOfflineStatus);
+  useEffect(() => {
+    registerConnectivityListeners(
+      () => handleOfflineStatus(), // Online callback
+      () => handleOfflineStatus()  // Offline callback
+    );
 
     // Verifica o status inicial
     if (!navigator.onLine) {
@@ -28,9 +33,7 @@ const Main = () => {
     }
 
     return () => {
-      // Remove os listeners quando o componente é desmontado
-      window.removeEventListener('online', handleOfflineStatus);
-      window.removeEventListener('offline', handleOfflineStatus);
+      // Os listeners são removidos automaticamente pelo utilitário
     };
   }, []);
 
