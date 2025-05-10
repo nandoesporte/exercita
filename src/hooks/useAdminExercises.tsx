@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { storageClient, verifyStorageAccess, uploadExerciseFile } from '@/integrations/supabase/storageClient';
+import { verifyStorageAccess, uploadExerciseFile } from '@/integrations/supabase/storageClient';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -171,7 +171,7 @@ export function useAdminExercises() {
     try {
       console.log("Checking storage bucket configuration...");
       
-      // Directly use the verifyStorageAccess function from storageClient
+      // Use the improved verifyStorageAccess function
       const isAccessible = await verifyStorageAccess();
       
       if (isAccessible) {
@@ -189,7 +189,7 @@ export function useAdminExercises() {
     }
   };
 
-  // Updated function to upload a file to the storage bucket using the specialized client
+  // Updated function to upload a file to the storage bucket using the improved function
   const uploadExerciseImage = async (file: File): Promise<string> => {
     try {
       // Check if storage bucket exists/is accessible
@@ -198,7 +198,7 @@ export function useAdminExercises() {
         throw new Error("Storage bucket not available or not properly configured.");
       }
       
-      // Use the new uploadExerciseFile function
+      // Use the specialized uploadExerciseFile function
       return await uploadExerciseFile(file);
     } catch (error: any) {
       console.error("File upload error:", error);

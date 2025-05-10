@@ -5,7 +5,6 @@ import type { Database } from './types';
 // Dedicated storage client with special access keys
 const SUPABASE_URL = "https://jplkrysolselfculqvqr.supabase.co";
 const STORAGE_KEY = "63b690e66b1f25db23655d20aa27ea83fc85a4c670dc0e8f59e3e462c14ac236";
-const STORAGE_ID = "8a9b669bc0c6b3b746cfe318291b112a";
 
 // This client is specifically for storage operations with elevated permissions
 // Using anonymous key rather than JWT for direct storage access
@@ -24,41 +23,89 @@ export const storageClient = createClient<Database>(
 // Helper function to check if the storage is configured properly
 export const verifyStorageAccess = async (): Promise<boolean> => {
   try {
-    console.log("Verifying storage access with ID:", STORAGE_ID);
+    console.log("Verifying storage access");
     
     // First check if the bucket exists
-    const { data, error } = await storageClient.storage.getBucket('exercises');
+    const { data: buckets, error: listError } = await storageClient.storage.listBuckets();
     
-    if (error) {
-      console.error("Storage verification failed:", error.message);
-      
-      // If the bucket doesn't exist, try to create it
-      if (error.message.includes('not found')) {
-        try {
-          console.log("Attempting to create exercises bucket");
-          const { data: newBucket, error: createError } = await storageClient.storage.createBucket('exercises', {
-            public: true,
-            fileSizeLimit: 5242880 // 5MB limit
-          });
-          
-          if (createError) {
-            console.error("Failed to create bucket:", createError.message);
-            return false;
-          }
-          
-          console.log("Successfully created exercises bucket");
-          return true;
-        } catch (createErr: any) {
-          console.error("Error creating bucket:", createErr);
-          return false;
-        }
-      }
-      
+    if (listError) {
+      console.error("Error listing buckets:", listError.message);
       return false;
     }
     
-    console.log("Storage bucket verified successfully:", data);
-    return true;
+    // Check if exercises bucket exists
+    const exercisesBucket = buckets?.find(bucket => bucket.name === 'exercises');
+    
+    if (!exercisesBucket) {
+      console.log("Exercises bucket not found, creating it now");
+      
+      try {
+        const { error: createError } = await storageClient.storage.createBucket('exercises', {
+          public: true,
+          fileSizeLimit: 5242880 // 5MB limit
+        });
+        
+        if (createError) {
+          console.error("Failed to create bucket:", createError.message);
+          return false;
+        }
+        
+        console.log("Successfully created exercises bucket");
+      } catch (createErr: any) {
+        console.error("Error creating bucket:", createErr);
+        return false;
+      }
+    } else {
+      console.log("Exercises bucket exists:", exercisesBucket.name);
+      
+      // Make sure bucket is set to public
+      try {
+        const { error: updateError } = await storageClient.storage.updateBucket('exercises', {
+          public: true,
+          fileSizeLimit: 5242880 // 5MB limit
+        });
+        
+        if (updateError) {
+          console.error("Failed to update bucket:", updateError.message);
+          // Not returning false here as the bucket exists, just couldn't update settings
+        }
+      } catch (updateErr: any) {
+        console.error("Error updating bucket:", updateErr);
+      }
+    }
+    
+    // Verify access by testing basic operations
+    const testFilePath = `test-access-${Date.now()}.txt`;
+    const testContent = new Blob(['test'], { type: 'text/plain' });
+    
+    // Try to upload a test file
+    try {
+      const { error: uploadError } = await storageClient.storage
+        .from('exercises')
+        .upload(testFilePath, testContent, { upsert: true });
+      
+      if (uploadError) {
+        console.error("Upload test failed:", uploadError.message);
+        return false;
+      }
+      
+      // Try to delete the test file
+      const { error: deleteError } = await storageClient.storage
+        .from('exercises')
+        .remove([testFilePath]);
+      
+      if (deleteError) {
+        console.error("Delete test failed:", deleteError.message);
+        // Not returning false here as upload worked
+      }
+      
+      console.log("Storage access verified successfully");
+      return true;
+    } catch (testErr: any) {
+      console.error("Error testing storage access:", testErr);
+      return false;
+    }
+    
   } catch (error: any) {
     console.error("Error verifying storage access:", error);
     return false;
