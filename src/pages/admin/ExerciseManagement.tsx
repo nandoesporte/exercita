@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, Info } from 'lucide-react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -14,6 +14,7 @@ const ExerciseManagement = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [storageReady, setStorageReady] = useState<boolean | null>(null);
+  const [isCheckingStorage, setIsCheckingStorage] = useState(false);
   
   const { 
     exercises, 
@@ -32,6 +33,7 @@ const ExerciseManagement = () => {
   useEffect(() => {
     const verifyStorage = async () => {
       try {
+        setIsCheckingStorage(true);
         const result = await checkStorageBucket();
         setStorageReady(result);
         if (!result) {
@@ -40,6 +42,9 @@ const ExerciseManagement = () => {
       } catch (e) {
         console.error("Error checking storage:", e);
         setStorageReady(false);
+        toast.error("Failed to verify storage configuration");
+      } finally {
+        setIsCheckingStorage(false);
       }
     };
     
@@ -47,10 +52,16 @@ const ExerciseManagement = () => {
   }, [checkStorageBucket]);
 
   const handleCreate = () => {
+    if (storageReady === false) {
+      toast.warning("Image uploads may not work due to storage configuration issues");
+    }
     setIsCreateDialogOpen(true);
   };
 
   const handleEdit = (id: string) => {
+    if (storageReady === false) {
+      toast.warning("Image uploads may not work due to storage configuration issues");
+    }
     setSelectedExerciseId(id);
     setIsEditDialogOpen(true);
   };
@@ -58,6 +69,24 @@ const ExerciseManagement = () => {
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this exercise?')) {
       deleteExercise(id);
+    }
+  };
+
+  const handleCheckStorageAgain = async () => {
+    try {
+      setIsCheckingStorage(true);
+      const result = await checkStorageBucket();
+      setStorageReady(result);
+      if (result) {
+        toast.success("Storage is now properly configured!");
+      } else {
+        toast.error("Storage configuration issues persist.");
+      }
+    } catch (e) {
+      console.error("Error rechecking storage:", e);
+      setStorageReady(false);
+    } finally {
+      setIsCheckingStorage(false);
     }
   };
 
@@ -118,14 +147,31 @@ const ExerciseManagement = () => {
         </Button>
       </div>
 
-      {storageReady === false && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+      {isCheckingStorage ? (
+        <Alert className="bg-muted">
+          <Info className="h-4 w-4" />
           <AlertDescription>
-            Storage is not properly configured. Image uploads may not work correctly. Please check your console for more details.
+            Checking storage configuration...
           </AlertDescription>
         </Alert>
-      )}
+      ) : storageReady === false ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <div className="flex w-full justify-between items-center">
+            <AlertDescription>
+              Storage is not properly configured. Image uploads may not work correctly.
+            </AlertDescription>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleCheckStorageAgain}
+              className="ml-2 bg-background"
+            >
+              Check Again
+            </Button>
+          </div>
+        </Alert>
+      ) : null}
 
       <DataTable 
         columns={columns} 
@@ -146,6 +192,7 @@ const ExerciseManagement = () => {
             }}
             isLoading={isCreating}
             categories={categories}
+            storageReady={storageReady}
           />
         </DialogContent>
       </Dialog>
@@ -168,6 +215,7 @@ const ExerciseManagement = () => {
               isLoading={isUpdating}
               categories={categories}
               initialData={selectedExercise}
+              storageReady={storageReady}
             />
           )}
         </DialogContent>

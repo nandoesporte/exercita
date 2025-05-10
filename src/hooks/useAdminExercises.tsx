@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -166,42 +165,28 @@ export function useAdminExercises() {
     },
   });
 
-  // Enhanced storage bucket check function
+  // Improved storage bucket check function
   const checkStorageBucket = async (): Promise<boolean> => {
     try {
-      // First, check if the bucket exists
-      const { data: bucket, error: bucketError } = await supabase.storage.getBucket('exercises');
+      // Just check if the bucket exists without trying to create it
+      const { data, error } = await supabase.storage.getBucket('exercises');
       
-      // If there's an error other than "not found", log it
-      if (bucketError && !bucketError.message.includes('not found')) {
-        console.error("Error checking storage bucket:", bucketError);
-        toast.error(`Storage error: ${bucketError.message}`);
+      if (error) {
+        console.log("Storage bucket error:", error.message);
         return false;
       }
       
-      // If the bucket exists, return true
-      if (bucket) {
+      if (data) {
         console.log("Exercise storage bucket found");
         return true;
       }
       
-      // If the bucket doesn't exist, try to create it
-      const { data: newBucket, error: createError } = await supabase.storage.createBucket('exercises', {
-        public: true,
-        fileSizeLimit: 10485760, // 10MB limit
-      });
-      
-      if (createError) {
-        console.error("Error creating storage bucket:", createError);
-        toast.error(`Failed to create storage: ${createError.message}`);
-        return false;
-      }
-      
-      console.log("Exercise storage bucket created successfully");
-      toast.success("Storage setup completed");
-      return true;
+      // Don't try to create the bucket here, just inform the user
+      console.log("Exercise storage bucket not found");
+      toast.error("Storage bucket 'exercises' not found. Please check your Supabase configuration.");
+      return false;
     } catch (error) {
-      console.error("Unexpected error with storage bucket:", error);
+      console.error("Unexpected error checking storage bucket:", error);
       toast.error("Storage configuration error");
       return false;
     }
@@ -213,7 +198,7 @@ export function useAdminExercises() {
       // Check if storage bucket exists/is accessible
       const bucketExists = await checkStorageBucket();
       if (!bucketExists) {
-        throw new Error("Storage bucket not available. Please contact an administrator.");
+        throw new Error("Storage bucket not available or not properly configured.");
       }
       
       // Generate unique filename
@@ -221,25 +206,43 @@ export function useAdminExercises() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('exercises')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      // Upload file to Supabase Storage with exponential backoff retry
+      let attempts = 0;
+      const maxAttempts = 3;
+      let lastError = null;
       
-      if (error) {
-        console.error("Upload error:", error);
-        throw new Error(`Upload failed: ${error.message}`);
+      while (attempts < maxAttempts) {
+        try {
+          const { data, error } = await supabase.storage
+            .from('exercises')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: attempts > 0 // Try upsert on retry attempts
+            });
+          
+          if (error) {
+            lastError = error;
+            console.error(`Upload attempt ${attempts + 1} failed:`, error);
+            attempts++;
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts))); // Exponential backoff
+            continue;
+          }
+          
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('exercises')
+            .getPublicUrl(filePath);
+          
+          return publicUrl;
+        } catch (uploadError) {
+          lastError = uploadError;
+          console.error(`Upload attempt ${attempts + 1} exception:`, uploadError);
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts))); // Exponential backoff
+        }
       }
       
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('exercises')
-        .getPublicUrl(filePath);
-      
-      return publicUrl;
+      throw lastError || new Error("Upload failed after multiple attempts");
     } catch (error: any) {
       console.error("File upload error:", error);
       throw error;

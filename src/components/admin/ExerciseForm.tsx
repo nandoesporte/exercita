@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Upload, AlertCircle } from 'lucide-react';
+import { Loader2, Upload, AlertCircle, Info } from 'lucide-react';
 import { ExerciseFormData, useAdminExercises } from '@/hooks/useAdminExercises';
 import { Database } from '@/integrations/supabase/types';
 
@@ -49,14 +49,20 @@ interface ExerciseFormProps {
     image_url?: string | null;
     video_url?: string | null;
   };
+  storageReady?: boolean | null;
 }
 
-const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: ExerciseFormProps) => {
+const ExerciseForm = ({ 
+  onSubmit, 
+  isLoading, 
+  categories, 
+  initialData,
+  storageReady 
+}: ExerciseFormProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [gifPreview, setGifPreview] = useState<string | null>(initialData?.image_url || null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [bucketChecked, setBucketChecked] = useState(false);
-  const { uploadExerciseImage, checkStorageBucket } = useAdminExercises();
+  const { uploadExerciseImage } = useAdminExercises();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,24 +74,6 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
       video_url: initialData?.video_url || "",
     },
   });
-
-  // Check storage bucket availability on component mount
-  useEffect(() => {
-    const verifyStorageBucket = async () => {
-      try {
-        const bucketExists = await checkStorageBucket();
-        setBucketChecked(true);
-        if (!bucketExists) {
-          toast.error("Storage is not properly configured. Please contact an administrator.");
-        }
-      } catch (error) {
-        console.error("Failed to check storage bucket:", error);
-        setBucketChecked(true);
-      }
-    };
-
-    verifyStorageBucket();
-  }, [checkStorageBucket]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     if (uploadError) {
@@ -141,11 +129,11 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {!bucketChecked && (
+        {storageReady === false && (
           <Alert className="bg-amber-50 border-amber-300">
             <AlertCircle className="h-4 w-4 text-amber-500" />
             <AlertDescription>
-              Checking storage configuration...
+              Storage is not properly configured. Image upload might not work.
             </AlertDescription>
           </Alert>
         )}
@@ -241,12 +229,12 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
                       id="gif-upload"
                       onChange={handleGifUpload}
                       className="absolute inset-0 opacity-0 cursor-pointer"
-                      disabled={isUploading || !bucketChecked}
+                      disabled={isUploading || storageReady === false}
                     />
                     <Button 
                       type="button" 
                       variant="outline"
-                      disabled={isUploading || !bucketChecked}
+                      disabled={isUploading || storageReady === false}
                     >
                       {isUploading ? (
                         <>
