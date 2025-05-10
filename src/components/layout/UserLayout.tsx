@@ -10,15 +10,17 @@ const UserLayout = () => {
   
   // Determine the header title based on the current route
   const getHeaderTitle = () => {
-    switch (currentPath) {
-      case '/profile':
+    switch (true) {
+      case currentPath === '/profile':
         return 'Perfil';
-      case '/workouts':
+      case currentPath === '/workouts':
         return 'Treinos';
-      case '/history':
+      case currentPath === '/history':
         return 'Histórico';
-      case '/':
-        return '';
+      case currentPath.startsWith('/workout/'):
+        return 'Detalhes do Treino';
+      case currentPath === '/':
+        return 'Início';
       default:
         return '';
     }
