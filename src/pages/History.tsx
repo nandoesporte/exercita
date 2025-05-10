@@ -131,7 +131,7 @@ const History = () => {
               {workouts.map((workout) => (
                 <div 
                   key={workout.id} 
-                  className="fitness-card p-4 border border-fitness-darkGray rounded-lg bg-fitness-darkGray/50 hover:bg-fitness-darkGray/70 transition-colors"
+                  className="p-4 border border-fitness-darkGray/40 rounded-lg bg-fitness-darkGray/20 backdrop-blur-sm hover:bg-fitness-darkGray/30 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium">
@@ -179,7 +179,7 @@ const History = () => {
                   </div>
                   
                   {workout.notes && (
-                    <div className="mt-3 text-sm text-muted-foreground border-t border-fitness-darkGray/50 pt-2">
+                    <div className="mt-3 text-sm text-muted-foreground border-t border-fitness-darkGray/30 pt-2">
                       <p className="line-clamp-2">{workout.notes}</p>
                     </div>
                   )}
@@ -205,7 +205,7 @@ const History = () => {
       )}
       
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-fitness-darkGray/90 backdrop-blur-md border border-fitness-darkGray">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
             <AlertDialogDescription>
