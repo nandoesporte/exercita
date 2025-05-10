@@ -85,11 +85,7 @@ const Header: React.FC<HeaderProps> = ({
         )}
 
         <div className="flex items-center gap-4">
-          {showSearch && (
-            <Link to="/search" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
-              <Search className="h-5 w-5" />
-            </Link>
-          )}
+          {/* Search icon removed completely */}
           {showNotifications && (
             <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
               <Bell className="h-5 w-5" />
