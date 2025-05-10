@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Info } from 'lucide-react';
+import { Plus, AlertCircle, Info } from 'lucide-react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import ExerciseForm from '@/components/admin/ExerciseForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from 'sonner';
-import { Button } from "@/components/ui/button";
-import ExerciseForm from '@/components/admin/ExerciseForm';
 
 const ExerciseManagement = () => {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [storageReady, setStorageReady] = useState<boolean | null>(null);
@@ -19,6 +20,8 @@ const ExerciseManagement = () => {
     exercises, 
     isLoading, 
     error, 
+    createExercise, 
+    isCreating, 
     updateExercise,
     isUpdating,
     deleteExercise,
@@ -47,6 +50,13 @@ const ExerciseManagement = () => {
     
     verifyStorage();
   }, [checkStorageBucket]);
+
+  const handleCreate = () => {
+    if (storageReady === false) {
+      toast.warning("Image uploads may not work due to storage configuration issues");
+    }
+    setIsCreateDialogOpen(true);
+  };
 
   const handleEdit = (id: string) => {
     if (storageReady === false) {
@@ -131,6 +141,10 @@ const ExerciseManagement = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Exercise Management</h1>
+        <Button onClick={handleCreate}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Exercise
+        </Button>
       </div>
 
       {isCheckingStorage ? (
@@ -164,6 +178,24 @@ const ExerciseManagement = () => {
         data={exercises} 
         isLoading={isLoading}
       />
+
+      {/* Create Exercise Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Exercise</DialogTitle>
+          </DialogHeader>
+          <ExerciseForm 
+            onSubmit={(data) => {
+              createExercise(data);
+              setIsCreateDialogOpen(false);
+            }}
+            isLoading={isCreating}
+            categories={categories}
+            storageReady={storageReady}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Exercise Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
