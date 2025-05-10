@@ -1,10 +1,10 @@
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Import layouts
 import UserLayout from "@/components/layout/UserLayout";
@@ -33,43 +33,41 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          
-          {/* User Routes */}
-          <Route element={
-            <ProtectedRoute>
-              <UserLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="/" element={<Index />} />
-            <Route path="/workouts" element={<Workouts />} />
-            <Route path="/workout/:id" element={<WorkoutDetail />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/profile" element={<Profile />} />
-          </Route>
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={
-            <ProtectedRoute adminOnly>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="workouts" element={<WorkoutManagement />} />
-            <Route path="workouts/new" element={<CreateWorkout />} />
-            <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
-            <Route path="exercises" element={<ExerciseManagement />} />
-          </Route>
-          
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* User Routes */}
+        <Route element={
+          <ProtectedRoute>
+            <UserLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="/" element={<Index />} />
+          <Route path="/workouts" element={<Workouts />} />
+          <Route path="/workout/:id" element={<WorkoutDetail />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="workouts" element={<WorkoutManagement />} />
+          <Route path="workouts/new" element={<CreateWorkout />} />
+          <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
+          <Route path="exercises" element={<ExerciseManagement />} />
+        </Route>
+        
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </QueryClientProvider>
   );
 };

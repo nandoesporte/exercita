@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
@@ -8,6 +8,7 @@ import './index.css'
 import { Toaster } from 'sonner'
 import { toast } from '@/components/ui/sonner'
 import { registerConnectivityListeners } from '@/utils/pwaUtils'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 // Componente raiz que envolve a aplicação
 const Main = () => {
@@ -21,7 +22,7 @@ const Main = () => {
   };
 
   // Registra os listeners quando o componente é montado
-  useEffect(() => {
+  React.useEffect(() => {
     registerConnectivityListeners(
       () => handleOfflineStatus(), // Online callback
       () => handleOfflineStatus()  // Offline callback
@@ -38,12 +39,16 @@ const Main = () => {
   }, []);
 
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Toaster position="top-center" />
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <React.StrictMode>
+      <BrowserRouter>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster position="top-center" />
+            <App />
+          </AuthProvider>
+        </TooltipProvider>
+      </BrowserRouter>
+    </React.StrictMode>
   );
 };
 
