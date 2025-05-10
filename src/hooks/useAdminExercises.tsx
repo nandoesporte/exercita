@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { verifyStorageAccess, uploadExerciseFile } from '@/integrations/supabase/storageClient';
@@ -46,40 +47,6 @@ export function useAdminExercises() {
         throw error;
       }
     },
-  });
-
-  const createExercise = useMutation({
-    mutationFn: async (formData: ExerciseFormData) => {
-      try {
-        const { data, error } = await supabase
-          .from('exercises')
-          .insert({
-            name: formData.name,
-            description: formData.description || null,
-            category_id: formData.category_id || null,
-            image_url: formData.image_url || null,
-            video_url: formData.video_url || null,
-          })
-          .select()
-          .single();
-        
-        if (error) {
-          throw new Error(`Error creating exercise: ${error.message}`);
-        }
-        
-        return data;
-      } catch (error: any) {
-        console.error('Error in createExercise:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-exercises'] });
-      toast.success('Exercise created successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create exercise');
-    }
   });
 
   const updateExercise = useMutation({
@@ -210,8 +177,6 @@ export function useAdminExercises() {
     exercises: exercisesQuery.data || [],
     isLoading: exercisesQuery.isLoading,
     error: exercisesQuery.error,
-    createExercise: createExercise.mutate,
-    isCreating: createExercise.isPending,
     updateExercise: updateExercise.mutate,
     isUpdating: updateExercise.isPending,
     deleteExercise: deleteExercise.mutate,
