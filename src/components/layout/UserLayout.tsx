@@ -8,9 +8,6 @@ const UserLayout = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   
-  // Hide the title on workout detail pages since they have their own
-  const isWorkoutDetailPage = currentPath.startsWith('/workout/');
-  
   // Determine the header title based on the current route
   const getHeaderTitle = () => {
     switch (true) {
@@ -29,11 +26,15 @@ const UserLayout = () => {
     }
   };
   
+  // Check if we're on a workout detail page
+  const isWorkoutDetailPage = currentPath.startsWith('/workout/');
+  
   return (
     <div className="flex flex-col min-h-screen bg-fitness-dark text-white">
-      <Header showSearch={false} title={getHeaderTitle()} />
+      {/* Header is controlled within each workout detail page */}
+      {!isWorkoutDetailPage && <Header title={getHeaderTitle()} />}
       
-      <main className="flex-1 container max-w-7xl mx-auto px-4 py-3 pb-20 md:pb-8 animate-fade-in">
+      <main className={`flex-1 container max-w-7xl mx-auto px-4 py-3 pb-20 md:pb-8 animate-fade-in ${isWorkoutDetailPage ? 'pt-0' : ''}`}>
         <Outlet />
       </main>
       

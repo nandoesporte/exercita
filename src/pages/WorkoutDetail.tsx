@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import Header from '@/components/layout/Header';
 import { 
-  Clock, Dumbbell, BarChart, Info, Check
+  Clock, Dumbbell, BarChart, Info, Check, HeartPulse
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Import Shadcn Tabs components
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,6 +22,8 @@ const WorkoutDetail = () => {
   const [selectedTab, setSelectedTab] = useState('exercises');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
+  const { profile } = useProfile();
   
   const { data: workout, isLoading, error } = useWorkout(id);
   
@@ -27,10 +31,19 @@ const WorkoutDetail = () => {
     navigate(-1);
   };
 
+  // Helper function for profile avatar
+  const getInitials = () => {
+    if (!profile) return 'U';
+    
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
+
   if (isLoading) {
     return (
       <>
-        <Header showBack onBackClick={handleBackClick} />
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
         </div>
@@ -41,7 +54,6 @@ const WorkoutDetail = () => {
   if (error || !workout) {
     return (
       <>
-        <Header showBack onBackClick={handleBackClick} />
         <div className="container p-4 text-center">
           <h2 className="text-xl font-bold mb-2">Treino não encontrado</h2>
           <p className="text-muted-foreground mb-4">
@@ -124,7 +136,74 @@ const WorkoutDetail = () => {
 
   return (
     <>
-      <Header showBack onBackClick={handleBackClick} />
+      {/* Custom header for workout detail pages */}
+      <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            {/* Back button */}
+            <button 
+              onClick={handleBackClick} 
+              className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+            >
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  d="M19 12H5M5 12L12 19M5 12L12 5" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+          
+          {/* App Logo for Mobile (centered) */}
+          <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                <HeartPulse className="text-white h-6 w-6" />
+              </div>
+              <span className="font-extrabold text-xl text-white">Exercita</span>
+            </Link>
+          </div>
+
+          {/* App Logo for Desktop (left aligned) */}
+          {!isMobile && (
+            <div className="flex-1 flex justify-center">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                  <HeartPulse className="text-white h-6 w-6" />
+                </div>
+                <span className="font-extrabold text-xl text-white">Exercita</span>
+              </Link>
+            </div>
+          )}
+
+          <div className="flex items-center gap-4">
+            {/* Profile Icon */}
+            <Link 
+              to="/profile" 
+              className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+            >
+              <Avatar className="h-8 w-8 border-2 border-fitness-orange">
+                <AvatarImage 
+                  src={profile?.avatar_url || ''} 
+                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+                />
+                <AvatarFallback className="bg-fitness-dark text-white">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
+        </div>
+      </header>
       
       <main className="container pb-6">
         {/* Hero Image */}
@@ -135,7 +214,7 @@ const WorkoutDetail = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-            <h1 className="text-white text-2xl md:text-3xl font-bold">{workout.title}</h1>
+            <h1 className="text-fitness-orange text-2xl md:text-3xl font-bold">{workout.title}</h1>
             <div className="flex flex-wrap items-center gap-3 mt-2">
               <div className="flex items-center text-white gap-1">
                 <Clock size={14} />
@@ -159,20 +238,20 @@ const WorkoutDetail = () => {
             <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0">
               <TabsTrigger 
                 value="exercises" 
-                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
+                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-orange data-[state=active]:text-fitness-orange rounded-none data-[state=active]:shadow-none"
               >
                 Exercícios
               </TabsTrigger>
               <TabsTrigger 
                 value="overview" 
-                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
+                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-orange data-[state=active]:text-fitness-orange rounded-none data-[state=active]:shadow-none"
               >
                 Visão Geral
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="exercises" className="p-4 animate-fade-in">
-              <h2 className="text-lg font-semibold mb-4">Lista de Exercícios</h2>
+              <h2 className="text-lg font-semibold mb-4 text-fitness-orange">Lista de Exercícios</h2>
               
               {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <div className="space-y-3">
@@ -184,7 +263,7 @@ const WorkoutDetail = () => {
                         onClick={() => handleExerciseClick(workoutExercise.id)}
                         className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
                       >
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-green/20 flex items-center justify-center text-fitness-green font-medium">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
                           {index + 1}
                         </div>
                         <div className="ml-3 flex-grow">
@@ -193,7 +272,7 @@ const WorkoutDetail = () => {
                             {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
                           </div>
                         </div>
-                        <div className="text-fitness-green">
+                        <div className="text-fitness-orange">
                           <Info size={18} />
                         </div>
                       </button>
@@ -224,12 +303,12 @@ const WorkoutDetail = () => {
             <TabsContent value="overview" className="p-4 animate-fade-in">
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold mb-2">Descrição</h2>
+                  <h2 className="text-lg font-semibold mb-2 text-fitness-orange">Descrição</h2>
                   <p className="text-muted-foreground">{workout.description || 'Nenhuma descrição disponível.'}</p>
                 </div>
                 
                 <div>
-                  <h2 className="text-lg font-semibold mb-3">Categoria</h2>
+                  <h2 className="text-lg font-semibold mb-3 text-fitness-orange">Categoria</h2>
                   <div className="flex flex-wrap gap-2">
                     <span 
                       className="px-3 py-1 rounded-full text-sm"

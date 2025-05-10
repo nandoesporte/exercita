@@ -25,8 +25,13 @@ const Header: React.FC<HeaderProps> = ({
   const { profile } = useProfile();
   const location = useLocation();
   
-  // Check if we're on a workout detail page to hide the title
+  // Check if we're on a workout detail page to hide the header
   const isWorkoutDetailPage = location.pathname.startsWith('/workout/');
+  
+  // Don't render anything on workout detail pages
+  if (isWorkoutDetailPage) {
+    return null;
+  }
   
   const getInitials = () => {
     if (!profile) return 'U';
@@ -63,8 +68,7 @@ const Header: React.FC<HeaderProps> = ({
               </svg>
             </button>
           )}
-          {/* Only show the title if not on a workout detail page */}
-          {!isMobile && title && !isWorkoutDetailPage && (
+          {!isMobile && title && (
             <h1 className="text-xl font-bold text-white">{title}</h1>
           )}
         </div>
@@ -92,7 +96,6 @@ const Header: React.FC<HeaderProps> = ({
         )}
 
         <div className="flex items-center gap-4">
-          {/* Search icon removed completely */}
           {showNotifications && (
             <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
               <Bell className="h-5 w-5" />

@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell } from 'lucide-react';
-import Header from '@/components/layout/Header';
 import { Database } from '@/integrations/supabase/types';
+import { HeartPulse } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type Exercise = Database['public']['Tables']['exercises']['Row'];
 type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
@@ -16,10 +20,89 @@ interface ExerciseDetailProps {
 
 const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   const { exercise, sets, reps, duration, rest } = workoutExercise;
+  const isMobile = useIsMobile();
+  const { profile } = useProfile();
+  
+  // Helper function for profile avatar
+  const getInitials = () => {
+    if (!profile) return 'U';
+    
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
   
   return (
     <>
-      <Header showBack onBackClick={onBack} />
+      {/* Custom header for workout detail pages */}
+      <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            {/* Back button */}
+            <button 
+              onClick={onBack} 
+              className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+            >
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  d="M19 12H5M5 12L12 19M5 12L12 5" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+          
+          {/* App Logo for Mobile (centered) */}
+          <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                <HeartPulse className="text-white h-6 w-6" />
+              </div>
+              <span className="font-extrabold text-xl text-white">Exercita</span>
+            </Link>
+          </div>
+
+          {/* App Logo for Desktop (left aligned) */}
+          {!isMobile && (
+            <div className="flex-1 flex justify-center">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                  <HeartPulse className="text-white h-6 w-6" />
+                </div>
+                <span className="font-extrabold text-xl text-white">Exercita</span>
+              </Link>
+            </div>
+          )}
+
+          <div className="flex items-center gap-4">
+            {/* Profile Icon */}
+            <Link 
+              to="/profile" 
+              className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+            >
+              <Avatar className="h-8 w-8 border-2 border-fitness-orange">
+                <AvatarImage 
+                  src={profile?.avatar_url || ''} 
+                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+                />
+                <AvatarFallback className="bg-fitness-dark text-white">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
+        </div>
+      </header>
       
       <main className="container pb-6">
         {/* Hero Image */}
@@ -30,7 +113,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-            <h1 className="text-white text-2xl md:text-3xl font-bold">{exercise.name}</h1>
+            <h1 className="text-fitness-orange text-2xl md:text-3xl font-bold">{exercise.name}</h1>
           </div>
         </div>
         
@@ -38,7 +121,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
         <div className="mt-6 space-y-6">
           {/* Exercise Instructions */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">Instruções</h2>
+            <h2 className="text-lg font-semibold mb-2 text-fitness-orange">Instruções</h2>
             <p className="text-muted-foreground">
               {exercise.description || 'Nenhuma instrução disponível para este exercício.'}
             </p>
@@ -46,7 +129,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
           
           {/* Exercise Parameters */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">Parâmetros</h2>
+            <h2 className="text-lg font-semibold mb-3 text-fitness-orange">Parâmetros</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -89,7 +172,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
           {/* Video if available */}
           {exercise.video_url && (
             <div>
-              <h2 className="text-lg font-semibold mb-3">Guia em Vídeo</h2>
+              <h2 className="text-lg font-semibold mb-3 text-fitness-orange">Guia em Vídeo</h2>
               <div className="aspect-video rounded-lg overflow-hidden">
                 <iframe 
                   src={exercise.video_url} 
