@@ -30,7 +30,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-            <h1 className="text-fitness-orange text-2xl md:text-3xl font-bold">{exercise.name}</h1>
+            <h1 className="text-white text-2xl md:text-3xl font-bold">{exercise.name}</h1>
           </div>
         </div>
         
@@ -38,7 +38,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
         <div className="mt-6 space-y-6">
           {/* Exercise Instructions */}
           <div>
-            <h2 className="text-lg font-semibold text-fitness-orange mb-2">Instruções</h2>
+            <h2 className="text-lg font-semibold mb-2">Instruções</h2>
             <p className="text-muted-foreground">
               {exercise.description || 'Nenhuma instrução disponível para este exercício.'}
             </p>
@@ -46,7 +46,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
           
           {/* Exercise Parameters */}
           <div>
-            <h2 className="text-lg font-semibold text-fitness-orange mb-3">Parâmetros</h2>
+            <h2 className="text-lg font-semibold mb-3">Parâmetros</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -89,7 +89,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
           {/* Video if available */}
           {exercise.video_url && (
             <div>
-              <h2 className="text-lg font-semibold text-fitness-orange mb-3">Guia em Vídeo</h2>
+              <h2 className="text-lg font-semibold mb-3">Guia em Vídeo</h2>
               <div className="aspect-video rounded-lg overflow-hidden">
                 <iframe 
                   src={exercise.video_url} 
