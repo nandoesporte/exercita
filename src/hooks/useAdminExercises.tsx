@@ -1,6 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { storageClient, verifyStorageAccess } from '@/integrations/supabase/storageClient';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -166,10 +166,18 @@ export function useAdminExercises() {
     },
   });
 
-  // Improved storage bucket check function with auto-creation attempt
+  // Updated storage bucket check function using the specialized storage client
   const checkStorageBucket = async (): Promise<boolean> => {
     try {
-      // First, check if the bucket exists
+      // First check with the specialized storage client
+      const isAccessible = await verifyStorageAccess();
+      
+      if (isAccessible) {
+        console.log("Exercise storage bucket verified with specialized access");
+        return true;
+      }
+      
+      // Fallback - try to access with the regular client
       const { data: bucketData, error: getBucketError } = await supabase.storage.getBucket('exercises');
       
       if (!getBucketError && bucketData) {
@@ -182,7 +190,7 @@ export function useAdminExercises() {
       // Attempt to create the bucket if it doesn't exist
       if (getBucketError && getBucketError.message.includes('not found')) {
         try {
-          const { data: newBucket, error: createError } = await supabase.storage.createBucket('exercises', {
+          const { data: newBucket, error: createError } = await storageClient.storage.createBucket('exercises', {
             public: true,
             fileSizeLimit: 5242880 // 5MB limit
           });
@@ -212,7 +220,7 @@ export function useAdminExercises() {
     }
   };
 
-  // Function to upload a file to the storage bucket
+  // Updated function to upload a file to the storage bucket using the specialized client
   const uploadExerciseImage = async (file: File): Promise<string> => {
     try {
       // Check if storage bucket exists/is accessible
@@ -233,7 +241,9 @@ export function useAdminExercises() {
       
       while (attempts < maxAttempts) {
         try {
-          const { data, error } = await supabase.storage
+          console.log(`Upload attempt ${attempts + 1} using specialized storage client`);
+          
+          const { data, error } = await storageClient.storage
             .from('exercises')
             .upload(filePath, file, {
               cacheControl: '3600',
@@ -249,10 +259,11 @@ export function useAdminExercises() {
           }
           
           // Get public URL
-          const { data: { publicUrl } } = supabase.storage
+          const { data: { publicUrl } } = storageClient.storage
             .from('exercises')
             .getPublicUrl(filePath);
           
+          console.log("Upload successful, public URL:", publicUrl);
           return publicUrl;
         } catch (uploadError) {
           lastError = uploadError;
