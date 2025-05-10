@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, HeartPulse, UserRound } from 'lucide-react';
+import { Bell, HeartPulse } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
   const { profile } = useProfile();
   const location = useLocation();
   
-  // Check if we're on a workout detail page to hide the title
+  // Check if we're on a workout detail page to hide both title and logo
   const isWorkoutDetailPage = location.pathname.startsWith('/workout/');
   
   const getInitials = () => {
@@ -65,34 +65,38 @@ const Header: React.FC<HeaderProps> = ({
           )}
           {/* Only show the title if not on a workout detail page */}
           {!isMobile && title && !isWorkoutDetailPage && (
-            <h1 className="text-xl font-bold text-white">{title}</h1>
+            <h1 className="text-xl font-bold text-fitness-orange">{title}</h1>
           )}
         </div>
         
-        {/* App Logo for Mobile (centered) */}
-        <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-              <HeartPulse className="text-white h-6 w-6" />
+        {/* Hide App Logo on workout detail pages */}
+        {!isWorkoutDetailPage && (
+          <>
+            {/* App Logo for Mobile (centered) */}
+            <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                  <HeartPulse className="text-white h-6 w-6" />
+                </div>
+                <span className="font-extrabold text-xl text-white">Exercita</span>
+              </Link>
             </div>
-            <span className="font-extrabold text-xl text-white">Exercita</span>
-          </Link>
-        </div>
 
-        {/* App Logo for Desktop (left aligned) */}
-        {!isMobile && (
-          <div className="flex-1 flex justify-center">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-                <HeartPulse className="text-white h-6 w-6" />
+            {/* App Logo for Desktop (left aligned) */}
+            {!isMobile && (
+              <div className="flex-1 flex justify-center">
+                <Link to="/" className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                    <HeartPulse className="text-white h-6 w-6" />
+                  </div>
+                  <span className="font-extrabold text-xl text-white">Exercita</span>
+                </Link>
               </div>
-              <span className="font-extrabold text-xl text-white">Exercita</span>
-            </Link>
-          </div>
+            )}
+          </>
         )}
 
         <div className="flex items-center gap-4">
-          {/* Search icon removed completely */}
           {showNotifications && (
             <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
               <Bell className="h-5 w-5" />

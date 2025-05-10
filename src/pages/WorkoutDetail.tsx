@@ -135,7 +135,7 @@ const WorkoutDetail = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-            <h1 className="text-white text-2xl md:text-3xl font-bold">{workout.title}</h1>
+            <h1 className="text-fitness-orange text-2xl md:text-3xl font-bold">{workout.title}</h1>
             <div className="flex flex-wrap items-center gap-3 mt-2">
               <div className="flex items-center text-white gap-1">
                 <Clock size={14} />
@@ -159,20 +159,20 @@ const WorkoutDetail = () => {
             <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0">
               <TabsTrigger 
                 value="exercises" 
-                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
+                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-orange data-[state=active]:text-fitness-orange rounded-none data-[state=active]:shadow-none"
               >
                 Exercícios
               </TabsTrigger>
               <TabsTrigger 
                 value="overview" 
-                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-green data-[state=active]:text-fitness-green rounded-none data-[state=active]:shadow-none"
+                className="px-4 py-3 data-[state=active]:border-b-2 data-[state=active]:border-fitness-orange data-[state=active]:text-fitness-orange rounded-none data-[state=active]:shadow-none"
               >
                 Visão Geral
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="exercises" className="p-4 animate-fade-in">
-              <h2 className="text-lg font-semibold mb-4">Lista de Exercícios</h2>
+              <h2 className="text-lg font-semibold text-fitness-orange mb-4">Lista de Exercícios</h2>
               
               {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <div className="space-y-3">
@@ -184,7 +184,7 @@ const WorkoutDetail = () => {
                         onClick={() => handleExerciseClick(workoutExercise.id)}
                         className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
                       >
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-green/20 flex items-center justify-center text-fitness-green font-medium">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
                           {index + 1}
                         </div>
                         <div className="ml-3 flex-grow">
@@ -193,7 +193,7 @@ const WorkoutDetail = () => {
                             {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
                           </div>
                         </div>
-                        <div className="text-fitness-green">
+                        <div className="text-fitness-orange">
                           <Info size={18} />
                         </div>
                       </button>
@@ -224,17 +224,17 @@ const WorkoutDetail = () => {
             <TabsContent value="overview" className="p-4 animate-fade-in">
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold mb-2">Descrição</h2>
+                  <h2 className="text-lg font-semibold text-fitness-orange mb-2">Descrição</h2>
                   <p className="text-muted-foreground">{workout.description || 'Nenhuma descrição disponível.'}</p>
                 </div>
                 
                 <div>
-                  <h2 className="text-lg font-semibold mb-3">Categoria</h2>
+                  <h2 className="text-lg font-semibold text-fitness-orange mb-3">Categoria</h2>
                   <div className="flex flex-wrap gap-2">
                     <span 
                       className="px-3 py-1 rounded-full text-sm"
                       style={{ 
-                        backgroundColor: workout.category?.color || '#00CB7E',
+                        backgroundColor: workout.category?.color || '#F97316',
                         color: 'white'
                       }}
                     >
