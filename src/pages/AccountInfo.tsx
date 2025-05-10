@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -64,13 +63,16 @@ const AccountInfo = () => {
       
       // Check if the date is valid
       if (!isValid(parsedDate)) {
+        console.error('Data inválida:', dateStr);
         return null;
       }
       
       // Format date as YYYY-MM-DD for the backend
-      return format(parsedDate, 'yyyy-MM-dd');
+      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      console.log('Data formatada para o backend:', formattedDate);
+      return formattedDate;
     } catch (error) {
-      console.error('Date parsing error:', error);
+      console.error('Erro ao analisar data:', error);
       return null;
     }
   };
@@ -85,14 +87,14 @@ const AccountInfo = () => {
       
       return format(date, 'dd/MM/yyyy', { locale: ptBR });
     } catch (error) {
-      console.error('Date formatting error:', error);
+      console.error('Erro ao formatar data:', error);
       return '';
     }
   };
   
   useEffect(() => {
     if (profile) {
-      console.log('Loading profile data into form:', profile);
+      console.log('Carregando dados do perfil no formulário:', profile);
       form.reset({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
@@ -112,13 +114,14 @@ const AccountInfo = () => {
     }
     
     setIsSaving(true);
-    console.log('Form values to submit:', values);
+    console.log('Valores do formulário para envio:', values);
     
     try {
       // Format and validate the date before sending to the backend
       const birthdate = formatDateForBackend(values.birthdate);
-      console.log('Formatted birthdate:', birthdate);
+      console.log('Data de nascimento formatada:', birthdate);
       
+      // Prepare profile data for update
       const profileData = {
         first_name: values.first_name,
         last_name: values.last_name,
@@ -129,16 +132,18 @@ const AccountInfo = () => {
         fitness_goal: values.fitness_goal || null,
       };
       
-      console.log('Submitting profile update:', profileData);
+      console.log('Enviando atualização de perfil:', profileData);
+      
+      // Send update to backend
       await updateProfile(profileData);
       
-      // No need to navigate away immediately - the success toast will show
+      // Add a delay before navigation to ensure the update is processed
       setTimeout(() => {
         navigate('/profile');
       }, 1000);
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Ocorreu um erro ao salvar as informações');
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', error);
+      toast.error(error.message || 'Ocorreu um erro ao salvar as informações');
     } finally {
       setIsSaving(false);
     }
@@ -221,20 +226,17 @@ const AccountInfo = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gênero</FormLabel>
-                  <Select
+                  <select 
+                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
                     value={field.value}
-                    onValueChange={field.onChange}
+                    onChange={field.onChange}
                   >
-                    <select 
-                      className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
-                    >
-                      <option value="">Selecione</option>
-                      <option value="male">Masculino</option>
-                      <option value="female">Feminino</option>
-                      <option value="other">Outro</option>
-                      <option value="prefer_not_to_say">Prefiro não dizer</option>
-                    </select>
-                  </Select>
+                    <option value="">Selecione</option>
+                    <option value="male">Masculino</option>
+                    <option value="female">Feminino</option>
+                    <option value="other">Outro</option>
+                    <option value="prefer_not_to_say">Prefiro não dizer</option>
+                  </select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -287,21 +289,18 @@ const AccountInfo = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Objetivo Fitness</FormLabel>
-                <Select
+                <select 
+                  className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
                   value={field.value}
-                  onValueChange={field.onChange}
+                  onChange={field.onChange}
                 >
-                  <select 
-                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
-                  >
-                    <option value="">Selecione</option>
-                    <option value="lose_weight">Perder peso</option>
-                    <option value="build_muscle">Ganhar massa muscular</option>
-                    <option value="improve_fitness">Melhorar condicionamento</option>
-                    <option value="improve_health">Melhorar a saúde geral</option>
-                    <option value="maintain">Manter a forma</option>
-                  </select>
-                </Select>
+                  <option value="">Selecione</option>
+                  <option value="lose_weight">Perder peso</option>
+                  <option value="build_muscle">Ganhar massa muscular</option>
+                  <option value="improve_fitness">Melhorar condicionamento</option>
+                  <option value="improve_health">Melhorar a saúde geral</option>
+                  <option value="maintain">Manter a forma</option>
+                </select>
                 <FormMessage />
               </FormItem>
             )}

@@ -25,16 +25,18 @@ export function useProfile() {
         .single();
       
       if (error) {
+        console.error('Erro ao buscar perfil:', error);
         throw new Error(`Erro ao buscar perfil: ${error.message}`);
       }
       
+      console.log('Perfil carregado:', data);
       return data as Profile;
     },
     enabled: !!user,
   });
   
   const updateProfile = useMutation({
-    mutationFn: async (profileData: ProfileUpdate) => {
+    mutationFn: async (profileData: ProfileUpdate): Promise<Profile | null> => {
       if (!user) throw new Error('Usuário precisa estar logado');
       
       console.log('Atualizando perfil com dados:', profileData);
@@ -51,7 +53,14 @@ export function useProfile() {
       }
       
       console.log('Perfil atualizado com sucesso:', data);
-      return data;
+      
+      // Verificar se há dados retornados
+      if (!data || data.length === 0) {
+        console.warn('Nenhum dado retornado após atualização do perfil');
+        return null;
+      }
+      
+      return data[0] as Profile;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
@@ -81,6 +90,7 @@ export function useProfile() {
         });
       
       if (uploadError) {
+        console.error('Erro ao fazer upload da imagem:', uploadError);
         throw new Error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
       }
       
@@ -98,6 +108,7 @@ export function useProfile() {
         .eq('id', user.id);
       
       if (updateError) {
+        console.error('Erro ao atualizar perfil com novo avatar:', updateError);
         throw new Error(`Erro ao atualizar perfil com novo avatar: ${updateError.message}`);
       }
       
@@ -108,6 +119,7 @@ export function useProfile() {
       toast.success('Foto de perfil atualizada com sucesso');
     },
     onError: (error: Error) => {
+      console.error('Erro ao atualizar foto de perfil:', error);
       toast.error(error.message || 'Falha ao atualizar foto de perfil');
     }
   });
