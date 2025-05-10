@@ -1,6 +1,6 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { verifyStorageAccess, uploadExerciseFile } from '@/integrations/supabase/storageClient';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -166,43 +166,18 @@ export function useAdminExercises() {
     },
   });
 
-  // Updated storage bucket check function using the specialized storage client
-  const checkStorageBucket = async (): Promise<boolean> => {
+  // Create bucket check function
+  const checkStorageBucket = async () => {
     try {
-      console.log("Checking storage bucket configuration...");
-      
-      // Use the improved verifyStorageAccess function
-      const isAccessible = await verifyStorageAccess();
-      
-      if (isAccessible) {
-        console.log("Exercise storage bucket verified successfully");
-        return true;
+      const { data, error } = await supabase.storage.getBucket('exercises');
+      if (error && error.message.includes('not found')) {
+        console.warn("Exercise storage bucket does not exist");
+        return false;
       }
-      
-      console.log("Storage bucket verification failed");
-      toast.error("Storage configuration issue detected. Please check the console for more details.");
+      return !!data;
+    } catch (error) {
+      console.error("Error checking storage bucket:", error);
       return false;
-    } catch (error: any) {
-      console.error("Unexpected error checking storage bucket:", error);
-      toast.error("Storage configuration error: " + error.message);
-      return false;
-    }
-  };
-
-  // Updated function to upload a file to the storage bucket using the improved function
-  const uploadExerciseImage = async (file: File): Promise<string> => {
-    try {
-      // Check if storage bucket exists/is accessible
-      const bucketExists = await checkStorageBucket();
-      if (!bucketExists) {
-        throw new Error("Storage bucket not available or not properly configured.");
-      }
-      
-      // Use the specialized uploadExerciseFile function
-      return await uploadExerciseFile(file);
-    } catch (error: any) {
-      console.error("File upload error:", error);
-      throw error;
     }
   };
 
@@ -218,7 +193,6 @@ export function useAdminExercises() {
     isDeleting: deleteExercise.isPending,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
-    checkStorageBucket,
-    uploadExerciseImage
+    checkStorageBucket
   };
 }

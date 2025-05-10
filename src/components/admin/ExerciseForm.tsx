@@ -1,11 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Upload, AlertCircle, Info } from 'lucide-react';
-import { ExerciseFormData, useAdminExercises } from '@/hooks/useAdminExercises';
+import { Loader2, Upload } from 'lucide-react';
+import { ExerciseFormData } from '@/hooks/useAdminExercises';
 import { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   Form,
@@ -26,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from 'sonner';
 
 // Define form schema with Zod
@@ -49,20 +50,12 @@ interface ExerciseFormProps {
     image_url?: string | null;
     video_url?: string | null;
   };
-  storageReady?: boolean | null;
 }
 
-const ExerciseForm = ({ 
-  onSubmit, 
-  isLoading, 
-  categories, 
-  initialData,
-  storageReady 
-}: ExerciseFormProps) => {
+const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: ExerciseFormProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [gifPreview, setGifPreview] = useState<string | null>(initialData?.image_url || null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const { uploadExerciseImage } = useAdminExercises();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -89,17 +82,10 @@ const ExerciseForm = ({
     
     if (!file) return;
     
-    // Validate file type and size
+    // Validate file type
     if (!file.type.includes('gif') && !file.type.includes('image')) {
-      setUploadError("Please upload a GIF or image file (PNG, JPG, JPEG, GIF)");
+      setUploadError("Please upload a GIF or image file");
       toast.error("Please upload a GIF or image file");
-      return;
-    }
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("File size must be less than 5MB");
-      toast.error("File size must be less than 5MB");
       return;
     }
     
@@ -107,20 +93,40 @@ const ExerciseForm = ({
       setIsUploading(true);
       console.log("Starting file upload to Supabase...");
       
-      // Upload file using the new function from the hook
-      const publicUrl = await uploadExerciseImage(file);
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `exercises/${fileName}`;
       
-      console.log("File uploaded successfully, public URL:", publicUrl);
+      // Upload file to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('exercises')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        setUploadError(`Upload error: ${uploadError.message}`);
+        throw uploadError;
+      }
+      
+      console.log("File uploaded successfully, getting public URL...");
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('exercises')
+        .getPublicUrl(filePath);
+      
+      console.log("Public URL obtained:", publicUrl);
       
       // Update form
       form.setValue('image_url', publicUrl);
       setGifPreview(publicUrl);
-      toast.success("Image uploaded successfully");
+      toast.success("GIF uploaded successfully");
       
     } catch (error: any) {
-      console.error('Error uploading image:', error);
-      setUploadError(error.message || "Failed to upload image");
-      toast.error("Failed to upload image: " + (error.message || "Unknown error"));
+      console.error('Error uploading GIF:', error);
+      setUploadError(error.message || "Failed to upload GIF");
+      toast.error("Failed to upload GIF: " + (error.message || "Unknown error"));
     } finally {
       setIsUploading(false);
     }
@@ -129,15 +135,6 @@ const ExerciseForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {storageReady === false && (
-          <Alert className="bg-amber-50 border-amber-300">
-            <AlertCircle className="h-4 w-4 text-amber-500" />
-            <AlertDescription>
-              Storage is not properly configured. Image upload might not work.
-            </AlertDescription>
-          </Alert>
-        )}
-        
         <FormField
           control={form.control}
           name="name"
@@ -213,28 +210,21 @@ const ExerciseForm = ({
                       {...field}
                       value={field.value || ""}
                       className={isUploading ? "opacity-50" : ""}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        if (e.target.value) {
-                          setGifPreview(e.target.value);
-                          setUploadError(null);
-                        }
-                      }}
                     />
                   </FormControl>
                   <div className="relative">
                     <Input
                       type="file"
-                      accept="image/gif,image/png,image/jpeg,image/jpg"
+                      accept="image/gif,image/*"
                       id="gif-upload"
                       onChange={handleGifUpload}
                       className="absolute inset-0 opacity-0 cursor-pointer"
-                      disabled={isUploading || storageReady === false}
+                      disabled={isUploading}
                     />
                     <Button 
                       type="button" 
                       variant="outline"
-                      disabled={isUploading || storageReady === false}
+                      disabled={isUploading}
                     >
                       {isUploading ? (
                         <>
@@ -244,7 +234,7 @@ const ExerciseForm = ({
                       ) : (
                         <>
                           <Upload className="mr-2 h-4 w-4" />
-                          Upload Image
+                          Upload GIF
                         </>
                       )}
                     </Button>
@@ -252,10 +242,9 @@ const ExerciseForm = ({
                 </div>
                 
                 {uploadError && (
-                  <Alert variant="destructive" className="text-sm mt-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{uploadError}</AlertDescription>
-                  </Alert>
+                  <div className="text-sm text-destructive mt-2 p-2 border border-destructive/50 rounded-md bg-destructive/10">
+                    {uploadError}
+                  </div>
                 )}
                 
                 {gifPreview && !uploadError && (
@@ -273,7 +262,7 @@ const ExerciseForm = ({
                 )}
                 
                 <FormDescription>
-                  Upload a GIF or image demonstrating the exercise or enter a URL. Supported formats: GIF, PNG, JPG.
+                  Upload a GIF demonstrating the exercise or enter a URL. Supported formats: GIF, PNG, JPG.
                 </FormDescription>
                 <FormMessage />
               </div>
