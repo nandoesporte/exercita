@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { isPwaInstalled } from '@/utils/pwaUtils';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from '@/components/ui/motion';
+import { toast } from 'sonner';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -16,54 +17,55 @@ interface PWAInstallPromptProps {
 }
 
 const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ onClose }) => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     // Check if already installed
     if (isPwaInstalled()) {
       setIsVisible(false);
+      onClose();
       return;
     }
 
-    // Get the stored install prompt
-    const storedPrompt = window.deferredPromptEvent;
-    if (storedPrompt) {
-      setDeferredPrompt(storedPrompt);
-    } else {
-      // If no prompt is available, don't show the component
+    // Check if install prompt is available
+    if (!window.deferredPromptEvent) {
+      console.log('No install prompt available');
       setIsVisible(false);
+      onClose();
+      return;
     }
-
-    return () => {
-      // Cleanup
-    };
-  }, []);
+    
+    console.log('Install prompt is available and showing');
+  }, [onClose]);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!window.deferredPromptEvent) {
+      toast.error('Não foi possível instalar o aplicativo');
+      return;
+    }
 
     try {
       // Show the install prompt
-      await deferredPrompt.prompt();
+      await window.deferredPromptEvent.prompt();
       
       // Wait for user choice
-      const choiceResult = await deferredPrompt.userChoice;
+      const choiceResult = await window.deferredPromptEvent.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
+        toast.success('Instalação iniciada!');
       } else {
         console.log('User dismissed the install prompt');
       }
       
       // Clear the prompt
-      setDeferredPrompt(null);
       window.deferredPromptEvent = null;
       
       // Close the prompt component
       handleClose();
     } catch (error) {
       console.error('Error installing PWA:', error);
+      toast.error('Erro ao instalar o aplicativo');
     }
   };
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,8 +35,11 @@ const Login = () => {
   const [adminPassword, setAdminPassword] = useState("");
   
   // PWA installation prompt
-  const { showInstallPrompt, closePrompt } = usePWAInstall();
+  const { showInstallPrompt, closePrompt, showPrompt, canInstall } = usePWAInstall();
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
+  
+  // Track successful login to show PWA prompt
+  const [loginSuccess, setLoginSuccess] = useState(false);
   
   useEffect(() => {
     // If redirected from admin page with adminAccess=required, show a message
@@ -45,6 +47,19 @@ const Login = () => {
       setShowAdminLogin(true);
     }
   }, [needsAdminAccess]);
+  
+  // Show PWA install prompt after successful login if available
+  useEffect(() => {
+    if (loginSuccess && canInstall) {
+      // Small delay to ensure the navigation completes first
+      const timer = setTimeout(() => {
+        setShowPWAPrompt(true);
+        console.log('Showing PWA install prompt after login');
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loginSuccess, canInstall]);
   
   // If user is already logged in, redirect to home page
   if (user) {
@@ -57,8 +72,8 @@ const Login = () => {
     
     try {
       await signIn(loginEmail, loginPassword);
-      // Show PWA install prompt after successful login
-      setShowPWAPrompt(true);
+      // Mark login as successful to trigger PWA prompt
+      setLoginSuccess(true);
     } catch (error) {
       console.error("Login error:", error);
     } finally {

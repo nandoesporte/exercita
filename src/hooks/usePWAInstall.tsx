@@ -5,6 +5,7 @@ import { isPwaInstalled } from '@/utils/pwaUtils';
 export const usePWAInstall = () => {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [userDismissed, setUserDismissed] = useState(false);
+  const [canInstall, setCanInstall] = useState(false);
   
   useEffect(() => {
     // Check if the PWA is already installed
@@ -16,6 +17,10 @@ export const usePWAInstall = () => {
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
     
+    // Check if install prompt is available
+    const hasInstallPrompt = !!window.deferredPromptEvent;
+    setCanInstall(hasInstallPrompt && !isInstalled);
+    
     // Only show if not installed and not dismissed recently
     if (!isInstalled && (!dismissedTime || dismissedTime < oneDayAgo)) {
       setUserDismissed(false);
@@ -25,9 +30,11 @@ export const usePWAInstall = () => {
   }, []);
 
   const showPrompt = () => {
-    if (!isPwaInstalled() && !userDismissed) {
+    if (!isPwaInstalled() && !userDismissed && window.deferredPromptEvent) {
       setShowInstallPrompt(true);
+      return true;
     }
+    return false;
   };
 
   const closePrompt = () => {
@@ -41,6 +48,7 @@ export const usePWAInstall = () => {
     showInstallPrompt,
     setShowInstallPrompt,
     showPrompt,
-    closePrompt
+    closePrompt,
+    canInstall
   };
 };

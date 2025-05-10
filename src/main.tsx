@@ -15,7 +15,13 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 const Main = () => {
   // Initialize PWA install prompt
   React.useEffect(() => {
+    console.log('Registering PWA install prompt');
     registerInstallPrompt();
+    
+    // Log when PWA is installed
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed successfully');
+    });
   }, []);
 
   // Adiciona listener para status online/offline

@@ -65,6 +65,14 @@ export const removeConnectivityListeners = (
  * Registra o evento beforeinstallprompt
  */
 export const registerInstallPrompt = (): void => {
+  // Check if already registered
+  if (window.deferredPromptEvent) {
+    console.log('Install prompt already registered');
+    return;
+  }
+
+  console.log('Registering beforeinstallprompt event listener');
+  
   window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
@@ -79,4 +87,12 @@ export const registerInstallPrompt = (): void => {
     window.deferredPromptEvent = null;
     console.log('PWA was installed');
   });
+};
+
+/**
+ * Checks if an install prompt is available
+ * @returns boolean
+ */
+export const canInstallPwa = (): boolean => {
+  return !!window.deferredPromptEvent && !isPwaInstalled();
 };
