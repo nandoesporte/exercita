@@ -1,14 +1,14 @@
 
-import React from 'react';
-import { useProfile } from '@/hooks/useProfile';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { format, isValid, parse } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import {
   Form,
   FormControl,
@@ -17,65 +17,136 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
-// Define schema for form validation
 const formSchema = z.object({
-  first_name: z.string().min(1, { message: 'Nome é obrigatório' }),
-  last_name: z.string().min(1, { message: 'Sobrenome é obrigatório' }),
-  height: z.number().positive().nullish(),
-  weight: z.number().positive().nullish(),
-  gender: z.string().nullish(),
-  birthdate: z.string().nullish(),
-  fitness_goal: z.string().nullish(),
+  first_name: z.string().min(2, {
+    message: 'Nome deve ter pelo menos 2 caracteres.',
+  }),
+  last_name: z.string().min(2, {
+    message: 'Sobrenome deve ter pelo menos 2 caracteres.',
+  }),
+  birth_date: z.string().optional(),
+  gender: z.string().optional(),
+  weight: z.string().optional(),
+  height: z.string().optional(),
+  fitness_goal: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
 const AccountInfo = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { profile, isLoading, updateProfile } = useProfile();
-
-  const form = useForm<FormValues>({
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: profile?.first_name || '',
-      last_name: profile?.last_name || '',
-      height: profile?.height || null,
-      weight: profile?.weight || null,
-      gender: profile?.gender || '',
-      birthdate: profile?.birthdate || '',
-      fitness_goal: profile?.fitness_goal || '',
+      first_name: '',
+      last_name: '',
+      birth_date: '',
+      gender: '',
+      weight: '',
+      height: '',
+      fitness_goal: '',
     },
   });
-
-  const onSubmit = async (values: FormValues) => {
+  
+  // Format date to ISO format for backend
+  const formatDateForBackend = (dateStr: string | undefined | null) => {
+    if (!dateStr) return null;
+    
     try {
-      updateProfile(values);
+      // Parse the date from DD/MM/YYYY format
+      const parsedDate = parse(dateStr, 'dd/MM/yyyy', new Date());
+      
+      // Check if the date is valid
+      if (!isValid(parsedDate)) {
+        return null;
+      }
+      
+      // Format date as YYYY-MM-DD for the backend
+      return format(parsedDate, 'yyyy-MM-dd');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Erro ao atualizar perfil');
+      console.error('Date parsing error:', error);
+      return null;
     }
   };
-
+  
+  // Format date from ISO to display format
+  const formatDateForDisplay = (dateStr: string | undefined | null) => {
+    if (!dateStr) return '';
+    
+    try {
+      const date = new Date(dateStr);
+      if (!isValid(date)) return '';
+      
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return '';
+    }
+  };
+  
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        birth_date: formatDateForDisplay(profile.birth_date),
+        gender: profile.gender || '',
+        weight: profile.weight ? profile.weight.toString() : '',
+        height: profile.height ? profile.height.toString() : '',
+        fitness_goal: profile.fitness_goal || '',
+      });
+    }
+  }, [profile, form]);
+  
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    
+    try {
+      // Format and validate the date before sending to the backend
+      const birth_date = formatDateForBackend(values.birth_date);
+      
+      await updateProfile({
+        first_name: values.first_name,
+        last_name: values.last_name,
+        birth_date,
+        gender: values.gender || null,
+        weight: values.weight ? parseFloat(values.weight) : null,
+        height: values.height ? parseFloat(values.height) : null,
+        fitness_goal: values.fitness_goal || null,
+      });
+      
+      navigate('/profile');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Ocorreu um erro ao salvar as informações');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-orange"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
       </div>
     );
   }
 
   return (
-    <main className="container">
-      <section className="mobile-section">
-        <div className="mb-6 flex items-center">
-          <Link to="/profile" className="mr-2">
-            <ArrowLeft className="text-fitness-orange" />
-          </Link>
-          <h1 className="text-2xl font-bold">Informações da Conta</h1>
-        </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <div className="container max-w-xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Informações da Conta</h1>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="first_name"
@@ -83,13 +154,17 @@ const AccountInfo = () => {
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu nome" {...field} className="text-black" />
+                    <Input
+                      placeholder="Seu nome"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="last_name"
@@ -97,125 +172,154 @@ const AccountInfo = () => {
                 <FormItem>
                   <FormLabel>Sobrenome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu sobrenome" {...field} className="text-black" />
+                    <Input
+                      placeholder="Seu sobrenome"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="weight"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Peso (kg)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="Seu peso" 
-                        {...field} 
-                        onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                        value={field.value ?? ''}
-                        className="text-black"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="height"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Altura (cm)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="Sua altura" 
-                        {...field} 
-                        onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                        value={field.value ?? ''}
-                        className="text-black"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="birth_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de nascimento</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="dd/mm/aaaa"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="gender"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gênero</FormLabel>
-                  <FormControl>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-black"
-                      {...field}
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <select 
+                      className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
                     >
                       <option value="">Selecione</option>
-                      <option value="masculino">Masculino</option>
-                      <option value="feminino">Feminino</option>
-                      <option value="outro">Outro</option>
-                      <option value="prefiro_nao_dizer">Prefiro não dizer</option>
+                      <option value="male">Masculino</option>
+                      <option value="female">Feminino</option>
+                      <option value="other">Outro</option>
+                      <option value="prefer_not_to_say">Prefiro não dizer</option>
                     </select>
-                  </FormControl>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="birthdate"
+              name="weight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data de nascimento</FormLabel>
+                  <FormLabel>Peso (kg)</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} className="text-black" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="fitness_goal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Objetivo Fitness</FormLabel>
-                  <FormControl>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-black"
+                    <Input
+                      type="number"
+                      placeholder="70"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                       {...field}
-                    >
-                      <option value="">Selecione</option>
-                      <option value="perder_peso">Perder peso</option>
-                      <option value="ganhar_massa">Ganhar massa muscular</option>
-                      <option value="manter_forma">Manter a forma</option>
-                      <option value="melhorar_saude">Melhorar saúde</option>
-                      <option value="condicionamento">Melhorar condicionamento</option>
-                    </select>
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <Button type="submit" className="w-full bg-fitness-orange hover:bg-fitness-orange/90">
-              Salvar alterações
+            
+            <FormField
+              control={form.control}
+              name="height"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Altura (cm)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="175"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="fitness_goal"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Objetivo Fitness</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <select 
+                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
+                  >
+                    <option value="">Selecione</option>
+                    <option value="lose_weight">Perder peso</option>
+                    <option value="build_muscle">Ganhar massa muscular</option>
+                    <option value="improve_fitness">Melhorar condicionamento</option>
+                    <option value="improve_health">Melhorar a saúde geral</option>
+                    <option value="maintain">Manter a forma</option>
+                  </select>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="flex justify-end space-x-4 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => navigate('/profile')}
+              className="bg-transparent border-fitness-darkGray/50 text-white hover:bg-fitness-darkGray/30"
+            >
+              Cancelar
             </Button>
-          </form>
-        </Form>
-      </section>
-    </main>
+            <Button 
+              type="submit"
+              disabled={isSaving}
+              className="bg-fitness-green hover:bg-fitness-green/90 text-white"
+            >
+              {isSaving ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Salvando...
+                </div>
+              ) : 'Salvar alterações'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 
