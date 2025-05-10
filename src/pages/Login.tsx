@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, HeartPulse } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 const Login = () => {
   const { user, signIn, signUp, adminLogin } = useAuth();
@@ -102,8 +102,13 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-2">
-            <HeartPulse size={32} className="text-fitness-orange mr-2" />
-            <h1 className="text-3xl font-bold text-fitness-orange">Exercita</h1>
+            {/* Logo updated to match the logo used in other pages */}
+            <img 
+              src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+              alt="Mais Saúde Logo"
+              className="h-10 w-10"
+            />
+            <span className="font-extrabold text-xl text-fitness-orange">Mais Saúde</span>
           </div>
           <p className="text-muted-foreground">Seu companheiro de fitness pessoal</p>
         </div>
