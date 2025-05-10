@@ -1,18 +1,21 @@
-
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   User, Settings, Calendar, Clock, Heart, LogOut,
-  CreditCard, HelpCircle, Bell, UserPlus, ChevronRight
+  CreditCard, HelpCircle, Bell, UserPlus, ChevronRight, Camera
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const Profile = () => {
-  const { profile, isLoading } = useProfile();
+  const { profile, isLoading, uploadProfileImage } = useProfile();
   const { signOut, user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImageHovered, setIsImageHovered] = useState(false);
   
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -32,6 +35,32 @@ const Profile = () => {
     favoriteWorkout: 'Unknown', // This could be implemented with a query
   };
   
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please select a valid image file (JPEG, PNG, or GIF)');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+    
+    // Upload the image
+    uploadProfileImage(file);
+  };
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -45,12 +74,39 @@ const Profile = () => {
       <section className="mobile-section">
         {/* User Info */}
         <div className="flex items-center mb-8">
-          <Avatar className="h-20 w-20 mr-4 border-2 border-fitness-orange">
-            <AvatarImage src={userData.avatar} alt={userData.name} className="object-cover" />
-            <AvatarFallback className="bg-fitness-darkGray text-xl">
-              {userData.name.substring(0, 1)}
-            </AvatarFallback>
-          </Avatar>
+          <div 
+            className="relative mr-4"
+            onMouseEnter={() => setIsImageHovered(true)}
+            onMouseLeave={() => setIsImageHovered(false)}
+          >
+            <Avatar 
+              className="h-20 w-20 cursor-pointer border-2 border-fitness-orange"
+              onClick={handleImageClick}
+            >
+              <AvatarImage src={userData.avatar} alt={userData.name} className="object-cover" />
+              <AvatarFallback className="bg-fitness-darkGray text-xl">
+                {userData.name.substring(0, 1)}
+              </AvatarFallback>
+            </Avatar>
+            
+            {isImageHovered && (
+              <div 
+                className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full"
+                onClick={handleImageClick}
+              >
+                <Camera className="text-white h-6 w-6" />
+              </div>
+            )}
+            
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </div>
+          
           <div>
             <h2 className="text-xl font-bold">{userData.name}</h2>
             <p className="text-muted-foreground">{userData.email}</p>
