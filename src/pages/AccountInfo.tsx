@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,7 @@ const formSchema = z.object({
   last_name: z.string().min(2, {
     message: 'Sobrenome deve ter pelo menos 2 caracteres.',
   }),
-  birth_date: z.string().optional(),
+  birthdate: z.string().optional(),
   gender: z.string().optional(),
   weight: z.string().optional(),
   height: z.string().optional(),
@@ -46,7 +45,7 @@ const AccountInfo = () => {
     defaultValues: {
       first_name: '',
       last_name: '',
-      birth_date: '',
+      birthdate: '',
       gender: '',
       weight: '',
       height: '',
@@ -95,7 +94,7 @@ const AccountInfo = () => {
       form.reset({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        birth_date: formatDateForDisplay(profile.birth_date),
+        birthdate: formatDateForDisplay(profile.birthdate),
         gender: profile.gender || '',
         weight: profile.weight ? profile.weight.toString() : '',
         height: profile.height ? profile.height.toString() : '',
@@ -111,12 +110,12 @@ const AccountInfo = () => {
     
     try {
       // Format and validate the date before sending to the backend
-      const birth_date = formatDateForBackend(values.birth_date);
+      const birthdate = formatDateForBackend(values.birthdate);
       
       await updateProfile({
         first_name: values.first_name,
         last_name: values.last_name,
-        birth_date,
+        birthdate,
         gender: values.gender || null,
         weight: values.weight ? parseFloat(values.weight) : null,
         height: values.height ? parseFloat(values.height) : null,
@@ -156,7 +155,7 @@ const AccountInfo = () => {
                   <FormControl>
                     <Input
                       placeholder="Seu nome"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
                       {...field}
                     />
                   </FormControl>
@@ -174,7 +173,7 @@ const AccountInfo = () => {
                   <FormControl>
                     <Input
                       placeholder="Seu sobrenome"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
                       {...field}
                     />
                   </FormControl>
@@ -187,14 +186,14 @@ const AccountInfo = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="birth_date"
+              name="birthdate"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Data de nascimento</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="dd/mm/aaaa"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
                       {...field}
                     />
                   </FormControl>
@@ -214,7 +213,7 @@ const AccountInfo = () => {
                     onValueChange={field.onChange}
                   >
                     <select 
-                      className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
+                      className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-black"
                     >
                       <option value="">Selecione</option>
                       <option value="male">Masculino</option>
@@ -240,7 +239,7 @@ const AccountInfo = () => {
                     <Input
                       type="number"
                       placeholder="70"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
                       {...field}
                     />
                   </FormControl>
@@ -259,7 +258,7 @@ const AccountInfo = () => {
                     <Input
                       type="number"
                       placeholder="175"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-black"
                       {...field}
                     />
                   </FormControl>
@@ -280,7 +279,7 @@ const AccountInfo = () => {
                   onValueChange={field.onChange}
                 >
                   <select 
-                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
+                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-black"
                   >
                     <option value="">Selecione</option>
                     <option value="lose_weight">Perder peso</option>

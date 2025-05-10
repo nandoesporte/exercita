@@ -4,6 +4,8 @@ import { Search } from 'lucide-react';
 import { WorkoutCard } from '@/components/ui/workout-card';
 import { useWorkouts, useWorkoutCategories } from '@/hooks/useWorkouts';
 import { Database } from '@/integrations/supabase/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -12,6 +14,7 @@ type Workout = Database['public']['Tables']['workouts']['Row'] & {
 const Workouts = () => {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const isMobile = useIsMobile();
   
   const { data: workouts, isLoading: isLoadingWorkouts } = useWorkouts();
   const { data: categories, isLoading: isLoadingCategories } = useWorkoutCategories();
@@ -49,15 +52,15 @@ const Workouts = () => {
   });
 
   return (
-    <div className="container">
-      <section className="mobile-section">
+    <div className="container h-full">
+      <section className="mobile-section h-full flex flex-col">
         {/* Search */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <input
             type="text"
             placeholder="Buscar treinos..."
-            className="w-full pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-fitness-green"
+            className="w-full pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-fitness-green text-black"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -82,7 +85,7 @@ const Workouts = () => {
         
         {/* Loading state */}
         {isLoadingWorkouts && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 flex-1 flex flex-col justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Carregando treinos...</p>
           </div>
@@ -90,23 +93,25 @@ const Workouts = () => {
         
         {/* Workouts Grid */}
         {!isLoadingWorkouts && filteredWorkouts && filteredWorkouts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredWorkouts.map((workout) => (
-              <WorkoutCard 
-                key={workout.id} 
-                id={workout.id}
-                title={workout.title}
-                image={workout.image_url || ''}
-                duration={`${workout.duration} min`}
-                level={workout.level === 'beginner' ? 'Iniciante' : 
-                       workout.level === 'intermediate' ? 'Intermediário' : 
-                       workout.level === 'advanced' ? 'Avançado' : workout.level}
-                calories={workout.calories || 0}
-              />
-            ))}
-          </div>
+          <ScrollArea className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
+              {filteredWorkouts.map((workout) => (
+                <WorkoutCard 
+                  key={workout.id} 
+                  id={workout.id}
+                  title={workout.title}
+                  image={workout.image_url || ''}
+                  duration={`${workout.duration} min`}
+                  level={workout.level === 'beginner' ? 'Iniciante' : 
+                         workout.level === 'intermediate' ? 'Intermediário' : 
+                         workout.level === 'advanced' ? 'Avançado' : workout.level}
+                  calories={workout.calories || 0}
+                />
+              ))}
+            </div>
+          </ScrollArea>
         ) : !isLoadingWorkouts && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 flex-1 flex flex-col justify-center">
             <p className="text-muted-foreground">Nenhum treino encontrado. Tente outra busca.</p>
           </div>
         )}
