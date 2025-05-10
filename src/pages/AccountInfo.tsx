@@ -83,7 +83,7 @@ const AccountInfo = () => {
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu nome" {...field} />
+                    <Input placeholder="Digite seu nome" {...field} className="text-black" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -97,7 +97,7 @@ const AccountInfo = () => {
                 <FormItem>
                   <FormLabel>Sobrenome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu sobrenome" {...field} />
+                    <Input placeholder="Digite seu sobrenome" {...field} className="text-black" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -118,6 +118,7 @@ const AccountInfo = () => {
                         {...field} 
                         onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)}
                         value={field.value ?? ''}
+                        className="text-black"
                       />
                     </FormControl>
                     <FormMessage />
@@ -138,6 +139,7 @@ const AccountInfo = () => {
                         {...field} 
                         onChange={e => field.onChange(e.target.value ? Number(e.target.value) : null)}
                         value={field.value ?? ''}
+                        className="text-black"
                       />
                     </FormControl>
                     <FormMessage />
@@ -154,7 +156,7 @@ const AccountInfo = () => {
                   <FormLabel>Gênero</FormLabel>
                   <FormControl>
                     <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-black"
                       {...field}
                     >
                       <option value="">Selecione</option>
@@ -176,7 +178,7 @@ const AccountInfo = () => {
                 <FormItem>
                   <FormLabel>Data de nascimento</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} className="text-black" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -191,7 +193,7 @@ const AccountInfo = () => {
                   <FormLabel>Objetivo Fitness</FormLabel>
                   <FormControl>
                     <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-black"
                       {...field}
                     >
                       <option value="">Selecione</option>
