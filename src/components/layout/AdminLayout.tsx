@@ -1,8 +1,8 @@
 
 import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
-import { Menu } from 'lucide-react';
+import { Menu, BadgeDollarSign } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -25,14 +25,24 @@ const AdminLayout = () => {
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-card border-b border-border h-16 flex items-center justify-between px-4 md:px-6">
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="md:hidden p-2 rounded-md hover:bg-muted"
             >
               <Menu size={24} />
             </button>
-            <h1 className="text-xl font-semibold ml-2">Admin Dashboard</h1>
+            
+            {/* Logo in admin header */}
+            <Link to="/admin" className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                <BadgeDollarSign className="text-white h-6 w-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-xl">Exercita</span>
+                <span className="text-xs text-muted-foreground">Admin Dashboard</span>
+              </div>
+            </Link>
           </div>
         </header>
         

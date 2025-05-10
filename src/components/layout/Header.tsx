@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Search, BadgeDollarSign, UserRound } from 'lucide-react';
+import { Bell, BadgeDollarSign, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
@@ -65,10 +65,10 @@ const Header: React.FC<HeaderProps> = ({
         {/* App Logo for Mobile (centered) */}
         <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-              <BadgeDollarSign className="text-white h-5 w-5" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+              <BadgeDollarSign className="text-white h-6 w-6" />
             </div>
-            <span className="font-bold text-xl text-white">Exercita</span>
+            <span className="font-extrabold text-xl text-white">Exercita</span>
           </Link>
         </div>
 
@@ -76,10 +76,10 @@ const Header: React.FC<HeaderProps> = ({
         {!isMobile && (
           <div className="flex-1 flex justify-center">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-                <BadgeDollarSign className="text-white h-5 w-5" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
+                <BadgeDollarSign className="text-white h-6 w-6" />
               </div>
-              <span className="font-bold text-xl text-white">Exercita</span>
+              <span className="font-extrabold text-xl text-white">Exercita</span>
             </Link>
           </div>
         )}
