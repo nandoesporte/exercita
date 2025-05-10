@@ -120,13 +120,13 @@ const Profile = () => {
             <div className="text-2xl font-bold text-fitness-orange">
               {userData.workoutsCompleted}
             </div>
-            <p className="text-sm text-gray-300">Treinos completados</p>
+            <p className="text-sm text-gray-500">Treinos completados</p>
           </div>
           <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg">
             <div className="text-2xl font-bold text-fitness-orange">
               {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
             </div>
-            <p className="text-sm text-gray-300">Peso atual</p>
+            <p className="text-sm text-gray-500">Peso atual</p>
           </div>
         </div>
         
