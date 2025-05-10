@@ -26,9 +26,12 @@ const UserLayout = () => {
     }
   };
   
+  // Determine if search icon should be shown
+  const shouldShowSearch = currentPath !== '/history';
+  
   return (
     <div className="flex flex-col min-h-screen bg-fitness-dark text-white">
-      <Header showSearch={true} title={getHeaderTitle()} />
+      <Header showSearch={shouldShowSearch} title={getHeaderTitle()} />
       
       <main className="flex-1 container max-w-7xl mx-auto px-4 py-3 pb-20 md:pb-8 animate-fade-in">
         <Outlet />
