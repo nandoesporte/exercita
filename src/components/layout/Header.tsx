@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, HeartPulse, UserRound } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
@@ -76,10 +76,12 @@ const Header: React.FC<HeaderProps> = ({
         {/* App Logo for Mobile (centered) */}
         <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-              <HeartPulse className="text-white h-6 w-6" />
-            </div>
-            <span className="font-extrabold text-xl text-white">Exercita</span>
+            <img 
+              src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+              alt="Mais Saúde Logo"
+              className="h-10 w-10"
+            />
+            <span className="font-extrabold text-xl text-white">Mais Saúde</span>
           </Link>
         </div>
 
@@ -87,10 +89,12 @@ const Header: React.FC<HeaderProps> = ({
         {!isMobile && (
           <div className="flex-1 flex justify-center">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-                <HeartPulse className="text-white h-6 w-6" />
-              </div>
-              <span className="font-extrabold text-xl text-white">Exercita</span>
+              <img 
+                src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+                alt="Mais Saúde Logo"
+                className="h-10 w-10"
+              />
+              <span className="font-extrabold text-xl text-white">Mais Saúde</span>
             </Link>
           </div>
         )}
@@ -99,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
           {showNotifications && (
             <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-fitness-orange rounded-full"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-fitness-green rounded-full"></span>
             </Link>
           )}
           
@@ -108,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({
             to="/profile" 
             className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
           >
-            <Avatar className="h-8 w-8 border-2 border-fitness-orange">
+            <Avatar className="h-8 w-8 border-2 border-fitness-green">
               <AvatarImage 
                 src={profile?.avatar_url || ''} 
                 alt={`${profile?.first_name || 'Usuário'}'s profile`} 

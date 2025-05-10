@@ -64,14 +64,15 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				fitness: {
-					green: '#00CB7E',
-					darkGreen: '#00855C',
+					green: '#34B5A9',
+					darkGreen: '#278F86',
+					blue: '#0055A2',
 					dark: '#1A1F2C',
 					darkGray: '#2A2F3C',
 					gray: '#8E9196',
 					lightGray: '#F2F2F2',
-					orange: '#F97316',
-					lightOrange: '#FEC6A1',
+					orange: '#34B5A9', // Substituído pelo verde para manter compatibilidade
+					lightOrange: '#A2E1DC', // Versão clara do verde
 				}
 			},
 			borderRadius: {
