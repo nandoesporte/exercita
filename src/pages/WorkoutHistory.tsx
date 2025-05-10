@@ -8,7 +8,7 @@ import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 
 const WorkoutHistory = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { history, isLoading } = useWorkoutHistory();
+  const { data: history, isLoading } = useWorkoutHistory();
   
   const handlePreviousMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
