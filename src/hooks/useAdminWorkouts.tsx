@@ -123,6 +123,53 @@ export function useAdminWorkouts() {
     }
   });
 
+  const updateWorkout = useMutation({
+    mutationFn: async ({ id, formData }: { id: string, formData: WorkoutFormData }) => {
+      // First update the workout
+      const { error: workoutError } = await supabase
+        .from('workouts')
+        .update({
+          title: formData.title,
+          description: formData.description || null,
+          duration: formData.duration,
+          level: formData.level,
+          category_id: formData.category_id || null,
+          image_url: formData.image_url || null,
+          calories: formData.calories || null,
+        })
+        .eq('id', id);
+      
+      if (workoutError) {
+        throw new Error(`Error updating workout: ${workoutError.message}`);
+      }
+
+      // Delete existing workout days for this workout
+      const { error: deleteError } = await supabase
+        .from('workout_days')
+        .delete()
+        .eq('workout_id', id);
+      
+      if (deleteError) {
+        throw new Error(`Error removing existing workout days: ${deleteError.message}`);
+      }
+
+      // If days_of_week are provided, create entries in workout_days using helper
+      if (formData.days_of_week && formData.days_of_week.length > 0) {
+        await workoutDaysClient.addWorkoutDays(id, formData.days_of_week);
+      }
+      
+      return { id };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
+      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      toast.success('Workout updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update workout');
+    }
+  });
+
   const deleteWorkout = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -322,15 +369,50 @@ export function useAdminWorkouts() {
       toast.error(error.message || 'Failed to update exercise order');
     }
   });
-  
+
+  // Get a single workout
+  const getWorkout = (id: string) => {
+    return useQuery({
+      queryKey: ['admin-workout', id],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('workouts')
+          .select(`
+            *,
+            category:category_id (
+              id, 
+              name,
+              icon,
+              color
+            )
+          `)
+          .eq('id', id)
+          .single();
+        
+        if (error) {
+          throw new Error(`Error fetching workout: ${error.message}`);
+        }
+
+        // Get workout days
+        const days = await workoutDaysClient.getWorkoutDays(id);
+        
+        return { ...data, days_of_week: days } as AdminWorkout;
+      },
+      enabled: !!id,
+    });
+  };
+
   return {
     workouts: workoutsQuery.data || [],
     isLoading: workoutsQuery.isLoading,
     error: workoutsQuery.error,
     createWorkout: createWorkout.mutate,
     isCreating: createWorkout.isPending,
+    updateWorkout: updateWorkout.mutate,
+    isUpdating: updateWorkout.isPending,
     deleteWorkout: deleteWorkout.mutate,
     isDeleting: deleteWorkout.isPending,
+    getWorkout,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
     users: usersQuery.data || [],
