@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, workoutDaysClient } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
@@ -47,22 +47,19 @@ export function useWorkouts() {
         throw new Error(`Error fetching workouts: ${error.message}`);
       }
       
-      // Fetch days of week for each workout
+      // Use the helper function to fetch days of week for each workout
       const workoutsWithDays = await Promise.all(data.map(async (workout) => {
-        const { data: daysData, error: daysError } = await supabase
-          .from('workout_days')
-          .select('day_of_week')
-          .eq('workout_id', workout.id);
-
-        if (daysError) {
-          console.error(`Error fetching days for workout ${workout.id}:`, daysError);
+        try {
+          const days = await workoutDaysClient.getWorkoutDays(workout.id);
+          
+          return {
+            ...workout,
+            days_of_week: days
+          };
+        } catch (error) {
+          console.error(`Error fetching days for workout ${workout.id}:`, error);
           return workout;
         }
-
-        return {
-          ...workout,
-          days_of_week: daysData.map(d => d.day_of_week)
-        };
       }));
       
       return workoutsWithDays as Workout[];
@@ -109,16 +106,13 @@ export function useWorkout(id: string | undefined) {
         throw new Error(`Error fetching workout: ${error.message}`);
       }
 
-      // Fetch days of week for the workout
-      const { data: daysData, error: daysError } = await supabase
-        .from('workout_days')
-        .select('day_of_week')
-        .eq('workout_id', id);
-
-      if (daysError) {
-        console.error(`Error fetching days for workout ${id}:`, daysError);
-      } else {
-        data.days_of_week = daysData.map(d => d.day_of_week);
+      try {
+        // Fetch days of week for the workout using helper
+        const days = await workoutDaysClient.getWorkoutDays(id);
+        data.days_of_week = days;
+      } catch (error) {
+        console.error(`Error fetching days for workout ${id}:`, error);
+        data.days_of_week = [];
       }
       
       return data as Workout & {
@@ -141,74 +135,62 @@ export function useWorkoutsByDay(day: string | null) {
         return useWorkouts().queryFn();
       }
       
-      // First get workout IDs for the specified day
-      const { data: dayWorkouts, error: dayError } = await supabase
-        .from('workout_days')
-        .select('workout_id')
-        .eq('day_of_week', day);
-      
-      if (dayError) {
-        throw new Error(`Error fetching workouts for day ${day}: ${dayError.message}`);
-      }
-      
-      if (dayWorkouts.length === 0) {
-        return [] as Workout[];
-      }
-      
-      // Get the full workout data for these IDs
-      const workoutIds = dayWorkouts.map(w => w.workout_id);
-      const { data, error } = await supabase
-        .from('workouts')
-        .select(`
-          *,
-          category:category_id (
-            id, 
-            name,
-            icon,
-            color
-          ),
-          workout_exercises (
-            id,
-            sets,
-            reps,
-            duration,
-            rest,
-            order_position,
-            exercise:exercise_id (
-              id,
-              name,
-              description,
-              image_url,
-              video_url
-            )
-          )
-        `)
-        .in('id', workoutIds)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        throw new Error(`Error fetching workouts: ${error.message}`);
-      }
-      
-      // Add the days_of_week to each workout
-      const workoutsWithDays = await Promise.all(data.map(async (workout) => {
-        const { data: daysData, error: daysError } = await supabase
-          .from('workout_days')
-          .select('day_of_week')
-          .eq('workout_id', workout.id);
-
-        if (daysError) {
-          console.error(`Error fetching days for workout ${workout.id}:`, daysError);
-          return workout;
+      try {
+        // First get workout IDs for the specified day using helper
+        const workoutIds = await workoutDaysClient.getWorkoutsByDay(day);
+        
+        if (workoutIds.length === 0) {
+          return [] as Workout[];
         }
-
-        return {
-          ...workout,
-          days_of_week: daysData.map(d => d.day_of_week)
-        };
-      }));
-      
-      return workoutsWithDays as Workout[];
+        
+        // Get the full workout data for these IDs
+        const { data, error } = await supabase
+          .from('workouts')
+          .select(`
+            *,
+            category:category_id (
+              id, 
+              name,
+              icon,
+              color
+            ),
+            workout_exercises (
+              id,
+              sets,
+              reps,
+              duration,
+              rest,
+              order_position,
+              exercise:exercise_id (
+                id,
+                name,
+                description,
+                image_url,
+                video_url
+              )
+            )
+          `)
+          .in('id', workoutIds)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw new Error(`Error fetching workouts: ${error.message}`);
+        }
+        
+        // Add the days_of_week to each workout
+        const workoutsWithDays = await Promise.all(data.map(async (workout) => {
+          const days = await workoutDaysClient.getWorkoutDays(workout.id);
+          return {
+            ...workout,
+            days_of_week: days
+          };
+        }));
+        
+        return workoutsWithDays as Workout[];
+      } catch (error) {
+        console.error(`Error in useWorkoutsByDay:`, error);
+        throw error;
+      }
     },
     enabled: true,
   });

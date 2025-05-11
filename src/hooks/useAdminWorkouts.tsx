@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, workoutDaysClient } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -52,22 +52,19 @@ export function useAdminWorkouts() {
         throw new Error(`Error fetching workouts: ${error.message}`);
       }
 
-      // Fetch days of week for each workout
+      // Fetch days of week for each workout using the helper
       const workoutsWithDays = await Promise.all(data.map(async (workout) => {
-        const { data: daysData, error: daysError } = await supabase
-          .from('workout_days')
-          .select('day_of_week')
-          .eq('workout_id', workout.id);
-
-        if (daysError) {
-          console.error(`Error fetching days for workout ${workout.id}:`, daysError);
+        try {
+          const days = await workoutDaysClient.getWorkoutDays(workout.id);
+          
+          return {
+            ...workout,
+            days_of_week: days
+          };
+        } catch (error) {
+          console.error(`Error fetching days for workout ${workout.id}:`, error);
           return { ...workout, days_of_week: [] };
         }
-
-        return {
-          ...workout,
-          days_of_week: daysData.map(d => d.day_of_week)
-        };
       }));
       
       return workoutsWithDays as AdminWorkout[];
@@ -95,20 +92,9 @@ export function useAdminWorkouts() {
         throw new Error(`Error creating workout: ${workoutError.message}`);
       }
 
-      // If days_of_week are provided, create entries in workout_days
+      // If days_of_week are provided, create entries in workout_days using helper
       if (formData.days_of_week && formData.days_of_week.length > 0 && workout) {
-        const workoutDaysEntries = formData.days_of_week.map(day => ({
-          workout_id: workout.id,
-          day_of_week: day
-        }));
-
-        const { error: daysError } = await supabase
-          .from('workout_days')
-          .insert(workoutDaysEntries);
-        
-        if (daysError) {
-          throw new Error(`Error assigning days to workout: ${daysError.message}`);
-        }
+        await workoutDaysClient.addWorkoutDays(workout.id, formData.days_of_week);
       }
 
       // If a user_id was provided, create an entry in user_workout_history
@@ -236,16 +222,7 @@ export function useAdminWorkouts() {
     return useQuery({
       queryKey: ['workout-days', workoutId],
       queryFn: async () => {
-        const { data, error } = await supabase
-          .from('workout_days')
-          .select('day_of_week')
-          .eq('workout_id', workoutId);
-        
-        if (error) {
-          throw new Error(`Error fetching workout days: ${error.message}`);
-        }
-        
-        return data.map(d => d.day_of_week);
+        return await workoutDaysClient.getWorkoutDays(workoutId);
       },
       enabled: !!workoutId,
     });
