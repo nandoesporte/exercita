@@ -118,8 +118,8 @@ export function useWorkout(id: string | undefined) {
       if (daysError) {
         console.error(`Error fetching days for workout ${id}:`, daysError);
       } else {
-        // Explicitly add days_of_week to the data object
-        data.days_of_week = daysData.map(d => d.day_of_week);
+        // We need to explicitly type data to include the days_of_week property
+        (data as Workout).days_of_week = daysData.map(d => d.day_of_week);
       }
       
       return data as Workout & {
@@ -138,9 +138,59 @@ export function useWorkoutsByDay(day: string | null) {
     queryKey: ['workouts-by-day', day],
     queryFn: async () => {
       if (!day) {
-        // Create a new query for all workouts instead of trying to access queryFn
-        const { data: allWorkouts = [] } = await useWorkouts().queryFn();
-        return allWorkouts;
+        // Create a new query directly instead of calling useWorkouts().queryFn
+        // which doesn't exist in the returned result from useQuery
+        const { data: allWorkouts, error } = await supabase
+          .from('workouts')
+          .select(`
+            *,
+            category:category_id (
+              id, 
+              name,
+              icon,
+              color
+            ),
+            workout_exercises (
+              id,
+              sets,
+              reps,
+              duration,
+              rest,
+              order_position,
+              exercise:exercise_id (
+                id,
+                name,
+                description,
+                image_url,
+                video_url
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw new Error(`Error fetching workouts: ${error.message}`);
+        }
+        
+        // Fetch days of week for each workout
+        const workoutsWithDays = await Promise.all(allWorkouts.map(async (workout) => {
+          const { data: daysData, error: daysError } = await supabase
+            .from('workout_days')
+            .select('day_of_week')
+            .eq('workout_id', workout.id);
+
+          if (daysError) {
+            console.error(`Error fetching days for workout ${workout.id}:`, daysError);
+            return workout;
+          }
+
+          return {
+            ...workout,
+            days_of_week: daysData.map(d => d.day_of_week)
+          };
+        }));
+        
+        return workoutsWithDays as Workout[];
       }
       
       // First get workout IDs for the specified day
