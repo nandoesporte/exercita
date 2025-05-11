@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar
+  Clock, Dumbbell, BarChart, Info, Check, HeartPulse
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
@@ -10,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+// Import Shadcn Tabs components
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ExerciseDetail from '@/components/ExerciseDetail';
 import { Button } from '@/components/ui/button';
@@ -37,55 +38,6 @@ const WorkoutDetail = () => {
     const lastName = profile.last_name || '';
     
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
-  };
-
-  // Helper function to translate day of week to Portuguese
-  const translateDayOfWeek = (day: string) => {
-    const translations: Record<string, string> = {
-      'monday': 'Segunda-feira',
-      'tuesday': 'Terça-feira',
-      'wednesday': 'Quarta-feira',
-      'thursday': 'Quinta-feira',
-      'friday': 'Sexta-feira',
-      'saturday': 'Sábado',
-      'sunday': 'Domingo'
-    };
-    return translations[day.toLowerCase()] || day;
-  };
-
-  // Group exercises by day of week or show all if no days are defined
-  const getExercisesByDay = () => {
-    if (!workout || !workout.workout_exercises) {
-      return {};
-    }
-
-    // If no days are specified, group all exercises under 'all'
-    if (!workout.days_of_week || workout.days_of_week.length === 0) {
-      return {
-        'all': workout.workout_exercises.sort((a, b) => a.order_position - b.order_position)
-      };
-    }
-
-    // Create an empty object to store exercises by day
-    const exercisesByDay: Record<string, typeof workout.workout_exercises> = {};
-    
-    // Initialize each day with an empty array
-    workout.days_of_week.forEach(day => {
-      exercisesByDay[day] = [];
-    });
-    
-    // For simplicity in this demo, we'll evenly distribute exercises across days
-    // In a real app, you might want to have a separate table linking exercises to specific days
-    const sortedExercises = workout.workout_exercises.sort((a, b) => a.order_position - b.order_position);
-    const daysCount = workout.days_of_week.length;
-    
-    sortedExercises.forEach((exercise, index) => {
-      const dayIndex = index % daysCount;
-      const day = workout.days_of_week![dayIndex];
-      exercisesByDay[day].push(exercise);
-    });
-    
-    return exercisesByDay;
   };
 
   if (isLoading) {
@@ -181,9 +133,6 @@ const WorkoutDetail = () => {
     }
   }
 
-  const exercisesByDay = getExercisesByDay();
-  const hasDays = workout.days_of_week && workout.days_of_week.length > 0;
-
   return (
     <>
       {/* Custom header for workout detail pages */}
@@ -278,18 +227,10 @@ const WorkoutDetail = () => {
                 <Dumbbell size={14} />
                 <span>{workout.level}</span>
               </div>
-              {workout.calories && (
-                <div className="flex items-center text-white gap-1">
-                  <BarChart size={14} />
-                  <span>{workout.calories} kcal</span>
-                </div>
-              )}
-              {hasDays && (
-                <div className="flex items-center text-white gap-1">
-                  <Calendar size={14} />
-                  <span>{workout.days_of_week?.length} dias</span>
-                </div>
-              )}
+              <div className="flex items-center text-white gap-1">
+                <BarChart size={14} />
+                <span>{workout.calories} kcal</span>
+              </div>
             </div>
           </div>
         </div>
@@ -315,40 +256,31 @@ const WorkoutDetail = () => {
             <TabsContent value="exercises" className="p-4 animate-fade-in">
               <h2 className="text-lg font-semibold mb-4 text-fitness-orange">Lista de Exercícios</h2>
               
-              {Object.keys(exercisesByDay).length > 0 ? (
-                <div className="space-y-6">
-                  {Object.keys(exercisesByDay).map((day) => (
-                    <div key={day} className="border-b pb-6 last:border-b-0 last:pb-0">
-                      {day !== 'all' && (
-                        <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-fitness-green">
-                          <Calendar size={16} />
-                          {translateDayOfWeek(day)}
-                        </h3>
-                      )}
-                      <div className="space-y-3">
-                        {exercisesByDay[day].map((workoutExercise, index) => (
-                          <button 
-                            key={workoutExercise.id}
-                            onClick={() => handleExerciseClick(workoutExercise.id)}
-                            className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
-                          >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
-                              {index + 1}
-                            </div>
-                            <div className="ml-3 flex-grow">
-                              <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
-                              <div className="text-sm text-muted-foreground">
-                                {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
-                              </div>
-                            </div>
-                            <div className="text-fitness-orange">
-                              <Info size={18} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+              {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
+                <div className="space-y-3">
+                  {workout.workout_exercises
+                    .sort((a, b) => a.order_position - b.order_position)
+                    .map((workoutExercise, index) => (
+                      <button 
+                        key={workoutExercise.id}
+                        onClick={() => handleExerciseClick(workoutExercise.id)}
+                        className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
+                      >
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
+                          {index + 1}
+                        </div>
+                        <div className="ml-3 flex-grow">
+                          <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
+                          <div className="text-sm text-muted-foreground">
+                            {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
+                          </div>
+                        </div>
+                        <div className="text-fitness-orange">
+                          <Info size={18} />
+                        </div>
+                      </button>
+                    ))
+                  }
                 </div>
               ) : (
                 <p className="text-muted-foreground">Nenhum exercício foi adicionado a este treino ainda.</p>
@@ -392,23 +324,6 @@ const WorkoutDetail = () => {
                     </span>
                   </div>
                 </div>
-
-                {hasDays && (
-                  <div>
-                    <h2 className="text-lg font-semibold mb-3 text-fitness-orange">Dias de Treino</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {workout.days_of_week?.map(day => (
-                        <span 
-                          key={day}
-                          className="px-3 py-1 rounded-full text-sm bg-fitness-darkGray/50 text-white flex items-center gap-1"
-                        >
-                          <Calendar size={14} />
-                          {translateDayOfWeek(day)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </TabsContent>
           </Tabs>
