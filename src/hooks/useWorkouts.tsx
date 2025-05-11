@@ -118,6 +118,7 @@ export function useWorkout(id: string | undefined) {
       if (daysError) {
         console.error(`Error fetching days for workout ${id}:`, daysError);
       } else {
+        // Explicitly add days_of_week to the data object
         data.days_of_week = daysData.map(d => d.day_of_week);
       }
       
@@ -137,8 +138,9 @@ export function useWorkoutsByDay(day: string | null) {
     queryKey: ['workouts-by-day', day],
     queryFn: async () => {
       if (!day) {
-        // Return all workouts if no day is specified
-        return useWorkouts().queryFn();
+        // Create a new query for all workouts instead of trying to access queryFn
+        const { data: allWorkouts = [] } = await useWorkouts().queryFn();
+        return allWorkouts;
       }
       
       // First get workout IDs for the specified day
