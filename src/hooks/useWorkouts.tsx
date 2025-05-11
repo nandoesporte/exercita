@@ -106,21 +106,19 @@ export function useWorkout(id: string | undefined) {
         throw new Error(`Error fetching workout: ${error.message}`);
       }
 
+      // Create a properly typed object with days_of_week
+      const workoutWithDays = data as unknown as Workout;
+
       try {
         // Fetch days of week for the workout using helper
         const days = await workoutDaysClient.getWorkoutDays(id);
-        data.days_of_week = days;
+        workoutWithDays.days_of_week = days;
       } catch (error) {
         console.error(`Error fetching days for workout ${id}:`, error);
-        data.days_of_week = [];
+        workoutWithDays.days_of_week = [];
       }
       
-      return data as Workout & {
-        workout_exercises: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
-          exercise: Database['public']['Tables']['exercises']['Row'];
-        }>;
-        days_of_week: string[];
-      };
+      return workoutWithDays;
     },
     enabled: !!id,
   });
@@ -131,8 +129,50 @@ export function useWorkoutsByDay(day: string | null) {
     queryKey: ['workouts-by-day', day],
     queryFn: async () => {
       if (!day) {
-        // Return all workouts if no day is specified
-        return useWorkouts().queryFn();
+        // For the last error, instead of calling useWorkouts().queryFn directly
+        // we need to implement the same logic here
+        const { data, error } = await supabase
+          .from('workouts')
+          .select(`
+            *,
+            category:category_id (
+              id, 
+              name,
+              icon,
+              color
+            ),
+            workout_exercises (
+              id,
+              sets,
+              reps,
+              duration,
+              rest,
+              order_position,
+              exercise:exercise_id (
+                id,
+                name,
+                description,
+                image_url,
+                video_url
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw new Error(`Error fetching workouts: ${error.message}`);
+        }
+        
+        // Add the days_of_week to each workout
+        const workoutsWithDays = await Promise.all(data.map(async (workout) => {
+          const days = await workoutDaysClient.getWorkoutDays(workout.id);
+          return {
+            ...workout,
+            days_of_week: days
+          };
+        }));
+        
+        return workoutsWithDays as Workout[];
       }
       
       try {
