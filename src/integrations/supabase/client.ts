@@ -22,3 +22,18 @@ export const supabase = createClient<Database>(
     }
   }
 );
+
+// Helper functions for debugging session issues
+export const checkAuthSession = async () => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    console.log('Current session status:', {
+      hasSession: !!data.session, 
+      error: error?.message || null
+    });
+    return data.session;
+  } catch (err) {
+    console.error('Error checking auth session:', err);
+    return null;
+  }
+}

@@ -33,8 +33,8 @@ export function useProfile() {
       return data as Profile;
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
-    gcTime: 15 * 60 * 1000, // Keep cache for 15 minutes
+    staleTime: 1000 * 60, // Consider data stale after 1 minute
+    gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
   });
   
   const updateProfile = useMutation({
@@ -68,11 +68,10 @@ export function useProfile() {
       if (updatedProfile) {
         // Update cache immediately with the new data
         queryClient.setQueryData(['profile', user?.id], updatedProfile);
+        // Force refetch to ensure fresh data from server
+        queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+        toast.success('Perfil atualizado com sucesso');
       }
-      
-      // Then invalidate to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      toast.success('Perfil atualizado com sucesso');
     },
     onError: (error: Error) => {
       console.error('Erro na atualização do perfil:', error);
@@ -89,8 +88,10 @@ export function useProfile() {
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
       
+      console.log('Fazendo upload da imagem do perfil:', filePath);
+      
       // Upload file to storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -102,6 +103,8 @@ export function useProfile() {
         throw new Error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
       }
       
+      console.log('Upload realizado com sucesso:', uploadData);
+      
       // Get public URL for the uploaded file
       const { data: urlData } = supabase.storage
         .from('profile_images')
@@ -109,28 +112,39 @@ export function useProfile() {
       
       const avatarUrl = urlData.publicUrl;
       
+      console.log('URL do avatar:', avatarUrl);
+      
       // Update profile with new avatar URL
-      const { error: updateError } = await supabase
+      const { error: updateError, data: profileData } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select();
       
       if (updateError) {
         console.error('Erro ao atualizar perfil com novo avatar:', updateError);
         throw new Error(`Erro ao atualizar perfil com novo avatar: ${updateError.message}`);
       }
       
-      return avatarUrl;
-    },
-    onSuccess: (avatarUrl) => {
-      // Update the profile in cache with the new avatar URL
-      queryClient.setQueryData(['profile', user?.id], (oldData: any) => {
-        if (oldData) {
-          return { ...oldData, avatar_url: avatarUrl };
-        }
-        return oldData;
-      });
+      console.log('Perfil atualizado com novo avatar:', profileData);
       
+      return { avatarUrl, updatedProfile: profileData?.[0] };
+    },
+    onSuccess: (result) => {
+      // Update the profile in cache with the new avatar URL and full profile data
+      if (result.updatedProfile) {
+        queryClient.setQueryData(['profile', user?.id], result.updatedProfile);
+      } else {
+        // Fall back to just updating the avatar_url if we don't have full profile data
+        queryClient.setQueryData(['profile', user?.id], (oldData: any) => {
+          if (oldData) {
+            return { ...oldData, avatar_url: result.avatarUrl };
+          }
+          return oldData;
+        });
+      }
+      
+      // Force refetch to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast.success('Foto de perfil atualizada com sucesso');
     },

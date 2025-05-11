@@ -1,6 +1,8 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
+import { checkAuthSession } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,14 +12,28 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
-
-  console.log("ProtectedRoute check:", { 
-    path: location.pathname,
-    user: !!user, 
-    isAdmin, 
-    adminOnly,
-    loading
-  });
+  
+  // Debug auth state on protected routes
+  useEffect(() => {
+    // Debug current auth state
+    console.log("ProtectedRoute auth status:", { 
+      path: location.pathname,
+      user: !!user, 
+      userId: user?.id,
+      isAdmin, 
+      adminOnly,
+      loading
+    });
+    
+    // Verify session with Supabase directly as a safety check
+    if (!loading && !user) {
+      checkAuthSession().then(session => {
+        if (session) {
+          console.log("Session found in direct check but not in context", session);
+        }
+      });
+    }
+  }, [user, loading, isAdmin, adminOnly, location.pathname]);
 
   if (loading) {
     return (
