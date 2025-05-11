@@ -1,7 +1,6 @@
 
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
@@ -74,16 +73,14 @@ const Main = () => {
 
   return (
     <React.StrictMode>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <AuthProvider>
-              <Toaster position="bottom-center" richColors closeButton />
-              <App />
-            </AuthProvider>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster position="bottom-center" richColors closeButton />
+            <App />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
     </React.StrictMode>
   );
 };
