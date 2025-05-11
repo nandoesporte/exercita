@@ -5,18 +5,11 @@ import AdminSidebar from './AdminSidebar';
 import { Menu, HeartPulse } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   
   // Add extra protection to make sure only admins can access this layout
   useEffect(() => {
@@ -28,30 +21,17 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      {!isMobile && <AdminSidebar />}
+      <AdminSidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-card border-b border-border h-16 flex items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
-            {isMobile ? (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <button className="p-2 rounded-md hover:bg-muted">
-                    <Menu size={24} />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[75vw] max-w-[280px] p-0">
-                  <AdminSidebar />
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <button 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="md:hidden p-2 rounded-md hover:bg-muted"
-              >
-                <Menu size={24} />
-              </button>
-            )}
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 rounded-md hover:bg-muted"
+            >
+              <Menu size={24} />
+            </button>
             
             {/* Logo in admin header */}
             <Link to="/admin" className="flex items-center gap-2">
@@ -71,8 +51,8 @@ const AdminLayout = () => {
         </main>
       </div>
       
-      {/* Old mobile sidebar approach - replaced with Sheet component */}
-      {!isMobile && sidebarOpen && (
+      {/* Mobile sidebar */}
+      {sidebarOpen && (
         <>
           <div 
             className="fixed inset-0 bg-black/50 z-40 md:hidden" 

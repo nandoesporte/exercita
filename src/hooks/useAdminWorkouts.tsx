@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, workoutDaysClient } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -52,19 +52,22 @@ export function useAdminWorkouts() {
         throw new Error(`Error fetching workouts: ${error.message}`);
       }
 
-      // Fetch days of week for each workout using the helper
+      // Fetch days of week for each workout
       const workoutsWithDays = await Promise.all(data.map(async (workout) => {
-        try {
-          const days = await workoutDaysClient.getWorkoutDays(workout.id);
-          
-          return {
-            ...workout,
-            days_of_week: days
-          };
-        } catch (error) {
-          console.error(`Error fetching days for workout ${workout.id}:`, error);
+        const { data: daysData, error: daysError } = await supabase
+          .from('workout_days')
+          .select('day_of_week')
+          .eq('workout_id', workout.id);
+
+        if (daysError) {
+          console.error(`Error fetching days for workout ${workout.id}:`, daysError);
           return { ...workout, days_of_week: [] };
         }
+
+        return {
+          ...workout,
+          days_of_week: daysData.map(d => d.day_of_week)
+        };
       }));
       
       return workoutsWithDays as AdminWorkout[];
@@ -92,9 +95,20 @@ export function useAdminWorkouts() {
         throw new Error(`Error creating workout: ${workoutError.message}`);
       }
 
-      // If days_of_week are provided, create entries in workout_days using helper
+      // If days_of_week are provided, create entries in workout_days
       if (formData.days_of_week && formData.days_of_week.length > 0 && workout) {
-        await workoutDaysClient.addWorkoutDays(workout.id, formData.days_of_week);
+        const workoutDaysEntries = formData.days_of_week.map(day => ({
+          workout_id: workout.id,
+          day_of_week: day
+        }));
+
+        const { error: daysError } = await supabase
+          .from('workout_days')
+          .insert(workoutDaysEntries);
+        
+        if (daysError) {
+          throw new Error(`Error assigning days to workout: ${daysError.message}`);
+        }
       }
 
       // If a user_id was provided, create an entry in user_workout_history
@@ -120,53 +134,6 @@ export function useAdminWorkouts() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create workout');
-    }
-  });
-
-  const updateWorkout = useMutation({
-    mutationFn: async ({ id, formData }: { id: string, formData: WorkoutFormData }) => {
-      // First update the workout
-      const { error: workoutError } = await supabase
-        .from('workouts')
-        .update({
-          title: formData.title,
-          description: formData.description || null,
-          duration: formData.duration,
-          level: formData.level,
-          category_id: formData.category_id || null,
-          image_url: formData.image_url || null,
-          calories: formData.calories || null,
-        })
-        .eq('id', id);
-      
-      if (workoutError) {
-        throw new Error(`Error updating workout: ${workoutError.message}`);
-      }
-
-      // Delete existing workout days for this workout
-      const { error: deleteError } = await supabase
-        .from('workout_days')
-        .delete()
-        .eq('workout_id', id);
-      
-      if (deleteError) {
-        throw new Error(`Error removing existing workout days: ${deleteError.message}`);
-      }
-
-      // If days_of_week are provided, create entries in workout_days using helper
-      if (formData.days_of_week && formData.days_of_week.length > 0) {
-        await workoutDaysClient.addWorkoutDays(id, formData.days_of_week);
-      }
-      
-      return { id };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
-      toast.success('Workout updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update workout');
     }
   });
 
@@ -269,7 +236,16 @@ export function useAdminWorkouts() {
     return useQuery({
       queryKey: ['workout-days', workoutId],
       queryFn: async () => {
-        return await workoutDaysClient.getWorkoutDays(workoutId);
+        const { data, error } = await supabase
+          .from('workout_days')
+          .select('day_of_week')
+          .eq('workout_id', workoutId);
+        
+        if (error) {
+          throw new Error(`Error fetching workout days: ${error.message}`);
+        }
+        
+        return data.map(d => d.day_of_week);
       },
       enabled: !!workoutId,
     });
@@ -369,50 +345,15 @@ export function useAdminWorkouts() {
       toast.error(error.message || 'Failed to update exercise order');
     }
   });
-
-  // Get a single workout
-  const getWorkout = (id: string) => {
-    return useQuery({
-      queryKey: ['admin-workout', id],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('workouts')
-          .select(`
-            *,
-            category:category_id (
-              id, 
-              name,
-              icon,
-              color
-            )
-          `)
-          .eq('id', id)
-          .single();
-        
-        if (error) {
-          throw new Error(`Error fetching workout: ${error.message}`);
-        }
-
-        // Get workout days
-        const days = await workoutDaysClient.getWorkoutDays(id);
-        
-        return { ...data, days_of_week: days } as AdminWorkout;
-      },
-      enabled: !!id,
-    });
-  };
-
+  
   return {
     workouts: workoutsQuery.data || [],
     isLoading: workoutsQuery.isLoading,
     error: workoutsQuery.error,
     createWorkout: createWorkout.mutate,
     isCreating: createWorkout.isPending,
-    updateWorkout: updateWorkout.mutate,
-    isUpdating: updateWorkout.isPending,
     deleteWorkout: deleteWorkout.mutate,
     isDeleting: deleteWorkout.isPending,
-    getWorkout,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
     users: usersQuery.data || [],

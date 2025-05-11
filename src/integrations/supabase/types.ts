@@ -223,35 +223,6 @@ export type Database = {
         }
         Relationships: []
       }
-      workout_days: {
-        Row: {
-          created_at: string | null
-          day_of_week: string
-          id: string
-          workout_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          day_of_week: string
-          id?: string
-          workout_id: string
-        }
-        Update: {
-          created_at?: string | null
-          day_of_week?: string
-          id?: string
-          workout_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workout_days_workout_id_fkey"
-            columns: ["workout_id"]
-            isOneToOne: false
-            referencedRelation: "workouts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       workout_exercises: {
         Row: {
           created_at: string | null
