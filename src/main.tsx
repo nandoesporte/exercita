@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-// Componente raiz que envolve a aplicação
+// Root component that wraps the application
 const Main = () => {
   // Initialize PWA install prompt
   React.useEffect(() => {
@@ -26,21 +26,21 @@ const Main = () => {
     registerInstallPrompt();
     
     // Log when PWA is installed
-    window.addEventListener('appinstalled', () => {
+    const handleAppInstalled = () => {
       console.log('PWA was installed successfully');
       // Clear the deferred prompt when installed
       window.deferredPromptEvent = null;
-    });
+    };
 
-    // Make sure to clean up event listener on unmount
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Clean up event listener on unmount
     return () => {
-      window.removeEventListener('appinstalled', () => {
-        console.log('Cleaned up appinstalled event listener');
-      });
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
-  // Adiciona listener para status online/offline
+  // Add listener for online/offline status
   const handleOfflineStatus = () => {
     if (!navigator.onLine) {
       toast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
@@ -49,20 +49,20 @@ const Main = () => {
     }
   };
 
-  // Registra os listeners quando o componente é montado
+  // Register listeners when component mounts
   React.useEffect(() => {
     const onlineCallback = () => handleOfflineStatus();
     const offlineCallback = () => handleOfflineStatus();
     
     registerConnectivityListeners(onlineCallback, offlineCallback);
 
-    // Verifica o status inicial
+    // Check initial status
     if (!navigator.onLine) {
       toast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
     }
 
     return () => {
-      // Os listeners são removidos corretamente
+      // Listeners are properly removed
       window.removeEventListener('online', onlineCallback);
       window.removeEventListener('offline', offlineCallback);
     };

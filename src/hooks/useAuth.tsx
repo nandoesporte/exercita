@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -34,10 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state change detected", { event, user: currentSession?.user?.email });
+        
+        // First update session and user state synchronously
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Defer checking admin status to avoid deadlocks
+        // Then defer checking admin status to avoid deadlocks
         if (currentSession?.user) {
           console.log("Auth state change detected, checking admin status");
           setTimeout(() => {

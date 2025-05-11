@@ -33,6 +33,8 @@ export function useProfile() {
       return data as Profile;
     },
     enabled: !!user,
+    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
+    gcTime: 15 * 60 * 1000, // Keep cache for 15 minutes
   });
   
   const updateProfile = useMutation({
@@ -62,7 +64,13 @@ export function useProfile() {
       
       return data[0] as Profile;
     },
-    onSuccess: () => {
+    onSuccess: (updatedProfile) => {
+      if (updatedProfile) {
+        // Update cache immediately with the new data
+        queryClient.setQueryData(['profile', user?.id], updatedProfile);
+      }
+      
+      // Then invalidate to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast.success('Perfil atualizado com sucesso');
     },
@@ -72,16 +80,16 @@ export function useProfile() {
     }
   });
   
-  // Função para upload de imagem de perfil
+  // Function for profile image upload
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
       if (!user) throw new Error('Usuário precisa estar logado');
       
-      // Gera um caminho único de arquivo com ID do usuário como prefixo
+      // Generate unique file path with user ID as prefix
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
       
-      // Upload do arquivo para o armazenamento
+      // Upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
@@ -94,14 +102,14 @@ export function useProfile() {
         throw new Error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
       }
       
-      // Obtém a URL pública para o arquivo carregado
+      // Get public URL for the uploaded file
       const { data: urlData } = supabase.storage
         .from('profile_images')
         .getPublicUrl(filePath);
       
       const avatarUrl = urlData.publicUrl;
       
-      // Atualiza o perfil com a nova URL do avatar
+      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
@@ -114,7 +122,15 @@ export function useProfile() {
       
       return avatarUrl;
     },
-    onSuccess: () => {
+    onSuccess: (avatarUrl) => {
+      // Update the profile in cache with the new avatar URL
+      queryClient.setQueryData(['profile', user?.id], (oldData: any) => {
+        if (oldData) {
+          return { ...oldData, avatar_url: avatarUrl };
+        }
+        return oldData;
+      });
+      
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast.success('Foto de perfil atualizada com sucesso');
     },
