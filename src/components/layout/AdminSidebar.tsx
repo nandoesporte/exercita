@@ -24,6 +24,7 @@ const AdminSidebar = () => {
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
+    console.log("Logout button clicked in AdminSidebar");
     await signOut();
   };
 

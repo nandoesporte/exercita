@@ -187,12 +187,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      setIsAdmin(false); // Clear admin status on logout
+      console.log("Attempting to sign out user");
+      // Clear local auth state first
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Error during sign out:", error);
+        throw error;
+      }
+      
+      console.log("Sign out successful, redirecting to login page");
       navigate('/login');
-      toast.success('Logged out successfully');
+      toast.success('Logout realizado com sucesso');
     } catch (error: any) {
-      toast.error(error.message || 'Error logging out');
+      console.error("Sign out error:", error);
+      toast.error(error.message || 'Erro ao fazer logout');
     }
   };
 
