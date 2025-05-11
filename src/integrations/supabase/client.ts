@@ -9,7 +9,44 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(
+// Create a custom type that extends the Database type to include workout_days
+type CustomDatabase = Database & {
+  public: {
+    Tables: {
+      workout_days: {
+        Row: {
+          id: string;
+          workout_id: string;
+          day_of_week: string;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          workout_id: string;
+          day_of_week: string;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          workout_id?: string;
+          day_of_week?: string;
+          created_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workout_days_workout_id_fkey";
+            columns: ["workout_id"];
+            isOneToOne: false;
+            referencedRelation: "workouts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+    } & Database['public']['Tables'];
+  };
+};
+
+export const supabase = createClient<CustomDatabase>(
   SUPABASE_URL, 
   SUPABASE_PUBLISHABLE_KEY, 
   {

@@ -6,7 +6,6 @@ import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from 'sonner'
-// Fix the import - use sonner's toast
 import { toast } from 'sonner'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
