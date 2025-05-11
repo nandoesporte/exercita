@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
   // Redirect to login if no user
   if (!user) {
     console.log("No user, redirecting to login");
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // For admin routes, check admin status

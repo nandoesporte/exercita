@@ -10,6 +10,7 @@ import { Toaster } from 'sonner'
 import { toast } from 'sonner'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Add type declaration for the global deferredPromptEvent
 declare global {
@@ -17,6 +18,9 @@ declare global {
     deferredPromptEvent: any;
   }
 }
+
+// Create the query client outside the component to avoid re-creation on renders
+const queryClient = new QueryClient();
 
 // Root component that wraps the application
 const Main = () => {
@@ -71,12 +75,14 @@ const Main = () => {
   return (
     <React.StrictMode>
       <BrowserRouter>
-        <TooltipProvider>
-          <AuthProvider>
-            <Toaster position="bottom-center" richColors closeButton />
-            <App />
-          </AuthProvider>
-        </TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthProvider>
+              <Toaster position="bottom-center" richColors closeButton />
+              <App />
+            </AuthProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
       </BrowserRouter>
     </React.StrictMode>
   );
