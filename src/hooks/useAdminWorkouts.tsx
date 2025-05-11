@@ -20,6 +20,10 @@ export type WorkoutFormData = {
   days_of_week?: string[] | null; // Added days_of_week for scheduling workouts
 };
 
+export type UpdateWorkoutData = WorkoutFormData & {
+  id: string;
+};
+
 export type WorkoutExercise = {
   exercise_id: string;
   sets: number;
@@ -134,6 +138,70 @@ export function useAdminWorkouts() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create workout');
+    }
+  });
+
+  const updateWorkout = useMutation({
+    mutationFn: async (data: UpdateWorkoutData) => {
+      const { id, days_of_week, ...workoutData } = data;
+      
+      // First, update the workout
+      const { error: workoutError } = await supabase
+        .from('workouts')
+        .update({
+          title: workoutData.title,
+          description: workoutData.description || null,
+          duration: workoutData.duration,
+          level: workoutData.level,
+          category_id: workoutData.category_id || null,
+          image_url: workoutData.image_url || null,
+          calories: workoutData.calories || null,
+        })
+        .eq('id', id);
+      
+      if (workoutError) {
+        throw new Error(`Error updating workout: ${workoutError.message}`);
+      }
+
+      // If days_of_week are provided, update the workout days
+      if (days_of_week !== undefined) {
+        // First delete existing workout days
+        const { error: deleteError } = await supabase
+          .from('workout_days')
+          .delete()
+          .eq('workout_id', id);
+        
+        if (deleteError) {
+          throw new Error(`Error removing existing workout days: ${deleteError.message}`);
+        }
+
+        // If there are days to add, insert them
+        if (days_of_week && days_of_week.length > 0) {
+          const workoutDaysEntries = days_of_week.map(day => ({
+            workout_id: id,
+            day_of_week: day
+          }));
+
+          const { error: daysError } = await supabase
+            .from('workout_days')
+            .insert(workoutDaysEntries);
+          
+          if (daysError) {
+            throw new Error(`Error assigning days to workout: ${daysError.message}`);
+          }
+        }
+      }
+      
+      return { id };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
+      queryClient.invalidateQueries({ queryKey: ['workout-days'] });
+      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      toast.success('Workout updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update workout');
     }
   });
 
@@ -352,6 +420,8 @@ export function useAdminWorkouts() {
     error: workoutsQuery.error,
     createWorkout: createWorkout.mutate,
     isCreating: createWorkout.isPending,
+    updateWorkout: updateWorkout.mutate,
+    isUpdating: updateWorkout.isPending,
     deleteWorkout: deleteWorkout.mutate,
     isDeleting: deleteWorkout.isPending,
     categories: workoutCategoriesQuery.data || [],

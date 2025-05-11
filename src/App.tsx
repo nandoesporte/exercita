@@ -32,6 +32,7 @@ import HelpCenter from "@/pages/HelpCenter";
 import Dashboard from "@/pages/admin/Dashboard";
 import WorkoutManagement from "@/pages/admin/WorkoutManagement";
 import CreateWorkout from "@/pages/admin/CreateWorkout";
+import EditWorkout from "@/pages/admin/EditWorkout";
 import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
 import ExerciseManagement from "@/pages/admin/ExerciseManagement";
 
@@ -78,6 +79,7 @@ const App = () => {
           <Route index element={<Dashboard />} />
           <Route path="workouts" element={<WorkoutManagement />} />
           <Route path="workouts/new" element={<CreateWorkout />} />
+          <Route path="workouts/:id/edit" element={<EditWorkout />} />
           <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
           <Route path="exercises" element={<ExerciseManagement />} />
         </Route>

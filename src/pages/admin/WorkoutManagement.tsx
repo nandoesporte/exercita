@@ -33,8 +33,7 @@ const WorkoutManagement = () => {
   };
 
   const handleEdit = (id: string) => {
-    // For future implementation
-    console.log('Edit workout:', id);
+    navigate(`/admin/workouts/${id}/edit`);
   };
 
   const handleEditExercises = (id: string) => {

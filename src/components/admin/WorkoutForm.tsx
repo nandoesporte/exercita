@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -56,12 +56,21 @@ interface WorkoutFormProps {
   isLoading: boolean;
   categories: Database['public']['Tables']['workout_categories']['Row'][];
   users: Database['public']['Tables']['profiles']['Row'][];
+  defaultValues?: WorkoutFormData;
+  isEditing?: boolean;
 }
 
-const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProps) => {
+const WorkoutForm = ({ 
+  onSubmit, 
+  isLoading, 
+  categories, 
+  users, 
+  defaultValues,
+  isEditing = false
+}: WorkoutFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: defaultValues || {
       title: "",
       description: "",
       duration: 30,
@@ -73,6 +82,17 @@ const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProp
       days_of_week: [],
     },
   });
+
+  // Update form values when defaultValues changes (useful for editing)
+  useEffect(() => {
+    if (defaultValues) {
+      Object.entries(defaultValues).forEach(([key, value]) => {
+        if (key === 'user_id' && !value) return; // Skip user_id if null
+        // @ts-ignore - dynamic form field setting
+        form.setValue(key, value);
+      });
+    }
+  }, [defaultValues, form]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values as WorkoutFormData);
@@ -167,6 +187,7 @@ const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProp
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -193,7 +214,7 @@ const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProp
                 <FormLabel>Category</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
-                  defaultValue={field.value || undefined}
+                  value={field.value || undefined}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -286,45 +307,47 @@ const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProp
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="user_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Assign to User (optional)</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value || undefined}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select user" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                If selected, this workout will be assigned to the user
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!isEditing && (
+          <FormField
+            control={form.control}
+            name="user_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Assign to User (optional)</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={field.value || undefined}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select user" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  If selected, this workout will be assigned to the user
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
+              {isEditing ? 'Saving...' : 'Creating...'}
             </>
           ) : (
-            'Create Workout'
+            isEditing ? 'Save Changes' : 'Create Workout'
           )}
         </Button>
       </form>
