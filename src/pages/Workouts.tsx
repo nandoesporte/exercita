@@ -1,23 +1,39 @@
 
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Calendar } from 'lucide-react';
 import { WorkoutCard } from '@/components/ui/workout-card';
-import { useWorkouts, useWorkoutCategories } from '@/hooks/useWorkouts';
+import { useWorkouts, useWorkoutCategories, useWorkoutsByDay } from '@/hooks/useWorkouts';
 import { Database } from '@/integrations/supabase/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
 };
 
+const weekdays = [
+  { id: 'monday', label: 'Segunda' },
+  { id: 'tuesday', label: 'Terça' },
+  { id: 'wednesday', label: 'Quarta' },
+  { id: 'thursday', label: 'Quinta' },
+  { id: 'friday', label: 'Sexta' },
+  { id: 'saturday', label: 'Sábado' },
+  { id: 'sunday', label: 'Domingo' },
+];
+
 const Workouts = () => {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const isMobile = useIsMobile();
   
-  const { data: workouts, isLoading: isLoadingWorkouts } = useWorkouts();
+  const { data: allWorkouts, isLoading: isLoadingAllWorkouts } = useWorkouts();
+  const { data: dayWorkouts, isLoading: isLoadingDayWorkouts } = useWorkoutsByDay(selectedDay);
   const { data: categories, isLoading: isLoadingCategories } = useWorkoutCategories();
+  
+  const workouts = selectedDay ? dayWorkouts : allWorkouts;
+  const isLoadingWorkouts = selectedDay ? isLoadingDayWorkouts : isLoadingAllWorkouts;
   
   // Combine built-in filters with category filters
   const filterCategories = ['Todos', 'Iniciante', 'Intermediário', 'Avançado', 'Rápido'];
@@ -54,6 +70,22 @@ const Workouts = () => {
   return (
     <div className="container h-full">
       <section className="mobile-section h-full flex flex-col">
+        {/* Weekly Schedule Tabs */}
+        <Tabs defaultValue="all" onValueChange={(val) => setSelectedDay(val === 'all' ? null : val)} className="mb-6">
+          <div className="flex items-center mb-2">
+            <Calendar className="mr-2 h-4 w-4" />
+            <h2 className="font-medium">Programação Semanal</h2>
+          </div>
+          <TabsList className="flex overflow-x-auto w-full">
+            <TabsTrigger value="all" className="flex-shrink-0">Todos</TabsTrigger>
+            {weekdays.map((day) => (
+              <TabsTrigger key={day.id} value={day.id} className="flex-shrink-0">
+                {day.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      
         {/* Search */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />

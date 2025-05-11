@@ -14,7 +14,7 @@ export const supabase = createClient<Database>(
   SUPABASE_PUBLISHABLE_KEY, 
   {
     auth: {
-      storage: localStorage,
+      storage: typeof window !== 'undefined' ? localStorage : undefined,
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
@@ -29,7 +29,9 @@ export const checkAuthSession = async () => {
     const { data, error } = await supabase.auth.getSession();
     console.log('Current session status:', {
       hasSession: !!data.session, 
-      error: error?.message || null
+      error: error?.message || null,
+      sessionExpiresAt: data.session?.expires_at,
+      currentTime: Math.floor(Date.now() / 1000)
     });
     return data.session;
   } catch (err) {

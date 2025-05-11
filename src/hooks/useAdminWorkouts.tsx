@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -6,6 +5,7 @@ import { toast } from 'sonner';
 
 export type AdminWorkout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
+  days_of_week?: string[] | null;
 };
 
 export type WorkoutFormData = {
@@ -16,7 +16,8 @@ export type WorkoutFormData = {
   category_id?: string | null;
   image_url?: string | null;
   calories?: number | null;
-  user_id?: string | null; // Added user_id for assigning workouts
+  user_id?: string | null; 
+  days_of_week?: string[] | null; // Added days_of_week for scheduling workouts
 };
 
 export type WorkoutExercise = {
@@ -50,8 +51,26 @@ export function useAdminWorkouts() {
       if (error) {
         throw new Error(`Error fetching workouts: ${error.message}`);
       }
+
+      // Fetch days of week for each workout
+      const workoutsWithDays = await Promise.all(data.map(async (workout) => {
+        const { data: daysData, error: daysError } = await supabase
+          .from('workout_days')
+          .select('day_of_week')
+          .eq('workout_id', workout.id);
+
+        if (daysError) {
+          console.error(`Error fetching days for workout ${workout.id}:`, daysError);
+          return { ...workout, days_of_week: [] };
+        }
+
+        return {
+          ...workout,
+          days_of_week: daysData.map(d => d.day_of_week)
+        };
+      }));
       
-      return data as AdminWorkout[];
+      return workoutsWithDays as AdminWorkout[];
     },
   });
 
@@ -74,6 +93,22 @@ export function useAdminWorkouts() {
       
       if (workoutError) {
         throw new Error(`Error creating workout: ${workoutError.message}`);
+      }
+
+      // If days_of_week are provided, create entries in workout_days
+      if (formData.days_of_week && formData.days_of_week.length > 0 && workout) {
+        const workoutDaysEntries = formData.days_of_week.map(day => ({
+          workout_id: workout.id,
+          day_of_week: day
+        }));
+
+        const { error: daysError } = await supabase
+          .from('workout_days')
+          .insert(workoutDaysEntries);
+        
+        if (daysError) {
+          throw new Error(`Error assigning days to workout: ${daysError.message}`);
+        }
       }
 
       // If a user_id was provided, create an entry in user_workout_history
@@ -196,6 +231,26 @@ export function useAdminWorkouts() {
     });
   };
 
+  // Get workout days
+  const getWorkoutDays = (workoutId: string) => {
+    return useQuery({
+      queryKey: ['workout-days', workoutId],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('workout_days')
+          .select('day_of_week')
+          .eq('workout_id', workoutId);
+        
+        if (error) {
+          throw new Error(`Error fetching workout days: ${error.message}`);
+        }
+        
+        return data.map(d => d.day_of_week);
+      },
+      enabled: !!workoutId,
+    });
+  };
+
   // Add exercise to workout
   const addExerciseToWorkout = useMutation({
     mutationFn: async ({ 
@@ -306,6 +361,7 @@ export function useAdminWorkouts() {
     exercises: exercisesQuery.data || [],
     areExercisesLoading: exercisesQuery.isLoading,
     getWorkoutExercises,
+    getWorkoutDays,
     addExerciseToWorkout: addExerciseToWorkout.mutate,
     isAddingExercise: addExerciseToWorkout.isPending,
     removeExerciseFromWorkout: removeExerciseFromWorkout.mutate,

@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -37,7 +38,18 @@ const formSchema = z.object({
   image_url: z.string().optional().nullable(),
   calories: z.coerce.number().optional().nullable(),
   user_id: z.string().optional().nullable(),
+  days_of_week: z.array(z.string()).optional(),
 });
+
+const weekdays = [
+  { id: 'monday', label: 'Monday' },
+  { id: 'tuesday', label: 'Tuesday' },
+  { id: 'wednesday', label: 'Wednesday' },
+  { id: 'thursday', label: 'Thursday' },
+  { id: 'friday', label: 'Friday' },
+  { id: 'saturday', label: 'Saturday' },
+  { id: 'sunday', label: 'Sunday' },
+];
 
 interface WorkoutFormProps {
   onSubmit: (data: WorkoutFormData) => void;
@@ -58,6 +70,7 @@ const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProp
       image_url: "",
       calories: null,
       user_id: null,
+      days_of_week: [],
     },
   });
 
@@ -217,6 +230,57 @@ const WorkoutForm = ({ onSubmit, isLoading, categories, users }: WorkoutFormProp
               <FormDescription>
                 Enter a URL for the workout image
               </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="days_of_week"
+          render={() => (
+            <FormItem>
+              <div className="mb-4">
+                <FormLabel className="text-base">Days of the Week</FormLabel>
+                <FormDescription>
+                  Select on which days this workout should be performed
+                </FormDescription>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {weekdays.map((item) => (
+                  <FormField
+                    key={item.id}
+                    control={form.control}
+                    name="days_of_week"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={item.id}
+                          className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(item.id)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...field.value || [], item.id])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== item.id
+                                      )
+                                    )
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {item.label}
+                          </FormLabel>
+                        </FormItem>
+                      )
+                    }}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}
