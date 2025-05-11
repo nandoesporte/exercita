@@ -1,12 +1,11 @@
 
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from 'sonner'
-// Fix the import - use sonner's toast
-import { toast } from 'sonner'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -73,14 +72,16 @@ const Main = () => {
 
   return (
     <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <Toaster position="bottom-center" richColors closeButton />
-            <App />
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+      <Router>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthProvider>
+              <Toaster position="bottom-center" richColors closeButton />
+              <App />
+            </AuthProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </Router>
     </React.StrictMode>
   );
 };

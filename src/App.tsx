@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
 // Public Pages
@@ -17,7 +17,7 @@ import ExerciseManagement from './pages/admin/ExerciseManagement';
 
 function App() {
   return (
-    <Router>
+    <>
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
@@ -39,7 +39,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
-    </Router>
+    </>
   );
 }
 
