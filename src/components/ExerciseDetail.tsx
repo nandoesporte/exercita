@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft, Clock, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Clock, Dumbbell, Scale } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -32,7 +32,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
     return null;
   }
   
-  const { exercise, sets, reps, duration, rest } = workoutExercise;
+  const { exercise, sets, reps, duration, rest, weight } = workoutExercise;
   const isMobile = useIsMobile();
   const { profile } = useProfile();
   
@@ -219,6 +219,17 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <span className="text-sm">Descanso</span>
                   </div>
                   <p className="text-xl font-bold">{rest} seg</p>
+                </div>
+              )}
+              
+              {/* New weight parameter block */}
+              {weight && (
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Scale size={16} />
+                    <span className="text-sm">Carga</span>
+                  </div>
+                  <p className="text-xl font-bold">{weight} kg</p>
                 </div>
               )}
             </div>
