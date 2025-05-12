@@ -15,6 +15,8 @@ import {
 type Exercise = Database['public']['Tables']['exercises']['Row'];
 type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
   exercise: Exercise;
+  is_title_section?: boolean;
+  section_title?: string | null;
 };
 
 interface ExerciseDetailProps {
@@ -23,6 +25,21 @@ interface ExerciseDetailProps {
 }
 
 const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
+  // If this is a title section, we shouldn't be showing this component
+  if (workoutExercise.is_title_section) {
+    return (
+      <div className="container p-6 text-center">
+        <p>Este é um título de seção, não um exercício.</p>
+        <button 
+          onClick={onBack}
+          className="mt-4 px-4 py-2 bg-fitness-orange text-white rounded-md"
+        >
+          Voltar
+        </button>
+      </div>
+    );
+  }
+  
   const { exercise, sets, reps, duration, rest } = workoutExercise;
   const isMobile = useIsMobile();
   const { profile } = useProfile();

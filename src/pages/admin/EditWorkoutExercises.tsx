@@ -56,6 +56,18 @@ const EditWorkoutExercises = () => {
     });
   };
 
+  const handleAddTitle = (titleData: WorkoutExercise) => {
+    if (!id) return;
+    
+    addExerciseToWorkout({
+      workoutId: id,
+      exerciseData: {
+        ...titleData,
+        is_title_section: true
+      }
+    });
+  };
+
   const handleRemoveExercise = (exerciseId: string) => {
     if (!id) return;
     
@@ -144,12 +156,14 @@ const EditWorkoutExercises = () => {
             </div>
             
             <div className="bg-card rounded-lg border border-border p-6">
-              <h2 className="text-xl font-semibold mb-4">Adicionar Exercício</h2>
+              <h2 className="text-xl font-semibold mb-4">Adicionar Exercício ou Título</h2>
               <AddExerciseForm 
                 exercises={exercises}
                 onAddExercise={handleAddExercise}
+                onAddTitle={handleAddTitle}
                 currentExerciseCount={workoutExercises.length}
                 isLoading={isActionLoading}
+                selectedDay={selectedDayOfWeek}
               />
             </div>
           </div>

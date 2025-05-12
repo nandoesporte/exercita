@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -33,6 +34,8 @@ export type WorkoutExercise = {
   weight?: number | null;
   order_position: number;
   day_of_week?: string | null;
+  is_title_section?: boolean;
+  section_title?: string | null;
 }
 
 export function useAdminWorkouts() {
@@ -336,22 +339,43 @@ export function useAdminWorkouts() {
       workoutId: string, 
       exerciseData: WorkoutExercise 
     }) => {
-      const { error } = await supabase
-        .from('workout_exercises')
-        .insert({
-          workout_id: workoutId,
-          exercise_id: exerciseData.exercise_id,
-          sets: exerciseData.sets,
-          reps: exerciseData.reps,
-          duration: exerciseData.duration,
-          rest: exerciseData.rest,
-          weight: exerciseData.weight,
-          order_position: exerciseData.order_position,
-          day_of_week: exerciseData.day_of_week || null,
-        });
-      
-      if (error) {
-        throw new Error(`Error adding exercise to workout: ${error.message}`);
+      // Check if this is a title section
+      if (exerciseData.is_title_section) {
+        const { error } = await supabase
+          .from('workout_exercises')
+          .insert({
+            workout_id: workoutId,
+            exercise_id: exerciseData.exercise_id,
+            order_position: exerciseData.order_position,
+            day_of_week: exerciseData.day_of_week || null,
+            is_title_section: true,
+            section_title: exerciseData.section_title
+          });
+        
+        if (error) {
+          throw new Error(`Error adding title section to workout: ${error.message}`);
+        }
+      } else {
+        // Regular exercise
+        const { error } = await supabase
+          .from('workout_exercises')
+          .insert({
+            workout_id: workoutId,
+            exercise_id: exerciseData.exercise_id,
+            sets: exerciseData.sets,
+            reps: exerciseData.reps,
+            duration: exerciseData.duration,
+            rest: exerciseData.rest,
+            weight: exerciseData.weight,
+            order_position: exerciseData.order_position,
+            day_of_week: exerciseData.day_of_week || null,
+            is_title_section: false,
+            section_title: null
+          });
+        
+        if (error) {
+          throw new Error(`Error adding exercise to workout: ${error.message}`);
+        }
       }
     },
     onSuccess: (_, variables) => {

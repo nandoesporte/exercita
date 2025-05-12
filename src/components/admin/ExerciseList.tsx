@@ -1,138 +1,114 @@
 
 import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, Weight, Calendar } from 'lucide-react';
+import { ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface Exercise {
   id: string;
-  exercise: {
+  order_position: number;
+  is_title_section?: boolean;
+  section_title?: string | null;
+  exercise?: {
     id: string;
     name: string;
-    description?: string | null;
   };
-  sets: number;
+  sets?: number;
   reps?: number | null;
   duration?: number | null;
   rest?: number | null;
-  weight?: number | null;
-  order_position: number;
-  day_of_week?: string | null;
 }
 
 interface ExerciseListProps {
   exercises: Exercise[];
-  onRemove: (id: string) => void;
-  onMoveUp: (id: string, currentPosition: number) => void;
-  onMoveDown: (id: string, currentPosition: number) => void;
-  isLoading: boolean;
+  onRemove: (exerciseId: string) => void;
+  onMoveUp: (exerciseId: string, currentPosition: number) => void;
+  onMoveDown: (exerciseId: string, currentPosition: number) => void;
+  isLoading?: boolean;
 }
-
-// Map day_of_week to Portuguese display names
-const dayTranslations: Record<string, string> = {
-  monday: 'Segunda',
-  tuesday: 'Terça',
-  wednesday: 'Quarta',
-  thursday: 'Quinta',
-  friday: 'Sexta',
-  saturday: 'Sábado',
-  sunday: 'Domingo',
-};
 
 const ExerciseList: React.FC<ExerciseListProps> = ({
   exercises,
   onRemove,
   onMoveUp,
   onMoveDown,
-  isLoading,
+  isLoading = false,
 }) => {
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="py-10 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-2 text-muted-foreground">Carregando exercícios...</p>
       </div>
     );
   }
 
   if (exercises.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Nenhum exercício adicionado ainda. Utilize o formulário para adicionar exercícios.
+      <div className="py-6 text-center border-2 border-dashed border-muted-foreground/20 rounded-lg">
+        <p className="text-muted-foreground">
+          Nenhum exercício adicionado ainda. Use o formulário ao lado para adicionar exercícios ou títulos de seção.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      {exercises.map((exercise, index) => (
+      {exercises.map((item) => (
         <div 
-          key={exercise.id}
-          className="border rounded-lg p-4 bg-background"
+          key={item.id} 
+          className={`p-3 border rounded-lg ${item.is_title_section ? 'bg-muted/50 border-primary/20' : ''}`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
-                {index + 1}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                {item.order_position}
               </div>
-              <h3 className="font-medium">{exercise.exercise.name}</h3>
+              <div>
+                {item.is_title_section ? (
+                  <h3 className="font-bold text-primary">{item.section_title}</h3>
+                ) : (
+                  <>
+                    <h3 className="font-medium">{item.exercise?.name}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {item.sets && `${item.sets} séries`}
+                      {item.reps && ` • ${item.reps} reps`}
+                      {item.duration && ` • ${item.duration} seg`}
+                      {item.rest && ` • ${item.rest} seg descanso`}
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center space-x-1">
               <Button
-                variant="ghost"
                 size="icon"
-                onClick={() => onMoveUp(exercise.id, exercise.order_position)}
-                disabled={index === 0}
+                variant="ghost"
+                onClick={() => onMoveUp(item.id, item.order_position)}
+                disabled={item.order_position === 1}
                 className="h-8 w-8"
               >
-                <ArrowUp className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
                 size="icon"
-                onClick={() => onMoveDown(exercise.id, exercise.order_position)}
-                disabled={index === exercises.length - 1}
+                variant="ghost"
+                onClick={() => onMoveDown(item.id, item.order_position)}
+                disabled={item.order_position === exercises.length}
                 className="h-8 w-8"
               >
-                <ArrowDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
                 size="icon"
-                onClick={() => onRemove(exercise.id)}
-                className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                variant="ghost"
+                onClick={() => onRemove(item.id)}
+                className="h-8 w-8 text-destructive hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">Séries:</span> {exercise.sets}
-            </div>
-            <div>
-              {exercise.reps ? (
-                <><span className="text-muted-foreground">Repetições:</span> {exercise.reps}</>
-              ) : exercise.duration ? (
-                <><span className="text-muted-foreground">Duração:</span> {exercise.duration}s</>
-              ) : null}
-            </div>
-            {exercise.rest && (
-              <div>
-                <span className="text-muted-foreground">Descanso:</span> {exercise.rest}s
-              </div>
-            )}
-            {exercise.weight && (
-              <div className="flex items-center gap-1">
-                <Weight className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">Carga:</span> {exercise.weight} kg
-              </div>
-            )}
-            {exercise.day_of_week && (
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">Dia:</span> {dayTranslations[exercise.day_of_week] || exercise.day_of_week}
-              </div>
-            )}
           </div>
         </div>
       ))}
