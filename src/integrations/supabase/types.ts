@@ -255,6 +255,7 @@ export type Database = {
       workout_exercises: {
         Row: {
           created_at: string | null
+          day_of_week: string | null
           duration: number | null
           exercise_id: string | null
           id: string
@@ -268,6 +269,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          day_of_week?: string | null
           duration?: number | null
           exercise_id?: string | null
           id?: string
@@ -281,6 +283,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          day_of_week?: string | null
           duration?: number | null
           exercise_id?: string | null
           id?: string
