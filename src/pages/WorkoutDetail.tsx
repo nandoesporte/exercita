@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -422,9 +423,10 @@ const WorkoutDetail = () => {
                           {exercisesByDay[activeDay].map((workoutExercise, index) => (
                             <button 
                               key={workoutExercise.id}
-                              onClick={() => handleExerciseClick(workoutExercise.id)}
-                              className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
-                              disabled={workoutExercise.is_title_section}
+                              onClick={() => workoutExercise.is_title_section ? undefined : handleExerciseClick(workoutExercise.id)}
+                              className={`w-full flex items-center p-3 border rounded-lg transition-colors text-left ${
+                                !workoutExercise.is_title_section ? 'hover:bg-muted/50 cursor-pointer' : 'cursor-default'
+                              }`}
                             >
                               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
                                 {workoutExercise.is_title_section ? (
