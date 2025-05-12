@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
@@ -14,7 +15,7 @@ import {
 
 type Exercise = Database['public']['Tables']['exercises']['Row'];
 type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
-  exercise: Exercise;
+  exercise?: Exercise | null;
   is_title_section?: boolean;
   section_title?: string | null;
 };

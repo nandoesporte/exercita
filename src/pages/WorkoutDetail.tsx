@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ExerciseDetail from '@/components/ExerciseDetail';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Database } from '@/integrations/supabase/types';
 
 // Days mapping in Portuguese
 const weekdaysMapping: Record<string, string> = {
@@ -36,6 +37,15 @@ const shortDayNames: Record<string, string> = {
   "friday": "Sex",
   "saturday": "Sáb",
   "sunday": "Dom"
+};
+
+// Define WorkoutExercise type to match the data structure from the database
+type Exercise = Database['public']['Tables']['exercises']['Row'];
+type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
+  exercise?: Exercise | null;
+  day_of_week?: string | null;
+  is_title_section?: boolean;
+  section_title?: string | null;
 };
 
 const WorkoutDetail = () => {
@@ -64,12 +74,12 @@ const WorkoutDetail = () => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
 
-  // Organize workout exercises by day - Fixed: moved outside of conditional rendering
+  // Organize workout exercises by day
   const exercisesByDay = useMemo(() => {
     if (!workout || !workout.workout_exercises) return {};
     
     // Initialize with all days that have exercises
-    const result: Record<string, typeof workout.workout_exercises> = {};
+    const result: Record<string, WorkoutExercise[]> = {};
     
     // Group exercises by their day_of_week
     workout.workout_exercises.forEach(exercise => {
@@ -113,7 +123,6 @@ const WorkoutDetail = () => {
   }, [workout]);
 
   // Set the first available day as active when workout loads
-  // Fixed: Use useEffect instead of useMemo for this side effect
   useEffect(() => {
     if (workout && !activeDay) {
       // First try to use a day with exercises
@@ -247,7 +256,7 @@ const WorkoutDetail = () => {
     if (workoutExercise && !workoutExercise.is_title_section && workoutExercise.exercise) {
       return (
         <ExerciseDetail 
-          workoutExercise={workoutExercise}
+          workoutExercise={workoutExercise as WorkoutExercise}
           onBack={handleBackToExercises}
         />
       );
