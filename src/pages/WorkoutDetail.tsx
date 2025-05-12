@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -331,7 +330,7 @@ const WorkoutDetail = () => {
               
               {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <>
-                  {/* Day cards */}
+                  {/* Day cards - Updated with white typography */}
                   <div className="flex overflow-x-auto gap-2 pb-3 mb-4 hide-scrollbar">
                     {daysToDisplay.map((day) => (
                       <Card
@@ -339,7 +338,7 @@ const WorkoutDetail = () => {
                         className={`px-4 py-2 cursor-pointer transition-colors flex-shrink-0 min-w-[80px] flex flex-col items-center justify-center ${
                           activeDay === day 
                             ? 'bg-fitness-orange text-white' 
-                            : 'bg-fitness-darkGray/30 hover:bg-fitness-darkGray/50'
+                            : 'bg-fitness-darkGray/30 text-white hover:bg-fitness-darkGray/50'
                         }`}
                         onClick={() => setActiveDay(day)}
                       >
