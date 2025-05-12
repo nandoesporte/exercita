@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar
@@ -64,7 +65,7 @@ const WorkoutDetail = () => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
 
-  // Organize workout exercises by day
+  // Organize workout exercises by day - Fixed: moved outside of conditional rendering
   const exercisesByDay = useMemo(() => {
     if (!workout || !workout.workout_exercises) return {};
     
@@ -113,7 +114,8 @@ const WorkoutDetail = () => {
   }, [workout]);
 
   // Set the first available day as active when workout loads
-  useMemo(() => {
+  // Fixed: Use useEffect instead of useMemo for this side effect
+  useEffect(() => {
     if (workout && !activeDay) {
       // First try to use a day with exercises
       const daysWithExercises = Object.keys(exercisesByDay).filter(day => 
@@ -135,6 +137,29 @@ const WorkoutDetail = () => {
       }
     }
   }, [workout, activeDay, exercisesByDay]);
+
+  // Get days for display - moved outside conditional rendering
+  const daysToDisplay = useMemo(() => {
+    if (!workout) return ['all_days'];
+    
+    // Get days that have exercises
+    const daysWithExercises = Object.keys(exercisesByDay).filter(day => 
+      day !== 'all_days' && exercisesByDay[day].length > 0
+    );
+    
+    // If we have days with exercises, use those
+    if (daysWithExercises.length > 0) {
+      return daysWithExercises;
+    }
+    
+    // Otherwise, use days defined for the workout
+    if (workout.days_of_week && workout.days_of_week.length > 0) {
+      return workout.days_of_week;
+    }
+    
+    // Fallback to 'all_days'
+    return ['all_days'];
+  }, [workout, exercisesByDay]);
 
   if (isLoading) {
     return (
@@ -228,29 +253,6 @@ const WorkoutDetail = () => {
       );
     }
   }
-
-  // Get days for display
-  const daysToDisplay = useMemo(() => {
-    if (!workout) return ['all_days'];
-    
-    // Get days that have exercises
-    const daysWithExercises = Object.keys(exercisesByDay).filter(day => 
-      day !== 'all_days' && exercisesByDay[day].length > 0
-    );
-    
-    // If we have days with exercises, use those
-    if (daysWithExercises.length > 0) {
-      return daysWithExercises;
-    }
-    
-    // Otherwise, use days defined for the workout
-    if (workout.days_of_week && workout.days_of_week.length > 0) {
-      return workout.days_of_week;
-    }
-    
-    // Fallback to 'all_days'
-    return ['all_days'];
-  }, [workout, exercisesByDay]);
 
   return (
     <>
