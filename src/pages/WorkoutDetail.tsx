@@ -68,41 +68,73 @@ const WorkoutDetail = () => {
   const exercisesByDay = useMemo(() => {
     if (!workout || !workout.workout_exercises) return {};
     
-    // Create default object with all days that have exercises
-    const days = workout.days_of_week || [];
+    // Initialize with all days that have exercises
     const result: Record<string, typeof workout.workout_exercises> = {};
     
-    // Initialize each day with an empty array
-    days.forEach(day => {
-      result[day] = [];
+    // Group exercises by their day_of_week
+    workout.workout_exercises.forEach(exercise => {
+      const day = exercise.day_of_week || 'all_days';
+      if (!result[day]) {
+        result[day] = [];
+      }
+      result[day].push(exercise);
     });
     
-    // If no specific days are assigned, put all exercises under "all_days"
-    if (days.length === 0) {
-      result["all_days"] = workout.workout_exercises.sort((a, b) => a.order_position - b.order_position);
-      return result;
+    // Sort exercises by order_position within each day
+    Object.keys(result).forEach(day => {
+      result[day].sort((a, b) => a.order_position - b.order_position);
+    });
+    
+    // If we have days_of_week from the workout but no exercises for some days,
+    // initialize those days with empty arrays
+    if (workout.days_of_week) {
+      workout.days_of_week.forEach(day => {
+        if (!result[day]) {
+          result[day] = [];
+        }
+      });
     }
     
-    // Distribute exercises evenly among the days
-    workout.workout_exercises
-      .sort((a, b) => a.order_position - b.order_position)
-      .forEach((exercise, index) => {
-        const dayIndex = index % days.length;
-        const day = days[dayIndex];
-        result[day].push(exercise);
-      });
+    // If there are no day-specific exercises but there are workout days,
+    // add all exercises to the first day as fallback
+    if (workout.days_of_week?.length > 0 && 
+        Object.keys(result).length === 0 && 
+        workout.workout_exercises.length > 0) {
+      result[workout.days_of_week[0]] = [...workout.workout_exercises];
+    }
+
+    // If there are no day-specific exercises and no workout days, 
+    // put all exercises under "all_days"
+    if (Object.keys(result).length === 0 && workout.workout_exercises.length > 0) {
+      result["all_days"] = [...workout.workout_exercises];
+    }
     
     return result;
   }, [workout]);
 
   // Set the first available day as active when workout loads
   useMemo(() => {
-    if (workout && workout.days_of_week && workout.days_of_week.length > 0 && !activeDay) {
-      setActiveDay(workout.days_of_week[0]);
-    } else if (workout && (!workout.days_of_week || workout.days_of_week.length === 0) && !activeDay) {
-      setActiveDay('all_days');
+    if (workout && !activeDay) {
+      // First try to use a day with exercises
+      const daysWithExercises = Object.keys(exercisesByDay).filter(day => 
+        exercisesByDay[day].length > 0
+      );
+      
+      if (daysWithExercises.length > 0) {
+        // Prioritize a real day over 'all_days'
+        const realDays = daysWithExercises.filter(day => day !== 'all_days');
+        setActiveDay(realDays.length > 0 ? realDays[0] : daysWithExercises[0]);
+      } 
+      // If no days with exercises, use the first day from workout.days_of_week
+      else if (workout.days_of_week && workout.days_of_week.length > 0) {
+        setActiveDay(workout.days_of_week[0]);
+      }
+      // Fallback to 'all_days'
+      else {
+        setActiveDay('all_days');
+      }
     }
-  }, [workout, activeDay]);
+  }, [workout, activeDay, exercisesByDay]);
 
   if (isLoading) {
     return (
@@ -198,9 +230,27 @@ const WorkoutDetail = () => {
   }
 
   // Get days for display
-  const daysToDisplay = workout.days_of_week && workout.days_of_week.length > 0 
-    ? workout.days_of_week 
-    : ['all_days'];
+  const daysToDisplay = useMemo(() => {
+    if (!workout) return ['all_days'];
+    
+    // Get days that have exercises
+    const daysWithExercises = Object.keys(exercisesByDay).filter(day => 
+      day !== 'all_days' && exercisesByDay[day].length > 0
+    );
+    
+    // If we have days with exercises, use those
+    if (daysWithExercises.length > 0) {
+      return daysWithExercises;
+    }
+    
+    // Otherwise, use days defined for the workout
+    if (workout.days_of_week && workout.days_of_week.length > 0) {
+      return workout.days_of_week;
+    }
+    
+    // Fallback to 'all_days'
+    return ['all_days'];
+  }, [workout, exercisesByDay]);
 
   return (
     <>
@@ -331,23 +381,25 @@ const WorkoutDetail = () => {
               {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <>
                   {/* Day cards - Updated with white typography */}
-                  <div className="flex overflow-x-auto gap-2 pb-3 mb-4 hide-scrollbar">
-                    {daysToDisplay.map((day) => (
-                      <Card
-                        key={day}
-                        className={`px-4 py-2 cursor-pointer transition-colors flex-shrink-0 min-w-[80px] flex flex-col items-center justify-center ${
-                          activeDay === day 
-                            ? 'bg-fitness-orange text-white' 
-                            : 'bg-fitness-darkGray/30 text-white hover:bg-fitness-darkGray/50'
-                        }`}
-                        onClick={() => setActiveDay(day)}
-                      >
-                        <span className="text-sm font-medium">
-                          {day === "all_days" ? "Todos" : shortDayNames[day]}
-                        </span>
-                      </Card>
-                    ))}
-                  </div>
+                  {daysToDisplay.length > 1 && (
+                    <div className="flex overflow-x-auto gap-2 pb-3 mb-4 hide-scrollbar">
+                      {daysToDisplay.map((day) => (
+                        <Card
+                          key={day}
+                          className={`px-4 py-2 cursor-pointer transition-colors flex-shrink-0 min-w-[80px] flex flex-col items-center justify-center ${
+                            activeDay === day 
+                              ? 'bg-fitness-orange text-white' 
+                              : 'bg-fitness-darkGray/30 text-white hover:bg-fitness-darkGray/50'
+                          }`}
+                          onClick={() => setActiveDay(day)}
+                        >
+                          <span className="text-sm font-medium">
+                            {day === "all_days" ? "Todos" : shortDayNames[day]}
+                          </span>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
 
                   {Object.keys(exercisesByDay).length === 0 ? (
                     <p className="text-muted-foreground">Nenhum exercício foi adicionado a este treino ainda.</p>

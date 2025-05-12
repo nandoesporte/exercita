@@ -7,6 +7,7 @@ type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
   workout_exercises?: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
     exercise: Database['public']['Tables']['exercises']['Row'];
+    day_of_week?: string | null;
   }>;
   days_of_week?: string[];
 };
@@ -92,7 +93,9 @@ export function useWorkout(id: string | undefined) {
             reps,
             duration,
             rest,
+            weight,
             order_position,
+            day_of_week,
             exercise:exercise_id (
               id,
               name,
@@ -125,11 +128,12 @@ export function useWorkout(id: string | undefined) {
       return data as Workout & {
         workout_exercises: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
           exercise: Database['public']['Tables']['exercises']['Row'];
+          day_of_week?: string | null;
         }>;
         days_of_week: string[];
       };
     },
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 
