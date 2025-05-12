@@ -17,7 +17,7 @@ export type WorkoutFormData = {
   image_url?: string | null;
   calories?: number | null;
   user_id?: string | null; 
-  days_of_week?: string[] | null; // Added days_of_week for scheduling workouts
+  days_of_week?: string[] | null;
 };
 
 export type UpdateWorkoutData = WorkoutFormData & {
@@ -303,7 +303,7 @@ export function useAdminWorkouts() {
         
         return data;
       },
-      enabled: !!workoutId,
+      enabled: Boolean(workoutId),
     });
   };
 
@@ -323,7 +323,7 @@ export function useAdminWorkouts() {
         
         return data.map(d => d.day_of_week);
       },
-      enabled: !!workoutId,
+      enabled: Boolean(workoutId),
     });
   };
 
