@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, Weight } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Weight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Exercise {
@@ -16,6 +16,7 @@ interface Exercise {
   rest?: number | null;
   weight?: number | null;
   order_position: number;
+  day_of_week?: string | null;
 }
 
 interface ExerciseListProps {
@@ -25,6 +26,17 @@ interface ExerciseListProps {
   onMoveDown: (id: string, currentPosition: number) => void;
   isLoading: boolean;
 }
+
+// Map day_of_week to Portuguese display names
+const dayTranslations: Record<string, string> = {
+  monday: 'Segunda',
+  tuesday: 'Terça',
+  wednesday: 'Quarta',
+  thursday: 'Quinta',
+  friday: 'Sexta',
+  saturday: 'Sábado',
+  sunday: 'Domingo',
+};
 
 const ExerciseList: React.FC<ExerciseListProps> = ({
   exercises,
@@ -113,6 +125,12 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               <div className="flex items-center gap-1">
                 <Weight className="h-3 w-3 text-muted-foreground" />
                 <span className="text-muted-foreground">Carga:</span> {exercise.weight} kg
+              </div>
+            )}
+            {exercise.day_of_week && (
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">Dia:</span> {dayTranslations[exercise.day_of_week] || exercise.day_of_week}
               </div>
             )}
           </div>

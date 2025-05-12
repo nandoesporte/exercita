@@ -29,6 +29,17 @@ import { cn } from '@/lib/utils';
 
 type Exercise = Database['public']['Tables']['exercises']['Row'];
 
+// Define the days of week options
+const daysOfWeek = [
+  { id: 'monday', label: 'Segunda' },
+  { id: 'tuesday', label: 'Terça' },
+  { id: 'wednesday', label: 'Quarta' },
+  { id: 'thursday', label: 'Quinta' },
+  { id: 'friday', label: 'Sexta' },
+  { id: 'saturday', label: 'Sábado' },
+  { id: 'sunday', label: 'Domingo' },
+];
+
 // Define form schema with Zod
 const formSchema = z.object({
   exercise_id: z.string().min(1, { message: "Selecione um exercício." }),
@@ -37,6 +48,7 @@ const formSchema = z.object({
   duration: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
   rest: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
   weight: z.coerce.number().min(0, { message: "Valor inválido." }).optional().nullable(),
+  day_of_week: z.string().optional(),
 });
 
 interface AddExerciseFormProps {
@@ -61,6 +73,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       duration: null,
       rest: 60,
       weight: null,
+      day_of_week: "monday",
     },
   });
 
@@ -74,7 +87,8 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       duration: values.duration,
       rest: values.rest,
       weight: values.weight,
-      order_position: currentExerciseCount + 1
+      order_position: currentExerciseCount + 1,
+      day_of_week: values.day_of_week
     });
     
     form.reset({
@@ -84,6 +98,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       duration: null,
       rest: 60,
       weight: null,
+      day_of_week: "monday",
     });
   };
 
@@ -116,6 +131,34 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
               </Select>
               <FormDescription>
                 Selecione o exercício a ser adicionado ao treino.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="day_of_week"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Dia da Semana</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || "monday"}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione o dia da semana" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {daysOfWeek.map((day) => (
+                    <SelectItem key={day.id} value={day.id}>
+                      {day.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Selecione o dia da semana em que este exercício aparecerá.
               </FormDescription>
               <FormMessage />
             </FormItem>

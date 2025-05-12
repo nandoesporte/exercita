@@ -1,16 +1,30 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import { useAdminWorkouts, WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { useWorkout } from '@/hooks/useWorkouts';
 import ExerciseList from '@/components/admin/ExerciseList';
 import AddExerciseForm from '@/components/admin/AddExerciseForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Define the days of week options
+const daysOfWeek = [
+  { id: 'all', label: 'Todos os dias' },
+  { id: 'monday', label: 'Segunda' },
+  { id: 'tuesday', label: 'Terça' },
+  { id: 'wednesday', label: 'Quarta' },
+  { id: 'thursday', label: 'Quinta' },
+  { id: 'friday', label: 'Sexta' },
+  { id: 'saturday', label: 'Sábado' },
+  { id: 'sunday', label: 'Domingo' },
+];
 
 const EditWorkoutExercises = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: workout, isLoading: isWorkoutLoading } = useWorkout(id);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<string | null>(null);
   
   const { 
     exercises,
@@ -27,7 +41,7 @@ const EditWorkoutExercises = () => {
   const { 
     data: workoutExercises = [], 
     isLoading: areWorkoutExercisesLoading 
-  } = getWorkoutExercises(id || '');
+  } = getWorkoutExercises(id || '', selectedDayOfWeek);
 
   const handleBackClick = () => {
     navigate('/admin/workouts');
@@ -71,6 +85,10 @@ const EditWorkoutExercises = () => {
     });
   };
 
+  const handleDayChange = (day: string) => {
+    setSelectedDayOfWeek(day === 'all' ? null : day);
+  };
+
   const isLoading = isWorkoutLoading || areExercisesLoading || areWorkoutExercisesLoading;
   const isActionLoading = isAddingExercise || isRemovingExercise || isUpdatingExerciseOrder;
 
@@ -95,28 +113,47 @@ const EditWorkoutExercises = () => {
           <p className="mt-2 text-muted-foreground">Carregando...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-card rounded-lg border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4">Lista de Exercícios</h2>
-            <ExerciseList 
-              exercises={workoutExercises}
-              onRemove={handleRemoveExercise}
-              onMoveUp={handleMoveUp}
-              onMoveDown={handleMoveDown}
-              isLoading={areWorkoutExercisesLoading}
-            />
+        <>
+          {/* Day of Week Filter Tabs */}
+          <div className="mb-6">
+            <div className="flex items-center mb-2">
+              <Calendar className="mr-2 h-4 w-4" />
+              <h2 className="font-medium">Filtrar por dia</h2>
+            </div>
+            <Tabs defaultValue="all" onValueChange={handleDayChange}>
+              <TabsList className="flex overflow-x-auto w-full">
+                {daysOfWeek.map((day) => (
+                  <TabsTrigger key={day.id} value={day.id} className="flex-shrink-0">
+                    {day.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
-          
-          <div className="bg-card rounded-lg border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4">Adicionar Exercício</h2>
-            <AddExerciseForm 
-              exercises={exercises}
-              onAddExercise={handleAddExercise}
-              currentExerciseCount={workoutExercises.length}
-              isLoading={isActionLoading}
-            />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-card rounded-lg border border-border p-6">
+              <h2 className="text-xl font-semibold mb-4">Lista de Exercícios</h2>
+              <ExerciseList 
+                exercises={workoutExercises}
+                onRemove={handleRemoveExercise}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                isLoading={areWorkoutExercisesLoading}
+              />
+            </div>
+            
+            <div className="bg-card rounded-lg border border-border p-6">
+              <h2 className="text-xl font-semibold mb-4">Adicionar Exercício</h2>
+              <AddExerciseForm 
+                exercises={exercises}
+                onAddExercise={handleAddExercise}
+                currentExerciseCount={workoutExercises.length}
+                isLoading={isActionLoading}
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

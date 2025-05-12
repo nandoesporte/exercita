@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -32,6 +33,7 @@ export type WorkoutExercise = {
   rest?: number | null;
   weight?: number | null;
   order_position: number;
+  day_of_week?: string | null;
 }
 
 export function useAdminWorkouts() {
@@ -277,18 +279,24 @@ export function useAdminWorkouts() {
   });
 
   // Get workout exercises
-  const getWorkoutExercises = (workoutId: string) => {
+  const getWorkoutExercises = (workoutId: string, day_of_week?: string | null) => {
     return useQuery({
-      queryKey: ['workout-exercises', workoutId],
+      queryKey: ['workout-exercises', workoutId, day_of_week],
       queryFn: async () => {
-        const { data, error } = await supabase
+        let query = supabase
           .from('workout_exercises')
           .select(`
             *,
             exercise:exercise_id (*)
           `)
-          .eq('workout_id', workoutId)
-          .order('order_position');
+          .eq('workout_id', workoutId);
+        
+        // Filter by day if provided
+        if (day_of_week) {
+          query = query.eq('day_of_week', day_of_week);
+        }
+        
+        const { data, error } = await query.order('order_position');
         
         if (error) {
           throw new Error(`Error fetching workout exercises: ${error.message}`);
@@ -340,6 +348,7 @@ export function useAdminWorkouts() {
           rest: exerciseData.rest,
           weight: exerciseData.weight,
           order_position: exerciseData.order_position,
+          day_of_week: exerciseData.day_of_week || null,
         });
       
       if (error) {
