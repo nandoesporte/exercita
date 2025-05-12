@@ -25,6 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  RadioGroup,
+  RadioGroupItem
+} from "@/components/ui/radio-group";
 import { cn } from '@/lib/utils';
 
 type Exercise = Database['public']['Tables']['exercises']['Row'];
@@ -46,6 +50,7 @@ const formSchema = z.object({
   sets: z.coerce.number().int().min(1, { message: "Mínimo de 1 série." }),
   reps: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
   duration: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
+  duration_unit: z.enum(['seconds', 'minutes']),
   rest: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
   weight: z.coerce.number().min(0, { message: "Valor inválido." }).optional().nullable(),
   day_of_week: z.string().optional(),
@@ -71,6 +76,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       sets: 3,
       reps: 12,
       duration: null,
+      duration_unit: "seconds",
       rest: 60,
       weight: null,
       day_of_week: "monday",
@@ -78,13 +84,20 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   });
 
   const exerciseType = form.watch("exercise_id");
+  const durationType = form.watch("duration_unit");
   
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    // Convert duration to seconds if unit is minutes
+    let durationInSeconds = values.duration;
+    if (values.duration && values.duration_unit === 'minutes') {
+      durationInSeconds = values.duration * 60;
+    }
+    
     onAddExercise({
       exercise_id: values.exercise_id,
       sets: values.sets,
       reps: values.reps,
-      duration: values.duration,
+      duration: durationInSeconds,
       rest: values.rest,
       weight: values.weight,
       order_position: currentExerciseCount + 1,
@@ -96,6 +109,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       sets: 3,
       reps: 12,
       duration: null,
+      duration_unit: "seconds",
       rest: 60,
       weight: null,
       day_of_week: "monday",
@@ -228,31 +242,70 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duração (segundos)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field}
-                    min={0}
-                    value={field.value === null ? "" : field.value}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? null : parseInt(e.target.value);
-                      field.onChange(value);
-                    }}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Use para exercícios baseados em tempo em vez de repetições
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duração</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field}
+                      min={0}
+                      value={field.value === null ? "" : field.value}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : parseInt(e.target.value);
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="duration_unit"
+              render={({ field }) => (
+                <FormItem className="mt-2">
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="seconds" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Segundos
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="minutes" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Minutos
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormDescription className="mt-1">
+                    {durationType === "seconds" 
+                      ? "Duração em segundos para exercícios baseados em tempo"
+                      : "Duração em minutos para exercícios baseados em tempo"}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         <FormField
