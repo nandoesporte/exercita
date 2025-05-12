@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -421,46 +420,46 @@ const WorkoutDetail = () => {
                       {activeDay && exercisesByDay[activeDay]?.length > 0 ? (
                         <div className="space-y-3">
                           {exercisesByDay[activeDay].map((workoutExercise, index) => (
-                            <button 
-                              key={workoutExercise.id}
-                              onClick={() => workoutExercise.is_title_section ? undefined : handleExerciseClick(workoutExercise.id)}
-                              className={`w-full flex items-center p-3 border rounded-lg transition-colors text-left ${
-                                !workoutExercise.is_title_section ? 'hover:bg-muted/50 cursor-pointer' : 'cursor-default'
-                              }`}
-                            >
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
-                                {workoutExercise.is_title_section ? (
-                                  <FileText className="h-4 w-4" />
-                                ) : (
-                                  index + 1
-                                )}
+                            workoutExercise.is_title_section ? (
+                              // Title section with enhanced styling
+                              <div 
+                                key={workoutExercise.id}
+                                className="w-full py-4 px-3 bg-fitness-darkGray/15 border-l-4 border-fitness-orange rounded-lg"
+                              >
+                                <h3 className="text-fitness-orange font-semibold text-lg flex items-center gap-2">
+                                  <FileText className="h-5 w-5" />
+                                  {workoutExercise.section_title || "Seção sem título"}
+                                </h3>
                               </div>
-                              <div className="ml-3 flex-grow">
-                                {workoutExercise.is_title_section ? (
-                                  <h3 className="font-semibold text-fitness-orange">{workoutExercise.section_title}</h3>
-                                ) : (
-                                  <>
-                                    <h3 className="font-medium">
-                                      {workoutExercise.exercise?.name || "Exercício desconhecido"}
-                                    </h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {workoutExercise.sets} séries • 
-                                      {workoutExercise.reps 
-                                        ? ` ${workoutExercise.reps} repetições` 
-                                        : workoutExercise.duration 
-                                          ? ` ${workoutExercise.duration} seg`
-                                          : ''
-                                      }
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                              {!workoutExercise.is_title_section && (
+                            ) : (
+                              // Regular exercise item
+                              <button 
+                                key={workoutExercise.id}
+                                onClick={() => handleExerciseClick(workoutExercise.id)}
+                                className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left cursor-pointer"
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
+                                  {index + 1}
+                                </div>
+                                <div className="ml-3 flex-grow">
+                                  <h3 className="font-medium">
+                                    {workoutExercise.exercise?.name || "Exercício desconhecido"}
+                                  </h3>
+                                  <div className="text-sm text-muted-foreground">
+                                    {workoutExercise.sets} séries • 
+                                    {workoutExercise.reps 
+                                      ? ` ${workoutExercise.reps} repetições` 
+                                      : workoutExercise.duration 
+                                        ? ` ${workoutExercise.duration} seg`
+                                        : ''
+                                    }
+                                  </div>
+                                </div>
                                 <div className="text-fitness-orange">
                                   <Info size={18} />
                                 </div>
-                              )}
-                            </button>
+                              </button>
+                            )
                           ))}
                         </div>
                       ) : (
