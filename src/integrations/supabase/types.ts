@@ -263,6 +263,7 @@ export type Database = {
           rest: number | null
           sets: number | null
           updated_at: string | null
+          weight: number | null
           workout_id: string | null
         }
         Insert: {
@@ -275,6 +276,7 @@ export type Database = {
           rest?: number | null
           sets?: number | null
           updated_at?: string | null
+          weight?: number | null
           workout_id?: string | null
         }
         Update: {
@@ -287,6 +289,7 @@ export type Database = {
           rest?: number | null
           sets?: number | null
           updated_at?: string | null
+          weight?: number | null
           workout_id?: string | null
         }
         Relationships: [
