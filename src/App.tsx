@@ -2,7 +2,6 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Import layouts
 import UserLayout from "@/components/layout/UserLayout";
