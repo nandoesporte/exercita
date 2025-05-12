@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
@@ -6,6 +5,12 @@ import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Exercise = Database['public']['Tables']['exercises']['Row'];
 type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
@@ -31,6 +36,27 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
     
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
+  
+  // Helper function to format duration
+  const formatDuration = (seconds: number | null) => {
+    if (seconds === null) return null;
+    
+    // If duration is a multiple of 60, display in minutes
+    if (seconds % 60 === 0 && seconds >= 60) {
+      return {
+        value: seconds / 60,
+        unit: 'min'
+      };
+    }
+    
+    // Otherwise display in seconds
+    return {
+      value: seconds,
+      unit: 'seg'
+    };
+  };
+  
+  const formattedDuration = formatDuration(duration);
   
   return (
     <>
@@ -156,7 +182,24 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Clock size={16} />
                     <span className="text-sm">Duração</span>
                   </div>
-                  <p className="text-xl font-bold">{duration} seg</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-xl font-bold">
+                          {formattedDuration ? `${formattedDuration.value} ${formattedDuration.unit}` : "0 seg"}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {formattedDuration && formattedDuration.unit === 'min' 
+                            ? `${formattedDuration.value * 60} segundos` 
+                            : formattedDuration 
+                              ? `${formattedDuration.value} segundos`
+                              : "0 segundos"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               )}
               
