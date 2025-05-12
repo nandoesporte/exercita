@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -387,7 +386,7 @@ const WorkoutDetail = () => {
               
               {workout?.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <>
-                  {/* Day cards - Updated with white typography */}
+                  {/* Day cards */}
                   {daysToDisplay?.length > 1 && (
                     <div className="flex overflow-x-auto gap-2 pb-3 mb-4 hide-scrollbar">
                       {daysToDisplay.map((day) => (
