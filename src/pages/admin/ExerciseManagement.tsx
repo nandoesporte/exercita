@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import ExerciseForm from '@/components/admin/ExerciseForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ExerciseManagement = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -103,42 +104,46 @@ const ExerciseManagement = () => {
         isLoading={isLoading}
       />
 
-      {/* Create Exercise Dialog */}
+      {/* Create Exercise Dialog - Updated with ScrollArea */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Create New Exercise</DialogTitle>
           </DialogHeader>
-          <ExerciseForm 
-            onSubmit={(data) => {
-              createExercise(data);
-              setIsCreateDialogOpen(false);
-            }}
-            isLoading={isCreating}
-            categories={categories}
-          />
+          <ScrollArea className="max-h-[70vh] pr-4">
+            <ExerciseForm 
+              onSubmit={(data) => {
+                createExercise(data);
+                setIsCreateDialogOpen(false);
+              }}
+              isLoading={isCreating}
+              categories={categories}
+            />
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Exercise Dialog */}
+      {/* Edit Exercise Dialog - Updated with ScrollArea */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Edit Exercise</DialogTitle>
           </DialogHeader>
           {selectedExercise && (
-            <ExerciseForm 
-              onSubmit={(data) => {
-                updateExercise({
-                  id: selectedExercise.id,
-                  ...data
-                });
-                setIsEditDialogOpen(false);
-              }}
-              isLoading={isUpdating}
-              categories={categories}
-              initialData={selectedExercise}
-            />
+            <ScrollArea className="max-h-[70vh] pr-4">
+              <ExerciseForm 
+                onSubmit={(data) => {
+                  updateExercise({
+                    id: selectedExercise.id,
+                    ...data
+                  });
+                  setIsEditDialogOpen(false);
+                }}
+                isLoading={isUpdating}
+                categories={categories}
+                initialData={selectedExercise}
+              />
+            </ScrollArea>
           )}
         </DialogContent>
       </Dialog>
