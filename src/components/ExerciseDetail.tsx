@@ -15,6 +15,8 @@ import {
 type Exercise = Database['public']['Tables']['exercises']['Row'];
 type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
   exercise: Exercise;
+  is_title_section?: boolean;
+  section_title?: string | null;
 };
 
 interface ExerciseDetailProps {
@@ -23,6 +25,12 @@ interface ExerciseDetailProps {
 }
 
 const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
+  // If this is a title section or has no exercise data, go back
+  if (workoutExercise.is_title_section || !workoutExercise.exercise) {
+    onBack();
+    return null;
+  }
+  
   const { exercise, sets, reps, duration, rest } = workoutExercise;
   const isMobile = useIsMobile();
   const { profile } = useProfile();

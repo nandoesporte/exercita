@@ -84,7 +84,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               {exercise.is_title_section ? (
                 <h3 className="font-semibold text-primary">{exercise.section_title}</h3>
               ) : (
-                <h3 className="font-medium">{exercise.exercise?.name}</h3>
+                <h3 className="font-medium">{exercise.exercise?.name || "Exercício desconhecido"}</h3>
               )}
             </div>
             <div className="flex items-center gap-1">

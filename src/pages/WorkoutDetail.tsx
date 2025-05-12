@@ -1,8 +1,7 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar
+  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar, FileText
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
@@ -243,14 +242,19 @@ const WorkoutDetail = () => {
 
   // If an exercise is selected, show its detail view
   if (selectedExercise) {
-    const workoutExercise = workout.workout_exercises?.find(we => we.id === selectedExercise);
-    if (workoutExercise) {
+    const workoutExercise = workout?.workout_exercises?.find(we => we.id === selectedExercise);
+    // Only show exercise detail if it's a valid exercise (not a title section) and has necessary data
+    if (workoutExercise && !workoutExercise.is_title_section && workoutExercise.exercise) {
       return (
         <ExerciseDetail 
           workoutExercise={workoutExercise}
           onBack={handleBackToExercises}
         />
       );
+    } else {
+      // If it's a title section or has missing data, go back to the list
+      handleBackToExercises();
+      return null; // This will not render, as handleBackToExercises will change state
     }
   }
 
@@ -380,10 +384,10 @@ const WorkoutDetail = () => {
                 <h2 className="text-lg font-semibold text-fitness-orange">Programa de Exercícios</h2>
               </div>
               
-              {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
+              {workout?.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <>
                   {/* Day cards - Updated with white typography */}
-                  {daysToDisplay.length > 1 && (
+                  {daysToDisplay?.length > 1 && (
                     <div className="flex overflow-x-auto gap-2 pb-3 mb-4 hide-scrollbar">
                       {daysToDisplay.map((day) => (
                         <Card
@@ -420,19 +424,40 @@ const WorkoutDetail = () => {
                               key={workoutExercise.id}
                               onClick={() => handleExerciseClick(workoutExercise.id)}
                               className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
+                              disabled={workoutExercise.is_title_section}
                             >
                               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
-                                {index + 1}
+                                {workoutExercise.is_title_section ? (
+                                  <FileText className="h-4 w-4" />
+                                ) : (
+                                  index + 1
+                                )}
                               </div>
                               <div className="ml-3 flex-grow">
-                                <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
-                                <div className="text-sm text-muted-foreground">
-                                  {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
+                                {workoutExercise.is_title_section ? (
+                                  <h3 className="font-semibold text-fitness-orange">{workoutExercise.section_title}</h3>
+                                ) : (
+                                  <>
+                                    <h3 className="font-medium">
+                                      {workoutExercise.exercise?.name || "Exercício desconhecido"}
+                                    </h3>
+                                    <div className="text-sm text-muted-foreground">
+                                      {workoutExercise.sets} séries • 
+                                      {workoutExercise.reps 
+                                        ? ` ${workoutExercise.reps} repetições` 
+                                        : workoutExercise.duration 
+                                          ? ` ${workoutExercise.duration} seg`
+                                          : ''
+                                      }
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                              {!workoutExercise.is_title_section && (
+                                <div className="text-fitness-orange">
+                                  <Info size={18} />
                                 </div>
-                              </div>
-                              <div className="text-fitness-orange">
-                                <Info size={18} />
-                              </div>
+                              )}
                             </button>
                           ))}
                         </div>
