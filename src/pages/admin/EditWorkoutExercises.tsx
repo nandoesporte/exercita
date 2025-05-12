@@ -84,7 +84,7 @@ const EditWorkoutExercises = () => {
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold">
-          Edit Workout Exercises
+          Editar Exercícios do Treino
           {workout && <span className="ml-2 text-muted-foreground">- {workout.title}</span>}
         </h1>
       </div>
@@ -92,12 +92,12 @@ const EditWorkoutExercises = () => {
       {isLoading ? (
         <div className="py-10 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
+          <p className="mt-2 text-muted-foreground">Carregando...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-card rounded-lg border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4">Exercise List</h2>
+            <h2 className="text-xl font-semibold mb-4">Lista de Exercícios</h2>
             <ExerciseList 
               exercises={workoutExercises}
               onRemove={handleRemoveExercise}
@@ -108,7 +108,7 @@ const EditWorkoutExercises = () => {
           </div>
           
           <div className="bg-card rounded-lg border border-border p-6">
-            <h2 className="text-xl font-semibold mb-4">Add Exercise</h2>
+            <h2 className="text-xl font-semibold mb-4">Adicionar Exercício</h2>
             <AddExerciseForm 
               exercises={exercises}
               onAddExercise={handleAddExercise}

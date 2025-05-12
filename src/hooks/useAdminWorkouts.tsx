@@ -30,6 +30,7 @@ export type WorkoutExercise = {
   reps?: number | null;
   duration?: number | null;
   rest?: number | null;
+  weight?: number | null;
   order_position: number;
 }
 
@@ -337,6 +338,7 @@ export function useAdminWorkouts() {
           reps: exerciseData.reps,
           duration: exerciseData.duration,
           rest: exerciseData.rest,
+          weight: exerciseData.weight,
           order_position: exerciseData.order_position,
         });
       
@@ -348,10 +350,10 @@ export function useAdminWorkouts() {
       queryClient.invalidateQueries({ 
         queryKey: ['workout-exercises', variables.workoutId] 
       });
-      toast.success('Exercise added to workout');
+      toast.success('Exercício adicionado ao treino');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add exercise');
+      toast.error(error.message || 'Falha ao adicionar exercício');
     }
   });
 
@@ -377,10 +379,10 @@ export function useAdminWorkouts() {
       queryClient.invalidateQueries({ 
         queryKey: ['workout-exercises', variables.workoutId] 
       });
-      toast.success('Exercise removed from workout');
+      toast.success('Exercício removido do treino');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to remove exercise');
+      toast.error(error.message || 'Falha ao remover exercício');
     }
   });
 
@@ -410,7 +412,7 @@ export function useAdminWorkouts() {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update exercise order');
+      toast.error(error.message || 'Falha ao atualizar posição do exercício');
     }
   });
   

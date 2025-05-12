@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Loader2, Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Loader2 } from 'lucide-react';
+import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { Database } from '@/integrations/supabase/types';
 
 import {
@@ -15,6 +16,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,160 +25,113 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
+import { cn } from '@/lib/utils';
+
+type Exercise = Database['public']['Tables']['exercises']['Row'];
 
 // Define form schema with Zod
 const formSchema = z.object({
-  exercise_id: z.string().min(1, { message: "Please select an exercise." }),
-  sets: z.coerce.number().min(1, { message: "At least 1 set is required." }),
-  reps: z.coerce.number().min(0).nullable().optional(),
-  duration: z.coerce.number().min(0).nullable().optional(),
-  rest: z.coerce.number().min(0).nullable().optional(),
+  exercise_id: z.string().min(1, { message: "Selecione um exercício." }),
+  sets: z.coerce.number().int().min(1, { message: "Mínimo de 1 série." }),
+  reps: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
+  duration: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
+  rest: z.coerce.number().int().min(0, { message: "Valor inválido." }).optional().nullable(),
+  weight: z.coerce.number().min(0, { message: "Valor inválido." }).optional().nullable(),
 });
 
 interface AddExerciseFormProps {
-  exercises: Database['public']['Tables']['exercises']['Row'][];
+  exercises: Exercise[];
   onAddExercise: (data: WorkoutExercise) => void;
   currentExerciseCount: number;
   isLoading: boolean;
 }
 
-const AddExerciseForm = ({ 
-  exercises, 
-  onAddExercise, 
+const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
+  exercises,
+  onAddExercise,
   currentExerciseCount,
-  isLoading 
-}: AddExerciseFormProps) => {
+  isLoading
+}) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       exercise_id: "",
       sets: 3,
-      reps: 10,
+      reps: 12,
       duration: null,
-      rest: 30,
+      rest: 60,
+      weight: null,
     },
   });
 
+  const exerciseType = form.watch("exercise_id");
+  
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    // Convert the form values to a WorkoutExercise object
-    const exerciseData: WorkoutExercise = {
+    onAddExercise({
       exercise_id: values.exercise_id,
       sets: values.sets,
       reps: values.reps,
       duration: values.duration,
       rest: values.rest,
-      order_position: currentExerciseCount + 1,
-    };
+      weight: values.weight,
+      order_position: currentExerciseCount + 1
+    });
     
-    onAddExercise(exerciseData);
-    form.reset();
+    form.reset({
+      exercise_id: "",
+      sets: 3,
+      reps: 12,
+      duration: null,
+      rest: 60,
+      weight: null,
+    });
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="exercise_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Exercise</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select exercise" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="max-h-[200px]">
-                    {exercises.map((exercise) => (
+        <FormField
+          control={form.control}
+          name="exercise_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Exercício</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione um exercício" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {exercises.length === 0 ? (
+                    <SelectItem value="none" disabled>Nenhum exercício disponível</SelectItem>
+                  ) : (
+                    exercises.map((exercise) => (
                       <SelectItem key={exercise.id} value={exercise.id}>
                         {exercise.name}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Selecione o exercício a ser adicionado ao treino.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="sets"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sets</FormLabel>
+                <FormLabel>Séries</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="3" 
-                    {...field}
-                    min={1}
-                  />
+                  <Input type="number" {...field} min={1} />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="reps"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reps (optional)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="10" 
-                    {...field}
-                    value={field.value === null ? '' : field.value}
-                    onChange={(e) => {
-                      const val = e.target.value ? parseInt(e.target.value) : null;
-                      field.onChange(val);
-                    }}
-                    min={0}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Leave empty for timed exercises
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration in seconds (optional)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="30" 
-                    {...field}
-                    value={field.value === null ? '' : field.value}
-                    onChange={(e) => {
-                      const val = e.target.value ? parseInt(e.target.value) : null;
-                      field.onChange(val);
-                    }}
-                    min={0}
-                  />
-                </FormControl>
-                <FormDescription>
-                  For timed exercises
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -186,18 +142,17 @@ const AddExerciseForm = ({
             name="rest"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Rest in seconds (optional)</FormLabel>
+                <FormLabel>Descanso (segundos)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
-                    placeholder="30" 
-                    {...field}
-                    value={field.value === null ? '' : field.value}
-                    onChange={(e) => {
-                      const val = e.target.value ? parseInt(e.target.value) : null;
-                      field.onChange(val);
-                    }}
+                    {...field} 
                     min={0}
+                    value={field.value === null ? "" : field.value}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? null : parseInt(e.target.value);
+                      field.onChange(value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -206,17 +161,99 @@ const AddExerciseForm = ({
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="reps"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Repetições</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    min={0}
+                    value={field.value === null ? "" : field.value}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? null : parseInt(e.target.value);
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Duração (segundos)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...field}
+                    min={0}
+                    value={field.value === null ? "" : field.value}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? null : parseInt(e.target.value);
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Use para exercícios baseados em tempo em vez de repetições
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="weight"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Carga (kg)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  {...field}
+                  min={0}
+                  step={0.5}
+                  value={field.value === null ? "" : field.value}
+                  onChange={(e) => {
+                    const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                    field.onChange(value);
+                  }}
+                />
+              </FormControl>
+              <FormDescription>
+                Informe a carga recomendada para este exercício (em kg)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button 
+          type="submit" 
+          disabled={isLoading} 
+          className={cn(
+            "w-full",
+            isLoading && "opacity-70 cursor-not-allowed"
+          )}
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Adding...
+              Adicionando...
             </>
           ) : (
-            <>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Exercise
-            </>
+            "Adicionar Exercício"
           )}
         </Button>
       </form>
