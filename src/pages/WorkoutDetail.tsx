@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -425,10 +424,16 @@ const WorkoutDetail = () => {
                               key={workoutExercise.id}
                               onClick={() => workoutExercise.is_title_section ? undefined : handleExerciseClick(workoutExercise.id)}
                               className={`w-full flex items-center p-3 border rounded-lg transition-colors text-left ${
-                                !workoutExercise.is_title_section ? 'hover:bg-muted/50 cursor-pointer' : 'cursor-default'
+                                workoutExercise.is_title_section 
+                                  ? 'bg-fitness-darkGray/40 border-fitness-darkGray/30' 
+                                  : 'hover:bg-muted/50 cursor-pointer'
                               }`}
                             >
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
+                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                workoutExercise.is_title_section 
+                                  ? 'bg-fitness-orange/20 text-fitness-orange' 
+                                  : 'bg-fitness-orange/20 text-fitness-orange font-medium'
+                              }`}>
                                 {workoutExercise.is_title_section ? (
                                   <FileText className="h-4 w-4" />
                                 ) : (

@@ -6,8 +6,10 @@ import { Database } from '@/integrations/supabase/types';
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
   workout_exercises?: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
-    exercise: Database['public']['Tables']['exercises']['Row'];
+    exercise?: Database['public']['Tables']['exercises']['Row'] | null;
     day_of_week?: string | null;
+    is_title_section?: boolean;
+    section_title?: string | null;
   }>;
   days_of_week?: string[];
 };
@@ -96,6 +98,8 @@ export function useWorkout(id: string | undefined) {
             weight,
             order_position,
             day_of_week,
+            is_title_section,
+            section_title,
             exercise:exercise_id (
               id,
               name,
@@ -127,8 +131,10 @@ export function useWorkout(id: string | undefined) {
       
       return data as Workout & {
         workout_exercises: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
-          exercise: Database['public']['Tables']['exercises']['Row'];
+          exercise?: Database['public']['Tables']['exercises']['Row'] | null;
           day_of_week?: string | null;
+          is_title_section?: boolean;
+          section_title?: string | null;
         }>;
         days_of_week: string[];
       };
