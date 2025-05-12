@@ -25,14 +25,16 @@ export type UpdateWorkoutData = WorkoutFormData & {
 };
 
 export type WorkoutExercise = {
-  exercise_id: string;
-  sets: number;
+  exercise_id?: string;
+  sets?: number;
   reps?: number | null;
   duration?: number | null;
   rest?: number | null;
   weight?: number | null;
   order_position: number;
   day_of_week?: string | null;
+  is_title_section?: boolean;
+  section_title?: string | null;
 }
 
 export function useAdminWorkouts() {
@@ -348,6 +350,8 @@ export function useAdminWorkouts() {
           weight: exerciseData.weight,
           order_position: exerciseData.order_position,
           day_of_week: exerciseData.day_of_week || null,
+          is_title_section: exerciseData.is_title_section || false,
+          section_title: exerciseData.section_title || null,
         });
       
       if (error) {

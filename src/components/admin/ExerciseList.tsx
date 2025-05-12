@@ -1,22 +1,24 @@
 
 import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, Weight, Calendar } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Weight, Calendar, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Exercise {
   id: string;
-  exercise: {
+  exercise?: {
     id: string;
     name: string;
     description?: string | null;
   };
-  sets: number;
+  sets?: number;
   reps?: number | null;
   duration?: number | null;
   rest?: number | null;
   weight?: number | null;
   order_position: number;
   day_of_week?: string | null;
+  is_title_section?: boolean;
+  section_title?: string | null;
 }
 
 interface ExerciseListProps {
@@ -70,10 +72,20 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
-                {index + 1}
-              </div>
-              <h3 className="font-medium">{exercise.exercise.name}</h3>
+              {exercise.is_title_section ? (
+                <div className="bg-primary/20 text-primary flex items-center justify-center">
+                  <FileText className="h-4 w-4" />
+                </div>
+              ) : (
+                <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                  {index + 1}
+                </div>
+              )}
+              {exercise.is_title_section ? (
+                <h3 className="font-semibold text-primary">{exercise.section_title}</h3>
+              ) : (
+                <h3 className="font-medium">{exercise.exercise?.name}</h3>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <Button
@@ -105,35 +117,37 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">Séries:</span> {exercise.sets}
-            </div>
-            <div>
-              {exercise.reps ? (
-                <><span className="text-muted-foreground">Repetições:</span> {exercise.reps}</>
-              ) : exercise.duration ? (
-                <><span className="text-muted-foreground">Duração:</span> {exercise.duration}s</>
-              ) : null}
-            </div>
-            {exercise.rest && (
+          {!exercise.is_title_section && (
+            <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="text-muted-foreground">Descanso:</span> {exercise.rest}s
+                <span className="text-muted-foreground">Séries:</span> {exercise.sets}
               </div>
-            )}
-            {exercise.weight && (
-              <div className="flex items-center gap-1">
-                <Weight className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">Carga:</span> {exercise.weight} kg
+              <div>
+                {exercise.reps ? (
+                  <><span className="text-muted-foreground">Repetições:</span> {exercise.reps}</>
+                ) : exercise.duration ? (
+                  <><span className="text-muted-foreground">Duração:</span> {exercise.duration}s</>
+                ) : null}
               </div>
-            )}
-            {exercise.day_of_week && (
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">Dia:</span> {dayTranslations[exercise.day_of_week] || exercise.day_of_week}
-              </div>
-            )}
-          </div>
+              {exercise.rest && (
+                <div>
+                  <span className="text-muted-foreground">Descanso:</span> {exercise.rest}s
+                </div>
+              )}
+              {exercise.weight && (
+                <div className="flex items-center gap-1">
+                  <Weight className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-muted-foreground">Carga:</span> {exercise.weight} kg
+                </div>
+              )}
+              {exercise.day_of_week && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-muted-foreground">Dia:</span> {dayTranslations[exercise.day_of_week] || exercise.day_of_week}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>
