@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ExerciseDetail from '@/components/ExerciseDetail';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 // Days mapping in Portuguese
 const weekdaysMapping: Record<string, string> = {
@@ -27,12 +28,24 @@ const weekdaysMapping: Record<string, string> = {
   "sunday": "Domingo"
 };
 
+// Short day names for cards
+const shortDayNames: Record<string, string> = {
+  "monday": "Seg",
+  "tuesday": "Ter",
+  "wednesday": "Qua",
+  "thursday": "Qui",
+  "friday": "Sex",
+  "saturday": "Sáb",
+  "sunday": "Dom"
+};
+
 const WorkoutDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('exercises');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeDay, setActiveDay] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const { profile } = useProfile();
   
@@ -82,6 +95,15 @@ const WorkoutDetail = () => {
     
     return result;
   }, [workout]);
+
+  // Set the first available day as active when workout loads
+  useMemo(() => {
+    if (workout && workout.days_of_week && workout.days_of_week.length > 0 && !activeDay) {
+      setActiveDay(workout.days_of_week[0]);
+    } else if (workout && (!workout.days_of_week || workout.days_of_week.length === 0) && !activeDay) {
+      setActiveDay('all_days');
+    }
+  }, [workout, activeDay]);
 
   if (isLoading) {
     return (
@@ -175,6 +197,11 @@ const WorkoutDetail = () => {
       );
     }
   }
+
+  // Get days for display
+  const daysToDisplay = workout.days_of_week && workout.days_of_week.length > 0 
+    ? workout.days_of_week 
+    : ['all_days'];
 
   return (
     <>
@@ -304,44 +331,63 @@ const WorkoutDetail = () => {
               
               {workout.workout_exercises && workout.workout_exercises.length > 0 ? (
                 <>
-                {Object.keys(exercisesByDay).length === 0 ? (
-                  <p className="text-muted-foreground">Nenhum exercício foi adicionado a este treino ainda.</p>
-                ) : Object.keys(exercisesByDay).map((day) => (
-                  <div key={day} className="mb-6">
-                    <h3 className="font-medium text-lg mb-3 border-b border-fitness-darkGray/20 pb-2">
-                      {day === "all_days" ? 
-                        "Todos os Dias" : 
-                        weekdaysMapping[day] || day
-                      }
-                    </h3>
-                    {exercisesByDay[day].length > 0 ? (
-                      <div className="space-y-3">
-                        {exercisesByDay[day].map((workoutExercise, index) => (
-                          <button 
-                            key={workoutExercise.id}
-                            onClick={() => handleExerciseClick(workoutExercise.id)}
-                            className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
-                          >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
-                              {index + 1}
-                            </div>
-                            <div className="ml-3 flex-grow">
-                              <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
-                              <div className="text-sm text-muted-foreground">
-                                {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
-                              </div>
-                            </div>
-                            <div className="text-fitness-orange">
-                              <Info size={18} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-sm">Nenhum exercício programado para este dia.</p>
-                    )}
+                  {/* Day cards */}
+                  <div className="flex overflow-x-auto gap-2 pb-3 mb-4 hide-scrollbar">
+                    {daysToDisplay.map((day) => (
+                      <Card
+                        key={day}
+                        className={`px-4 py-2 cursor-pointer transition-colors flex-shrink-0 min-w-[80px] flex flex-col items-center justify-center ${
+                          activeDay === day 
+                            ? 'bg-fitness-orange text-white' 
+                            : 'bg-fitness-darkGray/30 hover:bg-fitness-darkGray/50'
+                        }`}
+                        onClick={() => setActiveDay(day)}
+                      >
+                        <span className="text-sm font-medium">
+                          {day === "all_days" ? "Todos" : shortDayNames[day]}
+                        </span>
+                      </Card>
+                    ))}
                   </div>
-                ))}
+
+                  {Object.keys(exercisesByDay).length === 0 ? (
+                    <p className="text-muted-foreground">Nenhum exercício foi adicionado a este treino ainda.</p>
+                  ) : (
+                    <div className="mb-6">
+                      <h3 className="font-medium text-lg mb-3 border-b border-fitness-darkGray/20 pb-2">
+                        {activeDay === "all_days" ? 
+                          "Todos os Dias" : 
+                          weekdaysMapping[activeDay || ""] || activeDay
+                        }
+                      </h3>
+                      {activeDay && exercisesByDay[activeDay]?.length > 0 ? (
+                        <div className="space-y-3">
+                          {exercisesByDay[activeDay].map((workoutExercise, index) => (
+                            <button 
+                              key={workoutExercise.id}
+                              onClick={() => handleExerciseClick(workoutExercise.id)}
+                              className="w-full flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors text-left"
+                            >
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 flex items-center justify-center text-fitness-orange font-medium">
+                                {index + 1}
+                              </div>
+                              <div className="ml-3 flex-grow">
+                                <h3 className="font-medium">{workoutExercise.exercise.name}</h3>
+                                <div className="text-sm text-muted-foreground">
+                                  {workoutExercise.sets} séries • {workoutExercise.reps ? `${workoutExercise.reps} repetições` : `${workoutExercise.duration} seg`}
+                                </div>
+                              </div>
+                              <div className="text-fitness-orange">
+                                <Info size={18} />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">Nenhum exercício programado para este dia.</p>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <p className="text-muted-foreground">Nenhum exercício foi adicionado a este treino ainda.</p>

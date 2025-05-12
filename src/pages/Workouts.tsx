@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
+  days_of_week?: string[];
 };
 
 const weekdays = [
@@ -138,6 +139,7 @@ const Workouts = () => {
                          workout.level === 'intermediate' ? 'Intermediário' : 
                          workout.level === 'advanced' ? 'Avançado' : workout.level}
                   calories={workout.calories || 0}
+                  daysOfWeek={workout.days_of_week}
                 />
               ))}
             </div>
