@@ -259,11 +259,9 @@ export type Database = {
           duration: number | null
           exercise_id: string | null
           id: string
-          is_title_section: boolean | null
           order_position: number
           reps: number | null
           rest: number | null
-          section_title: string | null
           sets: number | null
           updated_at: string | null
           weight: number | null
@@ -275,11 +273,9 @@ export type Database = {
           duration?: number | null
           exercise_id?: string | null
           id?: string
-          is_title_section?: boolean | null
           order_position: number
           reps?: number | null
           rest?: number | null
-          section_title?: string | null
           sets?: number | null
           updated_at?: string | null
           weight?: number | null
@@ -291,11 +287,9 @@ export type Database = {
           duration?: number | null
           exercise_id?: string | null
           id?: string
-          is_title_section?: boolean | null
           order_position?: number
           reps?: number | null
           rest?: number | null
-          section_title?: string | null
           sets?: number | null
           updated_at?: string | null
           weight?: number | null
