@@ -14,6 +14,11 @@ const MobileNavbar = () => {
     { icon: User, path: '/profile', label: 'Perfil' },
   ];
 
+  // Don't show mobile navbar in admin routes
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-fitness-dark/95 backdrop-blur-md border-t border-fitness-darkGray/50 z-50 px-2 py-1 md:hidden animate-slide-up">
       <div className="flex items-center justify-between max-w-md mx-auto">
