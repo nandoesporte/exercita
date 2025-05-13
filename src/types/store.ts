@@ -2,15 +2,15 @@
 export interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  image_url: string;
-  sale_url?: string;        // Make optional with ?
+  image_url: string | null;
+  sale_url?: string;        // Optional field
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  category_id?: string;     // Make optional with ?
-  categories?: {            // Make optional with ?
+  created_at: string | null;
+  updated_at: string | null;
+  category_id?: string | null;     // Optional field
+  categories?: {            // Optional field
     name: string;
   } | null;                 // Allow null for when relation fails
 }
@@ -18,7 +18,7 @@ export interface Product {
 export interface ProductCategory {
   id: string;
   name: string;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface ProductFormData {
