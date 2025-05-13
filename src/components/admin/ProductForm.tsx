@@ -25,13 +25,13 @@ import { ProductFormData } from "@/types/store";
 import { ProductCategory } from "@/types/store";
 
 const formSchema = z.object({
-  title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
+  name: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
   price: z.coerce.number().positive("O preço deve ser positivo"),
   image_url: z.string().url("Deve ser uma URL válida").or(z.literal("")),
   sale_url: z.string().url("Deve ser uma URL válida para direcionamento do cliente"),
   category_id: z.string().nullable(),
-  is_featured: z.boolean().default(false),
+  is_active: z.boolean().default(false),
 });
 
 interface ProductFormProps {
@@ -52,13 +52,13 @@ const ProductForm = ({
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultValues || {
-      title: "",
+      name: "",
       description: "",
       price: 0,
       image_url: "",
       sale_url: "",
       category_id: null,
-      is_featured: false,
+      is_active: false,
     },
   });
 
@@ -70,13 +70,13 @@ const ProductForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Título */}
+          {/* Nome do Produto */}
           <FormField
             control={form.control}
-            name="title"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Título do Produto</FormLabel>
+                <FormLabel>Nome do Produto</FormLabel>
                 <FormControl>
                   <Input placeholder="Nome do produto" {...field} />
                 </FormControl>
@@ -166,16 +166,16 @@ const ProductForm = ({
             )}
           />
 
-          {/* É Destaque */}
+          {/* É Ativo */}
           <FormField
             control={form.control}
-            name="is_featured"
+            name="is_active"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Produto em Destaque</FormLabel>
+                  <FormLabel className="text-base">Produto Ativo</FormLabel>
                   <p className="text-sm text-muted-foreground">
-                    Marque esta opção para destacar este produto na loja.
+                    Marque esta opção para tornar este produto visível na loja.
                   </p>
                 </div>
                 <FormControl>

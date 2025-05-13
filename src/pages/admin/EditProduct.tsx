@@ -82,13 +82,13 @@ const EditProduct = () => {
   }
 
   const formData: ProductFormData = {
-    title: product.title,
+    name: product.name,
     description: product.description,
     price: product.price,
     image_url: product.image_url,
     sale_url: product.sale_url,
-    category_id: product.category_id,
-    is_featured: product.is_featured,
+    category_id: product.category_id || null,
+    is_active: product.is_active,
   };
 
   return (

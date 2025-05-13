@@ -59,7 +59,7 @@ export const useAdminStore = () => {
     return {
       ...data,
       sale_url: data.sale_url || '',
-      category_id: data.category_id || null, 
+      category_id: data.category_id || null,
       is_active: data.is_active === undefined ? true : data.is_active
     } as Product;
   };

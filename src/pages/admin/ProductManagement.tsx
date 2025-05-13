@@ -27,7 +27,7 @@ const ProductManagement = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
   const filteredProducts = products.filter(product => 
-    product.title.toLowerCase().includes(searchTerm.toLowerCase())
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreateNew = () => {
@@ -57,15 +57,15 @@ const ProductManagement = () => {
         <div className="h-10 w-10 rounded overflow-hidden">
           <img 
             src={row.original.image_url || '/placeholder.svg'} 
-            alt={row.original.title}
+            alt={row.original.name}
             className="h-full w-full object-cover"
           />
         </div>
       )
     },
     {
-      accessorKey: 'title',
-      header: 'Título'
+      accessorKey: 'name',
+      header: 'Nome'
     },
     {
       accessorKey: 'price',
@@ -78,12 +78,12 @@ const ProductManagement = () => {
       cell: ({ row }: { row: { original: any } }) => row.original.categories?.name || 'Sem categoria'
     },
     {
-      accessorKey: 'is_featured',
-      header: 'Destaque',
+      accessorKey: 'is_active',
+      header: 'Status',
       cell: ({ row }: { row: { original: any } }) => (
-        row.original.is_featured ? 
+        row.original.is_active ? 
           <Star className="h-5 w-5 text-amber-400" /> : 
-          <span className="text-muted-foreground">Não</span>
+          <span className="text-muted-foreground">Inativo</span>
       )
     },
     {

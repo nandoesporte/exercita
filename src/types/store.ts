@@ -5,7 +5,7 @@ export interface Product {
   description: string;
   price: number;
   image_url: string;
-  sale_url: string;         // Added field that doesn't exist in DB but we need
+  sale_url: string;         // Added field for external sales URL
   is_active: boolean;       // Changed from is_featured
   created_at: string;
   updated_at: string;

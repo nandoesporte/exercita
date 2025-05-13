@@ -87,7 +87,7 @@ export const useStore = () => {
     },
   });
 
-  // Buscar produtos destacados
+  // Buscar produtos ativos
   const { 
     data: featuredProducts = [], 
     isLoading: isLoadingFeaturedProducts 
@@ -102,7 +102,7 @@ export const useStore = () => {
 
       if (error) {
         toast({
-          title: 'Erro ao carregar produtos destacados',
+          title: 'Erro ao carregar produtos em destaque',
           description: error.message,
           variant: 'destructive',
         });
