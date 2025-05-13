@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '@/hooks/useStore';
@@ -9,13 +8,13 @@ import { toast } from 'sonner';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { addToCart, products } = useStore();
+  const { products, addToCart, fetchProduct } = useStore();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   
   useEffect(() => {
-    const fetchProductData = async () => {
+    const loadProductData = async () => {
       try {
         setLoading(true);
         
@@ -29,7 +28,6 @@ const ProductDetail = () => {
         
         // Fetch from API if not found locally
         if (id) {
-          const { fetchProduct } = useStore.getState();
           const result = await fetchProduct(id);
           setProduct(result);
         }
@@ -41,8 +39,8 @@ const ProductDetail = () => {
       }
     };
     
-    fetchProductData();
-  }, [id, products]);
+    loadProductData();
+  }, [id, products, fetchProduct]);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAdminStore } from '@/hooks/useAdminStore';
@@ -10,7 +9,7 @@ import { toast } from 'sonner';
 
 const EditProduct = () => {
   const { id } = useParams<{ id: string }>();
-  const { updateProduct, isUpdatingProduct, products } = useAdminStore();
+  const { updateProduct, isUpdatingProduct, products, fetchProduct } = useAdminStore();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -26,8 +25,7 @@ const EditProduct = () => {
         if (cachedProduct) {
           setProduct(cachedProduct);
         } else if (id) {
-          // If not in cache, fetch from API
-          const { fetchProduct } = useAdminStore.getState();
+          // If not in cache, fetch from API directly
           const result = await fetchProduct(id);
           setProduct(result);
         }
@@ -41,7 +39,7 @@ const EditProduct = () => {
     };
     
     loadProduct();
-  }, [id, products]);
+  }, [id, products, fetchProduct]);
   
   const handleSubmit = async (data) => {
     try {
