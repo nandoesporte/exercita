@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory, ProductFormData } from '@/types/store';
@@ -6,7 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 export const useAdminStore = () => {
   const queryClient = useQueryClient();
 
-  // Buscar todos os produtos (admin)
+  // Fetch all products (admin)
   const { 
     data: products = [], 
     isLoading: isLoadingProducts 
@@ -41,9 +42,8 @@ export const useAdminStore = () => {
           is_active: item.is_active === undefined ? true : item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          // Handle fields that might not exist in the actual database table
-          sale_url: (item as any).sale_url || '',
-          category_id: (item as any).category_id || null,
+          sale_url: item.sale_url || '',
+          category_id: item.category_id || null,
           // Categories is populated since we're fetching it
           categories: item.categories ? { name: (item.categories as any).name } : null
         };
@@ -52,7 +52,7 @@ export const useAdminStore = () => {
     },
   });
 
-  // Buscar um produto específico
+  // Fetch a specific product
   const fetchProduct = async (id: string): Promise<Product> => {
     console.log('Fetching product with ID:', id);
     const { data, error } = await supabase
@@ -83,9 +83,8 @@ export const useAdminStore = () => {
       is_active: data.is_active === undefined ? true : data.is_active,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      // Handle fields that might not exist in the actual database table
-      sale_url: (data as any).sale_url || '',
-      category_id: (data as any).category_id || null,
+      sale_url: data.sale_url || '',
+      category_id: data.category_id || null,
       // Categories is populated since we're fetching it
       categories: data.categories ? { name: (data.categories as any).name } : null
     };
@@ -93,7 +92,7 @@ export const useAdminStore = () => {
     return product;
   };
 
-  // Buscar categorias de produtos
+  // Fetch product categories
   const { 
     data: categories = [], 
     isLoading: isLoadingCategories 
@@ -119,20 +118,20 @@ export const useAdminStore = () => {
     },
   });
 
-  // Criar um produto
+  // Create a product
   const { mutateAsync: createProduct, isPending: isCreating } = useMutation({
     mutationFn: async (product: ProductFormData) => {
       console.log('Saving product to database:', product);
       
-      // Convert ProductFormData to match the available database columns
+      // Convert ProductFormData to match the database columns
       const dbProduct = {
         name: product.name,
         description: product.description,
         price: product.price,
         image_url: product.image_url,
+        sale_url: product.sale_url,
         is_active: product.is_active,
-        // Add category_id if available
-        ...(product.category_id !== 'null' && product.category_id !== null && { category_id: product.category_id }),
+        category_id: product.category_id === 'null' ? null : product.category_id
       };
 
       console.log('Database product object to create:', dbProduct);
@@ -170,8 +169,8 @@ export const useAdminStore = () => {
         is_active: data.is_active === undefined ? true : data.is_active,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        sale_url: '', // Add default values for fields not in database
-        category_id: (data as any).category_id || null,
+        sale_url: data.sale_url || '',
+        category_id: data.category_id || null,
         categories: null // New product might not have categories loaded
       };
       
@@ -185,7 +184,7 @@ export const useAdminStore = () => {
     },
   });
 
-  // Atualizar um produto
+  // Update a product
   const { mutateAsync: updateProduct, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, ...product }: ProductFormData & { id: string }) => {
       console.log('Updating product with ID:', id);
@@ -197,9 +196,9 @@ export const useAdminStore = () => {
         description: product.description,
         price: product.price,
         image_url: product.image_url,
+        sale_url: product.sale_url,
         is_active: product.is_active,
-        // Add category_id if available
-        ...(product.category_id !== 'null' && product.category_id !== null && { category_id: product.category_id }),
+        category_id: product.category_id === 'null' ? null : product.category_id
       };
 
       console.log('Database product object to update:', dbProduct);
@@ -238,8 +237,8 @@ export const useAdminStore = () => {
         is_active: data.is_active === undefined ? true : data.is_active,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        sale_url: '', // Add default values for fields not in database
-        category_id: (data as any).category_id || null,
+        sale_url: data.sale_url || '',
+        category_id: data.category_id || null,
         categories: null // Updated product might not have categories loaded
       };
       
@@ -253,7 +252,7 @@ export const useAdminStore = () => {
     },
   });
 
-  // Excluir um produto
+  // Delete a product
   const { mutateAsync: deleteProduct, isPending: isDeleting } = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase

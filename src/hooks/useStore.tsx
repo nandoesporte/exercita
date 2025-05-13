@@ -1,10 +1,11 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
 import { toast } from '@/components/ui/use-toast';
 
 export const useStore = () => {
-  // Buscar todos os produtos
+  // Fetch all products
   const { 
     data: products = [], 
     isLoading: isLoadingProducts 
@@ -42,9 +43,8 @@ export const useStore = () => {
           is_active: item.is_active === undefined ? true : item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          // Handle optional fields that might not be in the database response
-          sale_url: (item as any).sale_url || '',
-          category_id: (item as any).category_id || null,
+          sale_url: item.sale_url || '',
+          category_id: item.category_id || null,
           // Handle categories safely
           categories: item.categories && !(item.categories as any).error 
             ? { name: (item.categories as any).name } 
@@ -55,7 +55,7 @@ export const useStore = () => {
     },
   });
 
-  // Buscar um produto específico
+  // Fetch a specific product
   const fetchProduct = async (id: string): Promise<Product> => {
     const { data, error } = await supabase
       .from('products')
@@ -82,9 +82,8 @@ export const useStore = () => {
       is_active: data.is_active === undefined ? true : data.is_active,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      // Handle optional fields that might not be in the database response
-      sale_url: (data as any).sale_url || '',
-      category_id: (data as any).category_id || null,
+      sale_url: data.sale_url || '',
+      category_id: data.category_id || null,
       // Handle categories safely
       categories: data.categories && !(data.categories as any).error 
         ? { name: (data.categories as any).name } 
@@ -94,7 +93,7 @@ export const useStore = () => {
     return product;
   };
 
-  // Buscar categorias de produtos
+  // Fetch product categories
   const { 
     data: categories = [], 
     isLoading: isLoadingCategories 
@@ -119,7 +118,7 @@ export const useStore = () => {
     },
   });
 
-  // Buscar produtos em destaque
+  // Fetch featured products
   const { 
     data: featuredProducts = [], 
     isLoading: isLoadingFeaturedProducts 
@@ -157,9 +156,8 @@ export const useStore = () => {
           is_active: item.is_active === undefined ? true : item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          // Handle optional fields that might not be in the database response
-          sale_url: (item as any).sale_url || '',
-          category_id: (item as any).category_id || null,
+          sale_url: item.sale_url || '',
+          category_id: item.category_id || null,
           // Handle categories safely
           categories: item.categories && !(item.categories as any).error 
             ? { name: (item.categories as any).name } 

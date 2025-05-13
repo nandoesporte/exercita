@@ -171,6 +171,7 @@ export type Database = {
       }
       products: {
         Row: {
+          category_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -178,9 +179,11 @@ export type Database = {
           is_active: boolean | null
           name: string
           price: number
+          sale_url: string | null
           updated_at: string | null
         }
         Insert: {
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -188,9 +191,11 @@ export type Database = {
           is_active?: boolean | null
           name: string
           price: number
+          sale_url?: string | null
           updated_at?: string | null
         }
         Update: {
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -198,9 +203,18 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           price?: number
+          sale_url?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "workout_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
