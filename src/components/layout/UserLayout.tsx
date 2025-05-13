@@ -19,6 +19,8 @@ const UserLayout = () => {
         return 'Treinos';
       case currentPath === '/history':
         return 'Histórico';
+      case currentPath === '/store':
+        return 'Loja';
       case currentPath.startsWith('/workout/'):
         return ''; // Return empty title for workout detail pages
       case currentPath === '/':

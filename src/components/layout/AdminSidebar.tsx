@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Dumbbell, CalendarDays, FileText, Settings,
-  BarChart, LogOut
+  BarChart, LogOut, ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -18,13 +18,14 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
 
   const navItems = [
     { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
-    { icon: Users, path: '/admin/users', label: 'Users' },
-    { icon: Dumbbell, path: '/admin/exercises', label: 'Exercises' },
-    { icon: Dumbbell, path: '/admin/workouts', label: 'Workouts' },
-    { icon: CalendarDays, path: '/admin/appointments', label: 'Appointments' },
+    { icon: Users, path: '/admin/users', label: 'Usuários' },
+    { icon: Dumbbell, path: '/admin/exercises', label: 'Exercícios' },
+    { icon: Dumbbell, path: '/admin/workouts', label: 'Treinos' },
+    { icon: ShoppingBag, path: '/admin/products', label: 'Loja' },
+    { icon: CalendarDays, path: '/admin/appointments', label: 'Agendamentos' },
     { icon: FileText, path: '/admin/blog', label: 'Blog' },
-    { icon: BarChart, path: '/admin/analytics', label: 'Analytics' },
-    { icon: Settings, path: '/admin/settings', label: 'Settings' },
+    { icon: BarChart, path: '/admin/analytics', label: 'Estatísticas' },
+    { icon: Settings, path: '/admin/settings', label: 'Configurações' },
   ];
 
   const handleLogout = async (e: React.MouseEvent) => {

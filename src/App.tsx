@@ -15,6 +15,8 @@ import History from "@/pages/History";
 import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
+import Store from "@/pages/Store";
+import ProductDetail from "@/pages/ProductDetail";
 
 // Profile related pages
 import AccountInfo from "@/pages/AccountInfo";
@@ -34,6 +36,9 @@ import CreateWorkout from "@/pages/admin/CreateWorkout";
 import EditWorkout from "@/pages/admin/EditWorkout";
 import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
 import ExerciseManagement from "@/pages/admin/ExerciseManagement";
+import ProductManagement from "@/pages/admin/ProductManagement";
+import CreateProduct from "@/pages/admin/CreateProduct";
+import EditProduct from "@/pages/admin/EditProduct";
 
 const App = () => {
   console.log("App component rendering");
@@ -56,6 +61,8 @@ const App = () => {
           <Route path="/workout/:id" element={<WorkoutDetail />} />
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/store/:id" element={<ProductDetail />} />
           
           {/* Profile related pages */}
           <Route path="/account" element={<AccountInfo />} />
@@ -81,6 +88,9 @@ const App = () => {
           <Route path="workouts/:id/edit" element={<EditWorkout />} />
           <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
           <Route path="exercises" element={<ExerciseManagement />} />
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="products/new" element={<CreateProduct />} />
+          <Route path="products/:id/edit" element={<EditProduct />} />
         </Route>
         
         {/* 404 */}

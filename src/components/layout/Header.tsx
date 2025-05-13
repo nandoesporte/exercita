@@ -5,6 +5,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
+import { useWorkouts } from '@/hooks/useWorkouts';
 
 interface HeaderProps {
   title?: string;
@@ -23,7 +25,14 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const { profile } = useProfile();
+  const { user } = useAuth();
   const location = useLocation();
+  const { data: workouts } = useWorkouts();
+  
+  // Find the first workout to link to, or use a fallback
+  const firstWorkoutId = workouts && workouts.length > 0 
+    ? workouts[0].id 
+    : 'default';
   
   // Check if we're on a workout detail page to hide the header
   const isWorkoutDetailPage = location.pathname.startsWith('/workout/');
@@ -85,17 +94,74 @@ const Header: React.FC<HeaderProps> = ({
           </Link>
         </div>
 
-        {/* App Logo for Desktop (left aligned) */}
+        {/* Desktop Navigation */}
         {!isMobile && (
           <div className="flex-1 flex justify-center">
-            <Link to="/" className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-                alt="Mais Saúde Logo"
-                className="h-10 w-10"
-              />
-              <span className="font-extrabold text-xl text-white">Mais Saúde</span>
-            </Link>
+            <div className="flex items-center gap-6">
+              <Link to="/" className="flex items-center gap-2">
+                <img 
+                  src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+                  alt="Mais Saúde Logo"
+                  className="h-10 w-10"
+                />
+                <span className="font-extrabold text-xl text-white">Mais Saúde</span>
+              </Link>
+              
+              <nav className="flex items-center ml-6 space-x-4">
+                <Link 
+                  to="/" 
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location.pathname === '/' 
+                      ? 'text-fitness-green bg-fitness-darkGray/30' 
+                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                  }`}
+                >
+                  Início
+                </Link>
+                <Link 
+                  to={`/workout/${firstWorkoutId}`}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location.pathname.startsWith('/workout/') 
+                      ? 'text-fitness-green bg-fitness-darkGray/30' 
+                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                  }`}
+                >
+                  Treinos
+                </Link>
+                <Link 
+                  to="/store"
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location.pathname.startsWith('/store') 
+                      ? 'text-fitness-green bg-fitness-darkGray/30' 
+                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                  }`}
+                >
+                  Loja
+                </Link>
+                <Link 
+                  to="/history" 
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location.pathname === '/history' 
+                      ? 'text-fitness-green bg-fitness-darkGray/30' 
+                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                  }`}
+                >
+                  Histórico
+                </Link>
+                {user?.is_admin && (
+                  <Link 
+                    to="/admin" 
+                    className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                      location.pathname.startsWith('/admin') 
+                        ? 'text-fitness-green bg-fitness-darkGray/30' 
+                        : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                    }`}
+                  >
+                    Admin
+                  </Link>
+                )}
+              </nav>
+            </div>
           </div>
         )}
 
