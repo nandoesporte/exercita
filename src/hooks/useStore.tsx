@@ -27,12 +27,25 @@ export const useStore = () => {
       }
 
       // Map database fields to our Product interface
-      return (data || []).map(item => ({
-        ...item,
-        sale_url: item.sale_url || '', // Handle potentially missing field
-        category_id: item.category_id || null,
-        is_active: item.is_active === undefined ? true : item.is_active
-      })) as Product[];
+      return (data || []).map(item => {
+        // Create a properly typed product object
+        const product: Product = {
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          image_url: item.image_url || '',
+          is_active: item.is_active === undefined ? true : item.is_active,
+          created_at: item.created_at || '',
+          updated_at: item.updated_at || '',
+          // Add optional fields with proper handling
+          sale_url: item.sale_url || '',
+          category_id: item.category_id || null,
+          // Handle categories properly
+          categories: item.categories?.name ? { name: item.categories.name } : null
+        };
+        return product;
+      });
     },
   });
 
@@ -54,12 +67,23 @@ export const useStore = () => {
     }
 
     // Map database fields to our Product interface
-    return {
-      ...data,
+    const product: Product = {
+      id: data.id,
+      name: data.name,
+      description: data.description || '',
+      price: data.price,
+      image_url: data.image_url || '',
+      is_active: data.is_active === undefined ? true : data.is_active,
+      created_at: data.created_at || '',
+      updated_at: data.updated_at || '',
+      // Add optional fields with proper handling
       sale_url: data.sale_url || '',
       category_id: data.category_id || null,
-      is_active: data.is_active === undefined ? true : data.is_active
-    } as Product;
+      // Handle categories properly
+      categories: data.categories?.name ? { name: data.categories.name } : null
+    };
+    
+    return product;
   };
 
   // Buscar categorias de produtos
@@ -110,12 +134,25 @@ export const useStore = () => {
       }
 
       // Map database fields to our Product interface
-      return (data || []).map(item => ({
-        ...item,
-        sale_url: item.sale_url || '',
-        category_id: item.category_id || null,
-        is_active: item.is_active === undefined ? true : item.is_active
-      })) as Product[];
+      return (data || []).map(item => {
+        // Create a properly typed product object
+        const product: Product = {
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          image_url: item.image_url || '',
+          is_active: item.is_active === undefined ? true : item.is_active,
+          created_at: item.created_at || '',
+          updated_at: item.updated_at || '',
+          // Add optional fields with proper handling
+          sale_url: item.sale_url || '',
+          category_id: item.category_id || null,
+          // Handle categories properly
+          categories: item.categories?.name ? { name: item.categories.name } : null
+        };
+        return product;
+      });
     },
   });
 

@@ -1,18 +1,18 @@
 
 export interface Product {
   id: string;
-  name: string;             // Changed from title
+  name: string;
   description: string;
   price: number;
   image_url: string;
-  sale_url: string;         // Added field for external sales URL
-  is_active: boolean;       // Changed from is_featured
+  sale_url?: string;        // Make optional with ?
+  is_active: boolean;
   created_at: string;
   updated_at: string;
-  category_id?: string;     // Made optional
-  categories?: {            // Added for join queries
+  category_id?: string;     // Make optional with ?
+  categories?: {            // Make optional with ?
     name: string;
-  };
+  } | null;                 // Allow null for when relation fails
 }
 
 export interface ProductCategory {
@@ -22,11 +22,11 @@ export interface ProductCategory {
 }
 
 export interface ProductFormData {
-  name: string;             // Changed from title
+  name: string;
   description: string;
   price: number;
   image_url: string;
   sale_url: string;
   category_id: string | null;
-  is_active: boolean;       // Changed from is_featured
+  is_active: boolean;
 }
