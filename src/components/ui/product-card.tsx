@@ -41,7 +41,7 @@ export function ProductCard({ product, onAddToCart, className }: ProductCardProp
             />
           ) : (
             <div className="flex items-center justify-center w-full h-full bg-muted">
-              <span className="text-muted-foreground">No Image</span>
+              <span className="text-muted-foreground">Sem Imagem</span>
             </div>
           )}
         </div>
@@ -49,7 +49,7 @@ export function ProductCard({ product, onAddToCart, className }: ProductCardProp
         <CardContent className="p-4">
           <h3 className="font-semibold text-lg truncate">{name}</h3>
           <p className="text-muted-foreground text-sm line-clamp-2 h-10 mt-1">
-            {description || 'No description available'}
+            {description || 'Sem descrição disponível'}
           </p>
           <p className="font-bold text-xl text-primary mt-2">{formatCurrency(price)}</p>
         </CardContent>
@@ -63,7 +63,7 @@ export function ProductCard({ product, onAddToCart, className }: ProductCardProp
               onClick={handleAddToCart}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
+              Adicionar ao Carrinho
             </Button>
           )}
           <Button 
