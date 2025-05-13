@@ -27,6 +27,15 @@ import PaymentMethods from "@/pages/PaymentMethods";
 import InviteFriends from "@/pages/InviteFriends";
 import HelpCenter from "@/pages/HelpCenter";
 
+// Store pages
+import Store from "@/pages/Store";
+import ProductDetail from "@/pages/ProductDetail";
+import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
+import OrderSuccess from "@/pages/OrderSuccess";
+import MyOrders from "@/pages/MyOrders";
+import OrderDetail from "@/pages/OrderDetail";
+
 // Admin pages
 import Dashboard from "@/pages/admin/Dashboard";
 import WorkoutManagement from "@/pages/admin/WorkoutManagement";
@@ -34,6 +43,10 @@ import CreateWorkout from "@/pages/admin/CreateWorkout";
 import EditWorkout from "@/pages/admin/EditWorkout";
 import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
 import ExerciseManagement from "@/pages/admin/ExerciseManagement";
+import ProductManagement from "@/pages/admin/ProductManagement";
+import CreateProduct from "@/pages/admin/CreateProduct";
+import EditProduct from "@/pages/admin/EditProduct";
+import OrderManagement from "@/pages/admin/OrderManagement";
 
 const App = () => {
   console.log("App component rendering");
@@ -67,6 +80,15 @@ const App = () => {
           <Route path="/payment" element={<PaymentMethods />} />
           <Route path="/invite" element={<InviteFriends />} />
           <Route path="/help" element={<HelpCenter />} />
+          
+          {/* Store pages */}
+          <Route path="/store" element={<Store />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/order/:id" element={<OrderDetail />} />
         </Route>
         
         {/* Admin Routes */}
@@ -81,6 +103,12 @@ const App = () => {
           <Route path="workouts/:id/edit" element={<EditWorkout />} />
           <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
           <Route path="exercises" element={<ExerciseManagement />} />
+          
+          {/* Store admin pages */}
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="products/new" element={<CreateProduct />} />
+          <Route path="products/:id/edit" element={<EditProduct />} />
+          <Route path="orders" element={<OrderManagement />} />
         </Route>
         
         {/* 404 */}
