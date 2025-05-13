@@ -144,8 +144,8 @@ const ProductForm = ({
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
                 <Select
-                  value={field.value || ""}
-                  onValueChange={(value) => field.onChange(value === "" ? null : value)}
+                  value={field.value || "null"}
+                  onValueChange={(value) => field.onChange(value === "null" ? null : value)}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -153,7 +153,7 @@ const ProductForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Sem categoria</SelectItem>
+                    <SelectItem value="null">Sem categoria</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
