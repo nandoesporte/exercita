@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { ProductFormData } from "@/types/store";
 import { ProductCategory } from "@/types/store";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   name: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
@@ -62,7 +63,17 @@ const ProductForm = ({
     },
   });
 
+  useEffect(() => {
+    // This log helps debug form submission issues
+    const subscription = form.watch((value) => {
+      console.log("Form values changed:", value);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const handleSubmit = (values: ProductFormData) => {
+    console.log("Form submitting with values:", values);
     onSubmit(values);
   };
 

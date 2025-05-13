@@ -14,12 +14,14 @@ export const useAdminStore = () => {
   } = useQuery({
     queryKey: ['admin-products'],
     queryFn: async () => {
+      console.log('Fetching admin products');
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:workout_categories(name)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Error fetching products:', error);
         toast({
           title: 'Erro ao carregar produtos',
           description: error.message,
@@ -34,19 +36,17 @@ export const useAdminStore = () => {
         const product: Product = {
           id: item.id,
           name: item.name,
-          description: item.description,
+          description: item.description || null,
           price: item.price,
-          image_url: item.image_url,
+          image_url: item.image_url || null,
           is_active: item.is_active === undefined ? true : item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          // Handle optional fields that might not be in the database response
+          // Handle fields that might not exist in the actual database table
           sale_url: (item as any).sale_url || '',
           category_id: (item as any).category_id || null,
-          // Handle categories safely
-          categories: item.categories && !(item.categories as any).error 
-            ? { name: (item.categories as any).name } 
-            : null
+          // Categories is null since we're not fetching it
+          categories: null
         };
         return product;
       });
@@ -57,11 +57,12 @@ export const useAdminStore = () => {
   const fetchProduct = async (id: string): Promise<Product> => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:workout_categories(name)')
+      .select('*')
       .eq('id', id)
       .single();
 
     if (error) {
+      console.error('Error fetching product:', error);
       toast({
         title: 'Erro ao carregar produto',
         description: error.message,
@@ -74,19 +75,17 @@ export const useAdminStore = () => {
     const product: Product = {
       id: data.id,
       name: data.name,
-      description: data.description,
+      description: data.description || null,
       price: data.price,
-      image_url: data.image_url,
+      image_url: data.image_url || null,
       is_active: data.is_active === undefined ? true : data.is_active,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      // Handle optional fields that might not be in the database response
+      // Handle fields that might not exist in the actual database table
       sale_url: (data as any).sale_url || '',
       category_id: (data as any).category_id || null,
-      // Handle categories safely
-      categories: data.categories && !(data.categories as any).error 
-        ? { name: (data.categories as any).name } 
-        : null
+      // Categories is null since we're not fetching it
+      categories: null
     };
     
     return product;
@@ -105,6 +104,7 @@ export const useAdminStore = () => {
         .order('name');
 
       if (error) {
+        console.error('Error fetching categories:', error);
         toast({
           title: 'Erro ao carregar categorias',
           description: error.message,
@@ -120,16 +120,20 @@ export const useAdminStore = () => {
   // Criar um produto
   const { mutateAsync: createProduct, isPending: isCreating } = useMutation({
     mutationFn: async (product: ProductFormData) => {
-      // Convert ProductFormData to match the database columns
+      console.log('Saving product to database:', product);
+      
+      // Convert ProductFormData to match the available database columns
+      // Only include properties that actually exist in the Supabase table
       const dbProduct = {
         name: product.name,
         description: product.description,
         price: product.price,
         image_url: product.image_url,
-        sale_url: product.sale_url,
-        category_id: product.category_id,
         is_active: product.is_active
+        // Note: We're excluding category_id and sale_url as they don't exist in the database
       };
+
+      console.log('Database product object:', dbProduct);
 
       const { data, error } = await supabase
         .from('products')
@@ -138,6 +142,7 @@ export const useAdminStore = () => {
         .single();
 
       if (error) {
+        console.error('Error creating product:', error);
         toast({
           title: 'Erro ao criar produto',
           description: error.message,
@@ -146,29 +151,27 @@ export const useAdminStore = () => {
         throw error;
       }
 
-      toast({
-        title: 'Produto criado com sucesso',
-        variant: 'default',
-      });
+      console.log('Product created successfully:', data);
 
       // Map database fields to our Product interface
       const newProduct: Product = {
         id: data.id,
         name: data.name,
-        description: data.description,
+        description: data.description || null,
         price: data.price,
-        image_url: data.image_url,
+        image_url: data.image_url || null,
         is_active: data.is_active === undefined ? true : data.is_active,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        sale_url: (data as any).sale_url || '',
-        category_id: (data as any).category_id || null,
+        sale_url: '', // Add default values for fields not in database
+        category_id: null,
         categories: null // New product might not have categories loaded
       };
       
       return newProduct;
     },
     onSuccess: () => {
+      console.log('Invalidating queries after product creation');
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['featured-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -184,9 +187,8 @@ export const useAdminStore = () => {
         description: product.description,
         price: product.price,
         image_url: product.image_url,
-        sale_url: product.sale_url,
-        category_id: product.category_id,
         is_active: product.is_active
+        // Excluded fields that don't exist in database
       };
 
       const { data, error } = await supabase
@@ -214,14 +216,14 @@ export const useAdminStore = () => {
       const updatedProduct: Product = {
         id: data.id,
         name: data.name,
-        description: data.description,
+        description: data.description || null,
         price: data.price,
-        image_url: data.image_url,
+        image_url: data.image_url || null,
         is_active: data.is_active === undefined ? true : data.is_active,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        sale_url: (data as any).sale_url || '',
-        category_id: (data as any).category_id || null,
+        sale_url: '', // Add default values for fields not in database
+        category_id: null,
         categories: null // Updated product might not have categories loaded
       };
       
