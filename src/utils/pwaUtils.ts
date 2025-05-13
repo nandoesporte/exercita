@@ -106,5 +106,9 @@ export const registerInstallPrompt = (): void => {
  * @returns boolean
  */
 export const canInstallPwa = (): boolean => {
+  console.log('Checking if PWA can be installed:', { 
+    promptAvailable: !!window.deferredPromptEvent,
+    isInstalled: isPwaInstalled()
+  });
   return !!window.deferredPromptEvent && !isPwaInstalled();
 };

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle } from "lucide-react";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { toast } from "sonner";
 
 const Login = () => {
   const { user, signIn, signUp, adminLogin } = useAuth();
@@ -36,7 +37,7 @@ const Login = () => {
   const [adminPassword, setAdminPassword] = useState("");
   
   // PWA installation prompt
-  const { canInstall, showPrompt, closePrompt } = usePWAInstall();
+  const { canInstall, showPrompt, closePrompt, showInstallPrompt } = usePWAInstall();
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
   
   // Track successful login to show PWA prompt
@@ -52,18 +53,42 @@ const Login = () => {
   // Show PWA install prompt after successful login if available
   useEffect(() => {
     if (loginSuccess && canInstall) {
+      console.log('Login successful and PWA can be installed, showing prompt');
       // Small delay to ensure the navigation completes first
       const timer = setTimeout(() => {
         console.log('Attempting to show PWA prompt after successful login');
-        setShowPWAPrompt(true);
-      }, 1500);
+        if (showPrompt()) {
+          setShowPWAPrompt(true);
+        } else {
+          console.log('showPrompt() returned false, not showing PWA prompt');
+        }
+      }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [loginSuccess, canInstall]);
+  }, [loginSuccess, canInstall, showPrompt]);
   
   // If user is already logged in, redirect to home page
   if (user) {
+    // If login was just successful, delay redirect slightly to show PWA prompt
+    if (loginSuccess && canInstall && !showPWAPrompt) {
+      // Give time for the PWA prompt to appear
+      setTimeout(() => {
+        console.log('Redirecting after login');
+      }, 1500);
+      
+      // Return null to delay redirect while showing the PWA prompt
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+          <div className="w-full max-w-md text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fitness-orange mx-auto"></div>
+            <p className="mt-4">Redirecionando...</p>
+            {showPWAPrompt && <PWAInstallPrompt onClose={handleClosePWAPrompt} />}
+          </div>
+        </div>
+      );
+    }
+    
     return <Navigate to="/" replace />;
   }
   
@@ -73,6 +98,7 @@ const Login = () => {
     
     try {
       await signIn(loginEmail, loginPassword);
+      console.log('Login successful, setting loginSuccess state');
       // Mark login as successful to trigger PWA prompt
       setLoginSuccess(true);
     } catch (error) {
@@ -86,7 +112,7 @@ const Login = () => {
     e.preventDefault();
     
     if (registerPassword !== confirmPassword) {
-      alert("As senhas não coincidem");
+      toast.error("As senhas não coincidem");
       return;
     }
     
@@ -97,6 +123,8 @@ const Login = () => {
         first_name: firstName,
         last_name: lastName
       });
+      
+      toast.success("Conta criada com sucesso! Faça login para continuar.");
       
       // After sign up, switch to login tab
       setActiveTab("login");
@@ -114,8 +142,9 @@ const Login = () => {
     
     try {
       await adminLogin(adminPassword);
+      console.log('Admin login successful, setting loginSuccess state');
       // Show PWA install prompt after successful login
-      setShowPWAPrompt(true);
+      setLoginSuccess(true);
     } catch (error) {
       console.error("Admin login error:", error);
     } finally {
@@ -126,6 +155,7 @@ const Login = () => {
   const handleClosePWAPrompt = () => {
     console.log('Closing PWA prompt');
     setShowPWAPrompt(false);
+    closePrompt();
   };
   
   return (
