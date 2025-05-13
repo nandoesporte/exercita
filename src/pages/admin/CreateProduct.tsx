@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const CreateProduct = () => {
   const navigate = useNavigate();
@@ -58,7 +58,8 @@ const CreateProduct = () => {
           <ProductForm 
             onSubmit={handleCreateProduct} 
             isLoading={isCreating}
-            categories={categories}
+            categories={categories || []}
+            isEditing={false}
           />
         )}
       </div>
