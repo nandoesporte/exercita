@@ -1,12 +1,10 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
 import { toast } from '@/components/ui/use-toast';
 
 export const useStore = () => {
-  const queryClient = useQueryClient();
-
   // Buscar todos os produtos
   const { 
     data: products = [], 
@@ -16,7 +14,7 @@ export const useStore = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:category_id(name)')
+        .select('*, categories:workout_categories(name)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -28,7 +26,13 @@ export const useStore = () => {
         return [];
       }
 
-      return data as Product[];
+      // Map database fields to our Product interface
+      return (data || []).map(item => ({
+        ...item,
+        sale_url: item.sale_url || '', // Handle potentially missing field
+        category_id: item.category_id || null,
+        is_active: item.is_active === undefined ? true : item.is_active
+      })) as Product[];
     },
   });
 
@@ -36,7 +40,7 @@ export const useStore = () => {
   const fetchProduct = async (id: string): Promise<Product> => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:category_id(name)')
+      .select('*, categories:workout_categories(name)')
       .eq('id', id)
       .single();
 
@@ -49,7 +53,13 @@ export const useStore = () => {
       throw error;
     }
 
-    return data as Product;
+    // Map database fields to our Product interface
+    return {
+      ...data,
+      sale_url: data.sale_url || '',
+      category_id: data.category_id || null,
+      is_active: data.is_active === undefined ? true : data.is_active
+    } as Product;
   };
 
   // Buscar categorias de produtos
@@ -60,7 +70,7 @@ export const useStore = () => {
     queryKey: ['product-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_categories')
+        .from('workout_categories') // Using workout_categories instead of product_categories
         .select('*')
         .order('name');
 
@@ -86,8 +96,8 @@ export const useStore = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:category_id(name)')
-        .eq('is_featured', true)
+        .select('*, categories:workout_categories(name)')
+        .eq('is_active', true)
         .limit(6);
 
       if (error) {
@@ -99,7 +109,13 @@ export const useStore = () => {
         return [];
       }
 
-      return data as Product[];
+      // Map database fields to our Product interface
+      return (data || []).map(item => ({
+        ...item,
+        sale_url: item.sale_url || '',
+        category_id: item.category_id || null,
+        is_active: item.is_active === undefined ? true : item.is_active
+      })) as Product[];
     },
   });
 

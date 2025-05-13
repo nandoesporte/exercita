@@ -84,7 +84,7 @@ const ProductDetail = () => {
           <AspectRatio ratio={1}>
             <img 
               src={product.image_url || '/placeholder.svg'} 
-              alt={product.title}
+              alt={product.name}
               className="object-cover w-full h-full"
             />
           </AspectRatio>
@@ -93,14 +93,14 @@ const ProductDetail = () => {
         {/* Detalhes do produto */}
         <div className="space-y-6">
           {/* Tag de destaque */}
-          {product.is_featured && (
+          {product.is_active && (
             <div className="inline-block bg-fitness-green text-white text-xs font-medium px-3 py-1 rounded-full">
-              Produto Destacado
+              Produto Em Estoque
             </div>
           )}
 
           {/* Título */}
-          <h1 className="text-3xl font-bold">{product.title}</h1>
+          <h1 className="text-3xl font-bold">{product.name}</h1>
           
           {/* Preço */}
           <div className="text-3xl font-bold text-fitness-green">
@@ -108,10 +108,10 @@ const ProductDetail = () => {
           </div>
           
           {/* Categoria */}
-          {(product as any).categories && (
+          {product.categories && (
             <div className="text-sm">
               <span className="text-muted-foreground">Categoria: </span>
-              <span className="font-medium">{(product as any).categories.name}</span>
+              <span className="font-medium">{product.categories.name}</span>
             </div>
           )}
           

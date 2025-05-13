@@ -12,8 +12,8 @@ const Store = () => {
 
   // Filtragem de produtos
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (product.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory ? product.category_id === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });

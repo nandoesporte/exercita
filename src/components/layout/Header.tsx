@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const { profile } = useProfile();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth(); // Using isAdmin from useAuth instead of user.is_admin
   const location = useLocation();
   const { data: workouts } = useWorkouts();
   
@@ -148,7 +148,7 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   Histórico
                 </Link>
-                {user?.is_admin && (
+                {isAdmin && (
                   <Link 
                     to="/admin" 
                     className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${

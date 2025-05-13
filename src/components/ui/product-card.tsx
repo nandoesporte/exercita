@@ -2,84 +2,78 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Product } from '@/types/store';
 import { formatCurrency } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
+  className?: string;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
   return (
-    <Card className="overflow-hidden rounded-lg border border-fitness-darkGray/30 h-full flex flex-col transition-all hover:shadow-lg hover:scale-[1.02] hover:border-fitness-green/40">
-      <div className="relative aspect-square overflow-hidden">
+    <div className={cn("bg-card border border-border rounded-xl overflow-hidden flex flex-col", className)}>
+      {/* Product Image */}
+      <Link to={`/store/${product.id}`} className="relative block h-48 overflow-hidden">
         <img 
-          src={product.image_url || '/placeholder.svg'} 
-          alt={product.title}
-          className="object-cover w-full h-full transition-transform hover:scale-105"
-          loading="lazy"
+          src={product.image_url || '/placeholder.svg'}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
         />
+        {/* Badge for active status */}
+        {product.is_active && (
+          <span className="absolute top-3 right-3 bg-fitness-green/90 text-white text-xs px-2 py-1 rounded-full">
+            Em Estoque
+          </span>
+        )}
+      </Link>
+
+      {/* Product Content */}
+      <div className="flex flex-col flex-grow p-4 space-y-3">
+        <Link to={`/store/${product.id}`}>
+          <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+        </Link>
         
-        {product.is_featured && (
-          <div className="absolute top-2 right-2 bg-fitness-green text-white text-xs font-medium px-2 py-1 rounded-full">
-            Destaque
+        {/* Category if available */}
+        {product.categories && (
+          <div className="text-xs text-muted-foreground">
+            {product.categories.name}
           </div>
         )}
-      </div>
-      
-      <CardContent className="py-4 flex-1 flex flex-col">
-        <h3 className="font-semibold text-lg line-clamp-2 mb-1">
-          {product.title}
-        </h3>
         
-        <p className="text-muted-foreground text-sm line-clamp-3 flex-grow mb-3">
+        {/* Description */}
+        <p className="text-muted-foreground text-sm line-clamp-2 flex-grow">
           {product.description}
         </p>
         
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-fitness-green">
+        {/* Price and Action */}
+        <div className="flex items-center justify-between pt-3 mt-auto">
+          <span className="font-bold text-lg">
             {formatCurrency(product.price)}
           </span>
           
-          {product.category_id && (
-            <span className="text-xs bg-fitness-dark/20 px-2 py-1 rounded-full">
-              {(product as any).categories?.name || 'Geral'}
-            </span>
-          )}
+          <div className="flex gap-2">
+            <Button 
+              asChild
+              size="sm" 
+              variant="default"
+              className="bg-fitness-green hover:bg-fitness-green/80"
+            >
+              <a 
+                href={product.sale_url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-1"
+              >
+                Comprar
+                <ExternalLink size={14} />
+              </a>
+            </Button>
+          </div>
         </div>
-      </CardContent>
-      
-      <CardFooter className="pb-4 px-4 pt-0 gap-2 flex">
-        <Button 
-          asChild
-          variant="default" 
-          size="sm"
-          className="w-full bg-fitness-green hover:bg-fitness-green/80 text-white"
-        >
-          <a 
-            href={product.sale_url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2"
-          >
-            Comprar Agora
-            <ExternalLink size={16} />
-          </a>
-        </Button>
-        
-        <Button 
-          asChild
-          variant="outline" 
-          size="sm"
-          className="w-full"
-        >
-          <Link to={`/store/${product.id}`}>
-            Detalhes
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
-}
+};

@@ -16,7 +16,7 @@ export const useAdminStore = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:category_id(name)')
+        .select('*, categories:workout_categories(name)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -28,7 +28,13 @@ export const useAdminStore = () => {
         return [];
       }
 
-      return data as Product[];
+      // Map database fields to our Product interface
+      return (data || []).map(item => ({
+        ...item,
+        sale_url: item.sale_url || '', 
+        category_id: item.category_id || null,
+        is_active: item.is_active === undefined ? true : item.is_active
+      })) as Product[];
     },
   });
 
@@ -36,7 +42,7 @@ export const useAdminStore = () => {
   const fetchProduct = async (id: string): Promise<Product> => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:category_id(name)')
+      .select('*, categories:workout_categories(name)')
       .eq('id', id)
       .single();
 
@@ -49,7 +55,13 @@ export const useAdminStore = () => {
       throw error;
     }
 
-    return data as Product;
+    // Map database fields to our Product interface
+    return {
+      ...data,
+      sale_url: data.sale_url || '',
+      category_id: data.category_id || null, 
+      is_active: data.is_active === undefined ? true : data.is_active
+    } as Product;
   };
 
   // Buscar categorias de produtos
@@ -60,7 +72,7 @@ export const useAdminStore = () => {
     queryKey: ['admin-product-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_categories')
+        .from('workout_categories') // Using workout_categories instead of product_categories
         .select('*')
         .order('name');
 
@@ -80,9 +92,20 @@ export const useAdminStore = () => {
   // Criar um produto
   const { mutateAsync: createProduct, isPending: isCreating } = useMutation({
     mutationFn: async (product: ProductFormData) => {
+      // Convert ProductFormData to match the database columns
+      const dbProduct = {
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image_url: product.image_url,
+        sale_url: product.sale_url,
+        category_id: product.category_id,
+        is_active: product.is_active
+      };
+
       const { data, error } = await supabase
         .from('products')
-        .insert([product])
+        .insert([dbProduct])
         .select()
         .single();
 
@@ -100,7 +123,13 @@ export const useAdminStore = () => {
         variant: 'default',
       });
 
-      return data as Product;
+      // Map database fields to our Product interface
+      return {
+        ...data,
+        sale_url: data.sale_url || '',
+        category_id: data.category_id || null,
+        is_active: data.is_active === undefined ? true : data.is_active
+      } as Product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -112,9 +141,20 @@ export const useAdminStore = () => {
   // Atualizar um produto
   const { mutateAsync: updateProduct, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, ...product }: ProductFormData & { id: string }) => {
+      // Convert ProductFormData to match the database columns
+      const dbProduct = {
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image_url: product.image_url,
+        sale_url: product.sale_url,
+        category_id: product.category_id,
+        is_active: product.is_active
+      };
+
       const { data, error } = await supabase
         .from('products')
-        .update(product)
+        .update(dbProduct)
         .eq('id', id)
         .select()
         .single();
@@ -133,7 +173,13 @@ export const useAdminStore = () => {
         variant: 'default',
       });
 
-      return data as Product;
+      // Map database fields to our Product interface
+      return {
+        ...data,
+        sale_url: data.sale_url || '',
+        category_id: data.category_id || null,
+        is_active: data.is_active === undefined ? true : data.is_active
+      } as Product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });

@@ -1,15 +1,18 @@
 
 export interface Product {
   id: string;
-  title: string;
+  name: string;             // Changed from title
   description: string;
   price: number;
   image_url: string;
-  sale_url: string; // Link externo para onde o usuário será direcionado
-  category_id: string | null;
-  is_featured: boolean;
+  sale_url: string;         // Added field that doesn't exist in DB but we need
+  is_active: boolean;       // Changed from is_featured
   created_at: string;
   updated_at: string;
+  category_id?: string;     // Made optional
+  categories?: {            // Added for join queries
+    name: string;
+  };
 }
 
 export interface ProductCategory {
@@ -19,11 +22,11 @@ export interface ProductCategory {
 }
 
 export interface ProductFormData {
-  title: string;
+  name: string;             // Changed from title
   description: string;
   price: number;
   image_url: string;
   sale_url: string;
   category_id: string | null;
-  is_featured: boolean;
+  is_active: boolean;       // Changed from is_featured
 }
