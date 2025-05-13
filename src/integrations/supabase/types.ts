@@ -97,111 +97,6 @@ export type Database = {
           },
         ]
       }
-      order_items: {
-        Row: {
-          created_at: string | null
-          id: string
-          order_id: string
-          price: number
-          product_id: string
-          quantity: number
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          order_id: string
-          price: number
-          product_id: string
-          quantity: number
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          order_id?: string
-          price?: number
-          product_id?: string
-          quantity?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_items_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      orders: {
-        Row: {
-          created_at: string | null
-          id: string
-          kiwify_order_id: string | null
-          status: string
-          total_amount: number
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          kiwify_order_id?: string | null
-          status?: string
-          total_amount: number
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          kiwify_order_id?: string | null
-          status?: string
-          total_amount?: number
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      products: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          is_active: boolean | null
-          name: string
-          price: number
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean | null
-          name: string
-          price: number
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean | null
-          name?: string
-          price?: number
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -510,10 +405,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      handle_kiwify_webhook: {
-        Args: { payload: Json }
-        Returns: Json
-      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
