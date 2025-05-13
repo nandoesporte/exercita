@@ -318,6 +318,35 @@ export type Database = {
           },
         ]
       }
+      workout_recommendations: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string | null
+          workout_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          workout_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_recommendations_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workouts: {
         Row: {
           calories: number | null
@@ -328,6 +357,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_featured: boolean | null
+          is_recommended: boolean | null
           level: Database["public"]["Enums"]["difficulty_level"]
           title: string
           updated_at: string | null
@@ -341,6 +371,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
+          is_recommended?: boolean | null
           level: Database["public"]["Enums"]["difficulty_level"]
           title: string
           updated_at?: string | null
@@ -354,6 +385,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
+          is_recommended?: boolean | null
           level?: Database["public"]["Enums"]["difficulty_level"]
           title?: string
           updated_at?: string | null

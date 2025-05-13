@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ const formSchema = z.object({
   calories: z.coerce.number().optional().nullable(),
   user_id: z.string().optional().nullable(),
   days_of_week: z.array(z.string()).optional(),
+  is_recommended: z.boolean().optional().default(false),
 });
 
 const weekdays = [
@@ -80,6 +82,7 @@ const WorkoutForm = ({
       calories: null,
       user_id: null,
       days_of_week: [],
+      is_recommended: false,
     },
   });
 
@@ -234,6 +237,27 @@ const WorkoutForm = ({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="is_recommended"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Featured Workout</FormLabel>
+                <FormDescription>
+                  Mark this workout as recommended for all users
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

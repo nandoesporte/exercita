@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Trash2, PenSquare, Dumbbell
+  Plus, Search, Trash2, PenSquare, Dumbbell, Star, UserCheck
 } from 'lucide-react';
 import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
 import { Input } from "@/components/ui/input";
@@ -17,12 +17,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { RecommendWorkoutDialog } from '@/components/admin/RecommendWorkoutDialog';
 
 const WorkoutManagement = () => {
   const navigate = useNavigate();
   const { workouts, isLoading, deleteWorkout } = useAdminWorkouts();
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [recommendWorkoutId, setRecommendWorkoutId] = useState<string | null>(null);
   
   const filteredWorkouts = workouts.filter(workout => 
     workout.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -49,6 +51,10 @@ const WorkoutManagement = () => {
       deleteWorkout(deleteId);
       setDeleteId(null);
     }
+  };
+
+  const handleOpenRecommendDialog = (id: string) => {
+    setRecommendWorkoutId(id);
   };
 
   return (
@@ -86,6 +92,7 @@ const WorkoutManagement = () => {
                   <th className="text-left py-3 px-4 font-medium">Level</th>
                   <th className="text-left py-3 px-4 font-medium">Duration</th>
                   <th className="text-left py-3 px-4 font-medium">Category</th>
+                  <th className="text-center py-3 px-4 font-medium">Recommended</th>
                   <th className="text-right py-3 px-4 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -96,8 +103,20 @@ const WorkoutManagement = () => {
                     <td className="py-3 px-4 capitalize">{workout.level}</td>
                     <td className="py-3 px-4">{workout.duration} min</td>
                     <td className="py-3 px-4">{workout.category?.name || 'Uncategorized'}</td>
+                    <td className="py-3 px-4 text-center">
+                      {workout.is_recommended && <Star className="h-4 w-4 text-amber-400 inline" />}
+                    </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenRecommendDialog(workout.id)}
+                          className={workout.is_recommended ? "border-amber-400 text-amber-500" : ""}
+                        >
+                          <UserCheck className="h-4 w-4" />
+                          <span className="sr-only">Manage Recommendations</span>
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -157,6 +176,13 @@ const WorkoutManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {recommendWorkoutId && (
+        <RecommendWorkoutDialog
+          workoutId={recommendWorkoutId}
+          onClose={() => setRecommendWorkoutId(null)}
+        />
+      )}
     </div>
   );
 };

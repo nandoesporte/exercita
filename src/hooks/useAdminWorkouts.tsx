@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export type AdminWorkout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
   days_of_week?: string[] | null;
+  is_recommended?: boolean;
 };
 
 export type WorkoutFormData = {
@@ -18,6 +19,7 @@ export type WorkoutFormData = {
   calories?: number | null;
   user_id?: string | null; 
   days_of_week?: string[] | null;
+  is_recommended?: boolean;
 };
 
 export type UpdateWorkoutData = WorkoutFormData & {
@@ -35,6 +37,12 @@ export type WorkoutExercise = {
   day_of_week?: string | null;
   is_title_section?: boolean;
   section_title?: string | null;
+}
+
+export type WorkoutRecommendation = {
+  id?: string;
+  workout_id: string;
+  user_id: string | null; // null means recommended for all users
 }
 
 export function useAdminWorkouts() {
@@ -147,7 +155,7 @@ export function useAdminWorkouts() {
 
   const updateWorkout = useMutation({
     mutationFn: async (data: UpdateWorkoutData) => {
-      const { id, days_of_week, ...workoutData } = data;
+      const { id, days_of_week, is_recommended, ...workoutData } = data;
       
       // First, update the workout
       const { error: workoutError } = await supabase
@@ -160,6 +168,7 @@ export function useAdminWorkouts() {
           category_id: workoutData.category_id || null,
           image_url: workoutData.image_url || null,
           calories: workoutData.calories || null,
+          is_recommended: is_recommended || false,
         })
         .eq('id', id);
       
@@ -329,6 +338,82 @@ export function useAdminWorkouts() {
     });
   };
 
+  // Fetch workout recommendations
+  const getWorkoutRecommendations = (workoutId: string) => {
+    return useQuery({
+      queryKey: ['workout-recommendations', workoutId],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('workout_recommendations')
+          .select(`
+            *,
+            user:user_id (
+              id,
+              email,
+              first_name,
+              last_name
+            )
+          `)
+          .eq('workout_id', workoutId);
+        
+        if (error) {
+          throw new Error(`Error fetching workout recommendations: ${error.message}`);
+        }
+        
+        return data;
+      },
+      enabled: Boolean(workoutId),
+    });
+  };
+
+  // Add workout recommendation
+  const addWorkoutRecommendation = useMutation({
+    mutationFn: async (recommendation: WorkoutRecommendation) => {
+      const { error } = await supabase
+        .from('workout_recommendations')
+        .insert({
+          workout_id: recommendation.workout_id,
+          user_id: recommendation.user_id,
+        });
+      
+      if (error) {
+        throw new Error(`Error adding workout recommendation: ${error.message}`);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['workout-recommendations', variables.workout_id] 
+      });
+      toast.success('Workout recommendation added successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to add workout recommendation');
+    }
+  });
+
+  // Remove workout recommendation
+  const removeWorkoutRecommendation = useMutation({
+    mutationFn: async ({ recommendationId, workoutId }: { recommendationId: string, workoutId: string }) => {
+      const { error } = await supabase
+        .from('workout_recommendations')
+        .delete()
+        .eq('id', recommendationId);
+      
+      if (error) {
+        throw new Error(`Error removing workout recommendation: ${error.message}`);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['workout-recommendations', variables.workoutId] 
+      });
+      toast.success('Workout recommendation removed successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to remove workout recommendation');
+    }
+  });
+
   // Add exercise to workout
   const addExerciseToWorkout = useMutation({
     mutationFn: async ({ 
@@ -446,6 +531,11 @@ export function useAdminWorkouts() {
     areExercisesLoading: exercisesQuery.isLoading,
     getWorkoutExercises,
     getWorkoutDays,
+    getWorkoutRecommendations,
+    addWorkoutRecommendation: addWorkoutRecommendation.mutate,
+    isAddingRecommendation: addWorkoutRecommendation.isPending,
+    removeWorkoutRecommendation: removeWorkoutRecommendation.mutate,
+    isRemovingRecommendation: removeWorkoutRecommendation.isPending,
     addExerciseToWorkout: addExerciseToWorkout.mutate,
     isAddingExercise: addExerciseToWorkout.isPending,
     removeExerciseFromWorkout: removeExerciseFromWorkout.mutate,
