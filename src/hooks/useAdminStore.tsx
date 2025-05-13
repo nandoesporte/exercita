@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory, ProductFormData } from '@/types/store';
@@ -17,7 +16,7 @@ export const useAdminStore = () => {
       console.log('Fetching admin products');
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, categories:workout_categories(name)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -45,8 +44,8 @@ export const useAdminStore = () => {
           // Handle fields that might not exist in the actual database table
           sale_url: (item as any).sale_url || '',
           category_id: (item as any).category_id || null,
-          // Categories is null since we're not fetching it
-          categories: null
+          // Categories is populated since we're fetching it
+          categories: item.categories ? { name: (item.categories as any).name } : null
         };
         return product;
       });
@@ -55,9 +54,10 @@ export const useAdminStore = () => {
 
   // Buscar um produto específico
   const fetchProduct = async (id: string): Promise<Product> => {
+    console.log('Fetching product with ID:', id);
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, categories:workout_categories(name)')
       .eq('id', id)
       .single();
 
@@ -71,6 +71,8 @@ export const useAdminStore = () => {
       throw error;
     }
 
+    console.log('Product data received:', data);
+    
     // Map database fields to our Product interface with proper type safety
     const product: Product = {
       id: data.id,
@@ -84,8 +86,8 @@ export const useAdminStore = () => {
       // Handle fields that might not exist in the actual database table
       sale_url: (data as any).sale_url || '',
       category_id: (data as any).category_id || null,
-      // Categories is null since we're not fetching it
-      categories: null
+      // Categories is populated since we're fetching it
+      categories: data.categories ? { name: (data.categories as any).name } : null
     };
     
     return product;
@@ -123,17 +125,17 @@ export const useAdminStore = () => {
       console.log('Saving product to database:', product);
       
       // Convert ProductFormData to match the available database columns
-      // Only include properties that actually exist in the Supabase table
       const dbProduct = {
         name: product.name,
         description: product.description,
         price: product.price,
         image_url: product.image_url,
-        is_active: product.is_active
-        // Note: We're excluding category_id and sale_url as they don't exist in the database
+        is_active: product.is_active,
+        // Add category_id if available
+        ...(product.category_id !== 'null' && product.category_id !== null && { category_id: product.category_id }),
       };
 
-      console.log('Database product object:', dbProduct);
+      console.log('Database product object to create:', dbProduct);
 
       const { data, error } = await supabase
         .from('products')
@@ -152,6 +154,11 @@ export const useAdminStore = () => {
       }
 
       console.log('Product created successfully:', data);
+      
+      toast({
+        title: 'Produto criado com sucesso',
+        variant: 'default',
+      });
 
       // Map database fields to our Product interface
       const newProduct: Product = {
@@ -164,7 +171,7 @@ export const useAdminStore = () => {
         created_at: data.created_at,
         updated_at: data.updated_at,
         sale_url: '', // Add default values for fields not in database
-        category_id: null,
+        category_id: (data as any).category_id || null,
         categories: null // New product might not have categories loaded
       };
       
@@ -181,24 +188,31 @@ export const useAdminStore = () => {
   // Atualizar um produto
   const { mutateAsync: updateProduct, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, ...product }: ProductFormData & { id: string }) => {
+      console.log('Updating product with ID:', id);
+      console.log('Update data:', product);
+      
       // Convert ProductFormData to match the database columns
       const dbProduct = {
         name: product.name,
         description: product.description,
         price: product.price,
         image_url: product.image_url,
-        is_active: product.is_active
-        // Excluded fields that don't exist in database
+        is_active: product.is_active,
+        // Add category_id if available
+        ...(product.category_id !== 'null' && product.category_id !== null && { category_id: product.category_id }),
       };
+
+      console.log('Database product object to update:', dbProduct);
 
       const { data, error } = await supabase
         .from('products')
         .update(dbProduct)
         .eq('id', id)
-        .select()
+        .select('*')
         .single();
 
       if (error) {
+        console.error('Error updating product:', error);
         toast({
           title: 'Erro ao atualizar produto',
           description: error.message,
@@ -207,6 +221,8 @@ export const useAdminStore = () => {
         throw error;
       }
 
+      console.log('Product updated successfully:', data);
+      
       toast({
         title: 'Produto atualizado com sucesso',
         variant: 'default',
@@ -223,13 +239,14 @@ export const useAdminStore = () => {
         created_at: data.created_at,
         updated_at: data.updated_at,
         sale_url: '', // Add default values for fields not in database
-        category_id: null,
+        category_id: (data as any).category_id || null,
         categories: null // Updated product might not have categories loaded
       };
       
       return updatedProduct;
     },
     onSuccess: () => {
+      console.log('Invalidating queries after product update');
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['featured-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });

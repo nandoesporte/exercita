@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
@@ -12,12 +11,15 @@ export const useStore = () => {
   } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
+      console.log('Fetching store products');
       const { data, error } = await supabase
         .from('products')
         .select('*, categories:workout_categories(name)')
+        .eq('is_active', true)  // Only fetch active products for the store
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Error fetching products:', error);
         toast({
           title: 'Erro ao carregar produtos',
           description: error.message,
@@ -26,15 +28,17 @@ export const useStore = () => {
         return [];
       }
 
+      console.log('Store products fetched:', data);
+
       // Map database fields to our Product interface with proper type safety
       return (data || []).map(item => {
         // Create a properly typed product object
         const product: Product = {
           id: item.id,
           name: item.name,
-          description: item.description,
+          description: item.description || '',
           price: item.price,
-          image_url: item.image_url,
+          image_url: item.image_url || null,
           is_active: item.is_active === undefined ? true : item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,
@@ -72,9 +76,9 @@ export const useStore = () => {
     const product: Product = {
       id: data.id,
       name: data.name,
-      description: data.description,
+      description: data.description || '',
       price: data.price,
-      image_url: data.image_url,
+      image_url: data.image_url || null,
       is_active: data.is_active === undefined ? true : data.is_active,
       created_at: data.created_at,
       updated_at: data.updated_at,
@@ -115,13 +119,14 @@ export const useStore = () => {
     },
   });
 
-  // Buscar produtos ativos
+  // Buscar produtos em destaque
   const { 
     data: featuredProducts = [], 
     isLoading: isLoadingFeaturedProducts 
   } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
+      console.log('Fetching featured products');
       const { data, error } = await supabase
         .from('products')
         .select('*, categories:workout_categories(name)')
@@ -129,6 +134,7 @@ export const useStore = () => {
         .limit(6);
 
       if (error) {
+        console.error('Error fetching featured products:', error);
         toast({
           title: 'Erro ao carregar produtos em destaque',
           description: error.message,
@@ -137,15 +143,17 @@ export const useStore = () => {
         return [];
       }
 
+      console.log('Featured products fetched:', data);
+
       // Map database fields to our Product interface with proper type safety
       return (data || []).map(item => {
         // Create a properly typed product object
         const product: Product = {
           id: item.id,
           name: item.name,
-          description: item.description,
+          description: item.description || '',
           price: item.price,
-          image_url: item.image_url,
+          image_url: item.image_url || null,
           is_active: item.is_active === undefined ? true : item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,

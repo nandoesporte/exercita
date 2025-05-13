@@ -6,6 +6,7 @@ import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
 import { Product } from '@/types/store';
+import { toast } from '@/components/ui/use-toast';
 
 const EditProduct = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +33,9 @@ const EditProduct = () => {
 
       try {
         setIsLoading(true);
+        console.log('Loading product data for ID:', id);
         const data = await fetchProduct(id);
+        console.log('Product data loaded:', data);
         setProduct(data);
         setIsLoading(false);
       } catch (err) {
@@ -48,12 +51,27 @@ const EditProduct = () => {
   const handleSubmit = async (data: ProductFormData) => {
     if (!id) return;
     
-    await updateProduct({
-      id,
-      ...data
-    });
-    
-    navigate('/admin/products');
+    try {
+      console.log('Submitting product update:', data);
+      await updateProduct({
+        id,
+        ...data
+      });
+      
+      toast({
+        title: 'Produto atualizado com sucesso',
+        variant: 'default',
+      });
+      
+      navigate('/admin/products');
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast({
+        title: 'Erro ao atualizar produto',
+        description: 'Ocorreu um erro ao atualizar o produto. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading || isLoadingCategories) {
@@ -83,13 +101,15 @@ const EditProduct = () => {
 
   const formData: ProductFormData = {
     name: product.name,
-    description: product.description,
+    description: product.description || '',
     price: product.price,
-    image_url: product.image_url,
-    sale_url: product.sale_url,
+    image_url: product.image_url || '',
+    sale_url: product.sale_url || '',
     category_id: product.category_id || null,
     is_active: product.is_active,
   };
+
+  console.log('Form data prepared for ProductForm:', formData);
 
   return (
     <div className="space-y-6">

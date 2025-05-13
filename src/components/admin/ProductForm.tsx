@@ -50,6 +50,9 @@ const ProductForm = ({
   categories,
   isEditing = false,
 }: ProductFormProps) => {
+  console.log('ProductForm rendering with defaultValues:', defaultValues);
+  console.log('Categories available:', categories);
+
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultValues || {
@@ -62,6 +65,13 @@ const ProductForm = ({
       is_active: false,
     },
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      console.log('Setting form values from defaultValues:', defaultValues);
+      form.reset(defaultValues);
+    }
+  }, [defaultValues, form]);
 
   useEffect(() => {
     // This log helps debug form submission issues
