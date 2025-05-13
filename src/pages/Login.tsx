@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,6 +41,13 @@ const Login = () => {
   
   // Track successful login to show PWA prompt
   const [loginSuccess, setLoginSuccess] = useState(false);
+  
+  // Define handleClosePWAPrompt before it's used
+  const handleClosePWAPrompt = () => {
+    console.log('Closing PWA prompt');
+    setShowPWAPrompt(false);
+    closePrompt();
+  };
   
   useEffect(() => {
     // If redirected from admin page with adminAccess=required, show a message
@@ -150,12 +156,6 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleClosePWAPrompt = () => {
-    console.log('Closing PWA prompt');
-    setShowPWAPrompt(false);
-    closePrompt();
   };
   
   return (
