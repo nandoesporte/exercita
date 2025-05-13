@@ -26,7 +26,7 @@ export const useStore = () => {
         return [];
       }
 
-      // Map database fields to our Product interface
+      // Map database fields to our Product interface with proper type safety
       return (data || []).map(item => {
         // Create a properly typed product object
         const product: Product = {
@@ -39,11 +39,11 @@ export const useStore = () => {
           created_at: item.created_at,
           updated_at: item.updated_at,
           // Handle optional fields that might not be in the database response
-          sale_url: item.sale_url || '',
-          category_id: item.category_id || null,
+          sale_url: (item as any).sale_url || '',
+          category_id: (item as any).category_id || null,
           // Handle categories safely
-          categories: item.categories && !item.categories.error 
-            ? { name: item.categories.name } 
+          categories: item.categories && !(item.categories as any).error 
+            ? { name: (item.categories as any).name } 
             : null
         };
         return product;
@@ -68,7 +68,7 @@ export const useStore = () => {
       throw error;
     }
 
-    // Map database fields to our Product interface
+    // Map database fields to our Product interface with proper type safety
     const product: Product = {
       id: data.id,
       name: data.name,
@@ -79,11 +79,11 @@ export const useStore = () => {
       created_at: data.created_at,
       updated_at: data.updated_at,
       // Handle optional fields that might not be in the database response
-      sale_url: data.sale_url || '',
-      category_id: data.category_id || null,
+      sale_url: (data as any).sale_url || '',
+      category_id: (data as any).category_id || null,
       // Handle categories safely
-      categories: data.categories && !data.categories.error 
-        ? { name: data.categories.name } 
+      categories: data.categories && !(data.categories as any).error 
+        ? { name: (data.categories as any).name } 
         : null
     };
     
@@ -137,7 +137,7 @@ export const useStore = () => {
         return [];
       }
 
-      // Map database fields to our Product interface
+      // Map database fields to our Product interface with proper type safety
       return (data || []).map(item => {
         // Create a properly typed product object
         const product: Product = {
@@ -150,11 +150,11 @@ export const useStore = () => {
           created_at: item.created_at,
           updated_at: item.updated_at,
           // Handle optional fields that might not be in the database response
-          sale_url: item.sale_url || '',
-          category_id: item.category_id || null,
+          sale_url: (item as any).sale_url || '',
+          category_id: (item as any).category_id || null,
           // Handle categories safely
-          categories: item.categories && !item.categories.error 
-            ? { name: item.categories.name } 
+          categories: item.categories && !(item.categories as any).error 
+            ? { name: (item.categories as any).name } 
             : null
         };
         return product;
