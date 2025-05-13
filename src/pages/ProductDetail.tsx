@@ -7,6 +7,7 @@ import { useStore } from '@/hooks/useStore';
 import { formatCurrency } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Product } from '@/types/store';
+import { toast } from '@/components/ui/use-toast';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,17 @@ const ProductDetail = () => {
 
   const handleBackClick = () => {
     navigate('/store');
+  };
+
+  const handleBuyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!product?.sale_url) {
+      e.preventDefault();
+      toast({
+        title: "Link de compra não disponível",
+        description: "Este produto não possui um link de compra configurado.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
@@ -130,11 +142,13 @@ const ProductDetail = () => {
                 asChild
                 size="lg"
                 className="flex-1 bg-fitness-green hover:bg-fitness-green/80 text-white"
+                disabled={!product.sale_url}
               >
                 <a 
-                  href={product.sale_url} 
+                  href={product.sale_url || '#'} 
                   target="_blank" 
                   rel="noopener noreferrer"
+                  onClick={handleBuyClick}
                   className="flex items-center justify-center gap-2"
                 >
                   Comprar Agora
@@ -142,6 +156,11 @@ const ProductDetail = () => {
                 </a>
               </Button>
             </div>
+            {!product.sale_url && (
+              <p className="text-sm text-muted-foreground mt-2 text-center">
+                Link de compra não disponível para este produto.
+              </p>
+            )}
           </div>
         </div>
       </div>

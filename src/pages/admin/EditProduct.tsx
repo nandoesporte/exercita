@@ -22,6 +22,7 @@ const EditProduct = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<ProductFormData | null>(null);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -37,6 +38,19 @@ const EditProduct = () => {
         const data = await fetchProduct(id);
         console.log('Product data loaded:', data);
         setProduct(data);
+        
+        // Prepare form data once, not on every render
+        const preparedFormData: ProductFormData = {
+          name: data.name,
+          description: data.description || '',
+          price: data.price,
+          image_url: data.image_url || '',
+          sale_url: data.sale_url || '',
+          category_id: data.category_id || null,
+          is_active: data.is_active,
+        };
+        
+        setFormData(preparedFormData);
         setIsLoading(false);
       } catch (err) {
         console.error('Erro ao carregar produto:', err);
@@ -82,7 +96,7 @@ const EditProduct = () => {
     );
   }
 
-  if (error || !product) {
+  if (error || !product || !formData) {
     return (
       <div className="p-6 bg-card rounded-lg border border-border text-center">
         <h2 className="text-xl font-bold text-destructive mb-2">
@@ -98,18 +112,6 @@ const EditProduct = () => {
       </div>
     );
   }
-
-  const formData: ProductFormData = {
-    name: product.name,
-    description: product.description || '',
-    price: product.price,
-    image_url: product.image_url || '',
-    sale_url: product.sale_url || '',
-    category_id: product.category_id || null,
-    is_active: product.is_active,
-  };
-
-  console.log('Form data prepared for ProductForm:', formData);
 
   return (
     <div className="space-y-6">

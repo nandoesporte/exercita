@@ -13,6 +13,14 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
+  const handleBuyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!product.sale_url) {
+      e.preventDefault();
+      console.error('No sale URL provided for this product');
+      return;
+    }
+  };
+
   return (
     <div className={cn("bg-card border border-border rounded-xl overflow-hidden flex flex-col", className)}>
       {/* Product Image */}
@@ -60,12 +68,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
               size="sm" 
               variant="default"
               className="bg-fitness-green hover:bg-fitness-green/80"
+              disabled={!product.sale_url}
             >
               <a 
-                href={product.sale_url} 
+                href={product.sale_url || '#'} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="flex items-center gap-1"
+                onClick={handleBuyClick}
               >
                 Comprar
                 <ExternalLink size={14} />

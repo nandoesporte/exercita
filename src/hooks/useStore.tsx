@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
@@ -72,6 +71,9 @@ export const useStore = () => {
       throw error;
     }
 
+    // Log the received data including sale_url
+    console.log('Product detail fetched:', data, 'sale_url:', data.sale_url);
+    
     // Map database fields to our Product interface with proper type safety
     const product: Product = {
       id: data.id,
