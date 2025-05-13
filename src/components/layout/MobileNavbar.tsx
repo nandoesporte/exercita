@@ -3,13 +3,20 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Dumbbell, History, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useWorkouts } from '@/hooks/useWorkouts';
 
 const MobileNavbar = () => {
   const location = useLocation();
+  const { data: workouts } = useWorkouts();
+  
+  // Find the first workout to link to, or use a fallback
+  const firstWorkoutId = workouts && workouts.length > 0 
+    ? workouts[0].id 
+    : 'default';
   
   const navItems = [
     { icon: Home, path: '/', label: 'Início' },
-    { icon: Dumbbell, path: '/workouts', label: 'Treinos' },
+    { icon: Dumbbell, path: `/workout/${firstWorkoutId}`, label: 'Treinos' },
     { icon: History, path: '/history', label: 'Histórico' },
     { icon: User, path: '/profile', label: 'Perfil' },
   ];
@@ -23,7 +30,10 @@ const MobileNavbar = () => {
     <nav className="fixed bottom-0 left-0 right-0 bg-fitness-dark/95 backdrop-blur-md border-t border-fitness-darkGray/50 z-50 px-2 py-1 md:hidden animate-slide-up">
       <div className="flex items-center justify-between max-w-md mx-auto">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          // For Treinos, check if we're in any workout route
+          const isActive = item.label === 'Treinos' 
+            ? location.pathname.startsWith('/workout/') 
+            : location.pathname === item.path;
           
           return (
             <Link 
