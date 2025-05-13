@@ -131,7 +131,7 @@ export const useAdminStore = () => {
         image_url: product.image_url,
         sale_url: product.sale_url,
         is_active: product.is_active,
-        category_id: product.category_id === 'null' ? null : product.category_id
+        category_id: product.category_id === '' ? null : product.category_id
       };
 
       console.log('Database product object to create:', dbProduct);
@@ -198,7 +198,7 @@ export const useAdminStore = () => {
         image_url: product.image_url,
         sale_url: product.sale_url,
         is_active: product.is_active,
-        category_id: product.category_id === 'null' ? null : product.category_id
+        category_id: product.category_id === '' ? null : product.category_id
       };
 
       console.log('Database product object to update:', dbProduct);

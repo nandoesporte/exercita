@@ -30,7 +30,7 @@ const formSchema = z.object({
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
   price: z.coerce.number().positive("O preço deve ser positivo"),
   image_url: z.string().url("Deve ser uma URL válida").or(z.literal("")),
-  sale_url: z.string().url("Deve ser uma URL válida para direcionamento do cliente"),
+  sale_url: z.string().url("Deve ser uma URL válida para direcionamento do cliente").or(z.literal("")),
   category_id: z.string().nullable(),
   is_active: z.boolean().default(false),
 });
@@ -72,15 +72,6 @@ const ProductForm = ({
       form.reset(defaultValues);
     }
   }, [defaultValues, form]);
-
-  useEffect(() => {
-    // This log helps debug form submission issues
-    const subscription = form.watch((value) => {
-      console.log("Form values changed:", value);
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form]);
 
   const handleSubmit = (values: ProductFormData) => {
     console.log("Form submitting with values:", values);
@@ -165,8 +156,8 @@ const ProductForm = ({
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
                 <Select
-                  value={field.value || "null"}
-                  onValueChange={(value) => field.onChange(value === "null" ? null : value)}
+                  value={field.value || ""}
+                  onValueChange={(value) => field.onChange(value === "" ? null : value)}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -174,7 +165,7 @@ const ProductForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="null">Sem categoria</SelectItem>
+                    <SelectItem value="">Sem categoria</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
