@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
+import { toast } from '@/components/ui/use-toast';
 
 const CreateProduct = () => {
   const navigate = useNavigate();
@@ -15,8 +16,22 @@ const CreateProduct = () => {
   } = useAdminStore();
   
   const handleCreateProduct = async (data: ProductFormData) => {
-    await createProduct(data);
-    navigate('/admin/products');
+    try {
+      console.log('Creating product with data:', data);
+      await createProduct(data);
+      toast({
+        title: "Produto criado com sucesso",
+        description: "O produto foi adicionado à loja.",
+      });
+      navigate('/admin/products');
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast({
+        title: "Erro ao criar produto",
+        description: "Ocorreu um erro ao criar o produto. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const isLoading = isCreating || isLoadingCategories;
