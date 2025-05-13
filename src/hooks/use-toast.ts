@@ -1,13 +1,10 @@
 
-import { Toast, ToastActionElement, ToastProps } from "@/components/ui/toast"
+import { Toast, type ToastProps } from "@/components/ui/toast"
 import {
-  useToast as useToastPrimitive,
-  toast as toastPrimitive
-} from "@/components/ui/toaster"
+  useToast,
+  toast,
+  type ToastActionElement
+} from "@/hooks/use-toast.tsx"
 
-export const useToast = useToastPrimitive
-export const toast = toastPrimitive
-
-export type ToastActionProps = React.ComponentPropsWithoutRef<typeof ToastActionElement>
-
-export type { Toast, ToastProps }
+export { useToast, toast }
+export type { Toast, ToastProps, ToastActionElement }

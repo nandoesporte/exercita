@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminWorkouts, WorkoutFormData } from '@/hooks/useAdminWorkouts';
 import WorkoutForm from '@/components/admin/WorkoutForm';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 const CreateWorkout = () => {
   const navigate = useNavigate();
@@ -19,7 +19,11 @@ const CreateWorkout = () => {
   
   const handleCreateWorkout = (data: WorkoutFormData) => {
     if (data.days_of_week && data.days_of_week.length === 0) {
-      toast.warning('Consider selecting days of the week for the workout schedule');
+      toast({
+        title: "Warning",
+        description: "Consider selecting days of the week for the workout schedule",
+        variant: "default",
+      });
     }
     
     createWorkout(data, {

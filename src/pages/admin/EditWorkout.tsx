@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminWorkouts, WorkoutFormData } from '@/hooks/useAdminWorkouts';
 import { useWorkout } from '@/hooks/useWorkouts';
 import WorkoutForm from '@/components/admin/WorkoutForm';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 const EditWorkout = () => {
   const { id } = useParams<{ id: string }>();
