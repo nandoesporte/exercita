@@ -1,4 +1,6 @@
 
-import { Toaster } from "@/hooks/use-toast"
+import { Toaster as ToastPrimitive } from "@/hooks/use-toast.tsx"
 
-export { Toaster }
+export function Toaster() {
+  return <ToastPrimitive />
+}

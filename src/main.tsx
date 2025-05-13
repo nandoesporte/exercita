@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
-import { Toaster } from '@/hooks/use-toast'
+import { Toaster } from '@/components/ui/toaster'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

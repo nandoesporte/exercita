@@ -1,4 +1,4 @@
 
-import { useToast, toast, type ToastProps, type Toast } from "@/hooks/use-toast"
+import { useToast, toast, type ToastProps, type Toast, Toaster } from "@/hooks/use-toast"
 
-export { useToast, toast, type ToastProps, type Toast }
+export { useToast, toast, Toaster, type ToastProps, type Toast }
