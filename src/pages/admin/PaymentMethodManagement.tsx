@@ -17,6 +17,7 @@ interface PixKey {
   key_value: string;
   recipient_name: string;
   is_primary: boolean;
+  created_at?: string;
 }
 
 interface PaymentSettings {
@@ -25,6 +26,16 @@ interface PaymentSettings {
   accept_pix_payments: boolean;
   accept_monthly_fee: boolean;
   monthly_fee_amount: number;
+}
+
+// Type for database response
+interface PixKeyFromDB {
+  id: string;
+  key_type: string;
+  key_value: string;
+  recipient_name: string;
+  is_primary: boolean;
+  created_at: string;
 }
 
 const PaymentMethodManagement = () => {
@@ -54,7 +65,17 @@ const PaymentMethodManagement = () => {
 
       if (error) throw error;
       
-      setPixKeys(data || []);
+      // Transform the data to ensure key_type is the correct union type
+      const formattedData = data?.map((item: PixKeyFromDB) => ({
+        id: item.id,
+        key_type: item.key_type as 'cpf' | 'email' | 'phone' | 'random',
+        key_value: item.key_value,
+        recipient_name: item.recipient_name,
+        is_primary: item.is_primary || false,
+        created_at: item.created_at
+      }));
+      
+      setPixKeys(formattedData || []);
     } catch (error) {
       console.error('Error fetching pix keys:', error);
       toast("Erro ao carregar chaves PIX.");
