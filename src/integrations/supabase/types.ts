@@ -169,6 +169,42 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_trainers: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          credentials: string | null
+          id: string
+          is_primary: boolean | null
+          name: string
+          photo_url: string | null
+          updated_at: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          credentials?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          photo_url?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          credentials?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          photo_url?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category_id: string | null

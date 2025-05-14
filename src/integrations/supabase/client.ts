@@ -9,7 +9,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Create a custom type that extends the Database type to include workout_days
+// Create a custom type that extends the Database type to include workout_days and personal_trainers
 type CustomDatabase = Database & {
   public: {
     Tables: {
@@ -41,6 +41,42 @@ type CustomDatabase = Database & {
             referencedColumns: ["id"];
           }
         ];
+      };
+      personal_trainers: {
+        Row: {
+          id: string;
+          name: string;
+          credentials: string | null;
+          bio: string | null;
+          whatsapp: string | null;
+          photo_url: string | null;
+          is_primary: boolean | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          credentials?: string | null;
+          bio?: string | null;
+          whatsapp?: string | null;
+          photo_url?: string | null;
+          is_primary?: boolean | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          credentials?: string | null;
+          bio?: string | null;
+          whatsapp?: string | null;
+          photo_url?: string | null;
+          is_primary?: boolean | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
       };
     } & Database['public']['Tables'];
   };
