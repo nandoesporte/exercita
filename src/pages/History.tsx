@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { History as HistoryIcon, Calendar, Clock, Dumbbell, Star, Flame, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useWorkoutHistory, WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
@@ -24,7 +23,6 @@ interface GroupedWorkouts {
 
 const History = () => {
   const { data: workoutHistory, isLoading, error, refetch } = useWorkoutHistory();
-  const { toast } = useToast();
   const [workoutToDelete, setWorkoutToDelete] = React.useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);

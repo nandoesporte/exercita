@@ -1,6 +1,6 @@
 
 import React from "react";
-import { toast as sonnerToast, type Toast as SonnerToast } from "sonner";
+import { toast as sonnerToast, type ToastT } from "sonner";
 
 export interface ToastProps {
   title?: React.ReactNode;
@@ -9,15 +9,21 @@ export interface ToastProps {
   variant?: "default" | "destructive";
 }
 
-export type ToastActionElement = React.ReactElement<typeof ToastAction>;
+export type ToastActionElement = React.ReactElement;
 
-export const toast = (
-  title: React.ReactNode, 
-  props?: Omit<ToastProps, "title">
-) => {
-  return sonnerToast(title, {
-    ...props
-  });
+// This function overloads toast to support both direct message and options object
+export const toast = (props: ToastProps | string) => {
+  if (typeof props === 'string') {
+    return sonnerToast(props);
+  } else {
+    const { title, description, variant, ...rest } = props;
+    return sonnerToast(title as string, {
+      description,
+      // Map our variant to sonner's style
+      style: variant === "destructive" ? { backgroundColor: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" } : undefined,
+      ...rest
+    });
+  }
 };
 
 export const useToast = () => {

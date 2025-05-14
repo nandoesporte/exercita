@@ -6,7 +6,7 @@ import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
 import { Product } from '@/types/store';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const EditProduct = () => {
   const { id } = useParams<{ id: string }>();
