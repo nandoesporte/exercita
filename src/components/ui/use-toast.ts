@@ -3,5 +3,6 @@ import { toast } from "sonner"
 
 export { toast }
 
-// Re-export the types and hooks from toast library
-export type { ToastProps } from "sonner"
+// Re-export the types from sonner
+export type { ToasterProps } from "sonner"
+

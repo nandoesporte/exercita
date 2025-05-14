@@ -1,5 +1,5 @@
 
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -47,7 +47,7 @@ const App = () => {
   
   return (
     <>
-      <Sonner />
+      <Toaster />
       <Routes>
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />

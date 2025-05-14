@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -114,16 +113,14 @@ const Schedule = () => {
       
       setWhatsappLink(link);
       
-      toast({
-        title: "Agendamento criado com sucesso!",
-        description: "Clique no botão abaixo para confirmar pelo WhatsApp.",
+      toast("Agendamento criado com sucesso!", {
+        description: "Clique no botão abaixo para confirmar pelo WhatsApp."
       });
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro no agendamento",
+      toast("Erro no agendamento", {
         description: "Não foi possível criar o agendamento. Por favor, tente novamente.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);

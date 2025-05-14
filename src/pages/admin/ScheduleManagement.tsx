@@ -68,10 +68,9 @@ const ScheduleManagement = () => {
         }
       } catch (error) {
         console.error('Error fetching trainer data:', error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar dados",
-          description: "Não foi possível carregar as informações do personal trainer."
+        toast("Erro ao carregar dados", {
+          description: "Não foi possível carregar as informações do personal trainer.",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
@@ -106,16 +105,14 @@ const ScheduleManagement = () => {
 
       setPhotoUrl(data.publicUrl);
       
-      toast({
-        title: "Foto enviada com sucesso",
-        description: "A foto do perfil foi atualizada.",
+      toast("Foto enviada com sucesso", {
+        description: "A foto do perfil foi atualizada."
       });
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro no upload",
+      toast("Erro no upload", {
         description: "Não foi possível enviar a foto. Tente novamente.",
+        variant: "destructive"
       });
     } finally {
       setUploading(false);
@@ -169,16 +166,14 @@ const ScheduleManagement = () => {
 
       if (saveError) throw saveError;
 
-      toast({
-        title: "Salvo com sucesso",
-        description: "As informações do personal trainer foram atualizadas.",
+      toast("Salvo com sucesso", {
+        description: "As informações do personal trainer foram atualizadas."
       });
     } catch (error) {
       console.error('Error saving trainer data:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao salvar",
+      toast("Erro ao salvar", {
         description: "Não foi possível salvar as informações. Tente novamente.",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
