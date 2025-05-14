@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Dumbbell, History, User, ShoppingBag } from 'lucide-react';
+import { Home, Dumbbell, History, User, ShoppingBag, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWorkouts } from '@/hooks/useWorkouts';
 
@@ -17,8 +17,8 @@ const MobileNavbar = () => {
   const navItems = [
     { icon: Home, path: '/', label: 'Início' },
     { icon: Dumbbell, path: `/workout/${firstWorkoutId}`, label: 'Treinos' },
+    { icon: Calendar, path: '/schedule', label: 'Agendar' },
     { icon: ShoppingBag, path: '/store', label: 'Loja' },
-    { icon: History, path: '/history', label: 'Histórico' },
     { icon: User, path: '/profile', label: 'Perfil' },
   ];
 
@@ -31,12 +31,14 @@ const MobileNavbar = () => {
     <nav className="fixed bottom-0 left-0 right-0 bg-fitness-dark/95 backdrop-blur-md border-t border-fitness-darkGray/50 z-50 px-2 py-1 md:hidden animate-slide-up">
       <div className="flex items-center justify-between max-w-md mx-auto">
         {navItems.map((item) => {
-          // Special case for Treinos and Store paths
+          // Special case for Treinos, Store, and Schedule paths
           let isActive = false;
           if (item.label === 'Treinos') {
             isActive = location.pathname.startsWith('/workout/');
           } else if (item.label === 'Loja') {
             isActive = location.pathname.startsWith('/store');
+          } else if (item.label === 'Agendar') {
+            isActive = location.pathname.startsWith('/schedule');
           } else {
             isActive = location.pathname === item.path;
           }

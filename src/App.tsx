@@ -17,6 +17,7 @@ import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 import Store from "@/pages/Store";
 import ProductDetail from "@/pages/ProductDetail";
+import Schedule from "@/pages/Schedule";
 
 // Profile related pages
 import AccountInfo from "@/pages/AccountInfo";
@@ -63,6 +64,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/store" element={<Store />} />
           <Route path="/store/:id" element={<ProductDetail />} />
+          <Route path="/schedule" element={<Schedule />} />
           
           {/* Profile related pages */}
           <Route path="/account" element={<AccountInfo />} />

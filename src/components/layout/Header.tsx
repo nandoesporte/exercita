@@ -129,6 +129,16 @@ const Header: React.FC<HeaderProps> = ({
                   Treinos
                 </Link>
                 <Link 
+                  to="/schedule"
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location.pathname === '/schedule' 
+                      ? 'text-fitness-green bg-fitness-darkGray/30' 
+                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                  }`}
+                >
+                  Agendar
+                </Link>
+                <Link 
                   to="/store"
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     location.pathname.startsWith('/store') 
