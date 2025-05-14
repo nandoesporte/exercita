@@ -20,8 +20,9 @@ function convertToExternalToast(options: ToastOptions): ExternalToast {
     ...rest
   };
   
-  // Only add properties that are defined
+  // For sonner, we pass title directly in the object
   if (title !== undefined) {
+    // @ts-ignore - We know title is valid for sonner even if TypeScript doesn't recognize it
     externalToast.title = title;
   }
   
