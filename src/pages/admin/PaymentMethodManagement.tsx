@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,14 @@ interface PixKey {
   key_value: string;
   recipient_name: string;
   is_primary: boolean;
+}
+
+interface PaymentSettings {
+  id?: string;
+  accept_card_payments: boolean;
+  accept_pix_payments: boolean;
+  accept_monthly_fee: boolean;
+  monthly_fee_amount: number;
 }
 
 const PaymentMethodManagement = () => {
@@ -153,7 +162,7 @@ const PaymentMethodManagement = () => {
     setSavingSettings(true);
     
     try {
-      const settings = {
+      const settings: PaymentSettings = {
         accept_card_payments: acceptCardPayments,
         accept_pix_payments: acceptPixPayments,
         accept_monthly_fee: acceptMonthlyFee,

@@ -169,6 +169,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_settings: {
+        Row: {
+          accept_card_payments: boolean | null
+          accept_monthly_fee: boolean | null
+          accept_pix_payments: boolean | null
+          created_at: string | null
+          id: string
+          monthly_fee_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          accept_card_payments?: boolean | null
+          accept_monthly_fee?: boolean | null
+          accept_pix_payments?: boolean | null
+          created_at?: string | null
+          id?: string
+          monthly_fee_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          accept_card_payments?: boolean | null
+          accept_monthly_fee?: boolean | null
+          accept_pix_payments?: boolean | null
+          created_at?: string | null
+          id?: string
+          monthly_fee_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       personal_trainers: {
         Row: {
           bio: string | null
@@ -202,6 +232,33 @@ export type Database = {
           photo_url?: string | null
           updated_at?: string | null
           whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      pix_keys: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          key_type: string
+          key_value: string
+          recipient_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          key_type: string
+          key_value: string
+          recipient_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          key_type?: string
+          key_value?: string
+          recipient_name?: string
         }
         Relationships: []
       }
