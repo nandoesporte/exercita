@@ -7,6 +7,7 @@ export interface ToastProps {
   description?: React.ReactNode
   action?: React.ReactNode
   variant?: "default" | "destructive"
+  title?: React.ReactNode
 }
 
 // Export the Toast type

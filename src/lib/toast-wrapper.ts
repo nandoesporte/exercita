@@ -1,12 +1,36 @@
 
 import { toast as sonnerToast } from 'sonner';
 import type { ToastProps } from '@/hooks/use-toast';
+import { ExternalToast } from 'sonner';
 
+// Define our simplified toast options interface
 interface ToastOptions {
   title?: string;
   description?: string;
   variant?: "default" | "destructive";
   [key: string]: any; // Allow other props to be passed
+}
+
+// Convert our app's toast options to Sonner's expected format
+function convertToExternalToast(options: ToastOptions): ExternalToast {
+  const { variant, description, title, ...rest } = options;
+  
+  // Create a properly formatted ExternalToast object
+  const externalToast: ExternalToast = {
+    ...rest
+  };
+  
+  // Only add properties that are defined
+  if (title !== undefined) {
+    externalToast.title = title;
+  }
+  
+  // Map our variant to Sonner's style if needed
+  if (variant === "destructive") {
+    externalToast.style = { background: 'var(--destructive)', color: 'var(--destructive-foreground)' };
+  }
+  
+  return externalToast;
 }
 
 // Base toast function that handles both string and object inputs
@@ -15,12 +39,9 @@ function toastImpl(message: string | ToastOptions): void {
     // If a string is passed, use it directly
     sonnerToast(message);
   } else {
-    // If an object is passed, convert it to the format expected by sonner
-    const { description, variant, ...otherProps } = message;
-    sonnerToast(description || '', {
-      ...(variant && { variant }),
-      ...otherProps
-    });
+    // Extract description for the primary message
+    const { description, ...options } = message;
+    sonnerToast(description || '', convertToExternalToast(options));
   }
 }
 
@@ -31,8 +52,8 @@ export const toast = Object.assign(toastImpl, {
     if (typeof message === 'string') {
       sonnerToast.success(message);
     } else {
-      const { description, ...otherProps } = message;
-      sonnerToast.success(description || '', otherProps);
+      const { description, ...options } = message;
+      sonnerToast.success(description || '', convertToExternalToast(options));
     }
   },
   
@@ -41,8 +62,8 @@ export const toast = Object.assign(toastImpl, {
     if (typeof message === 'string') {
       sonnerToast.error(message);
     } else {
-      const { description, ...otherProps } = message;
-      sonnerToast.error(description || '', otherProps);
+      const { description, ...options } = message;
+      sonnerToast.error(description || '', convertToExternalToast(options));
     }
   },
   
