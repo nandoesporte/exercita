@@ -15,8 +15,7 @@ export function toast(message: string | ToastOptions): void {
     // If a string is passed, use it directly
     originalToast(message);
   } else {
-    // If an object is passed, adapt it to the current toast API
-    // Extract the message from the object
+    // If an object is passed with title/description properties, adapt it to the current toast API
     const messageContent = message.title || message.description || '';
     originalToast(messageContent);
   }

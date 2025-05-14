@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -23,7 +22,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardHeader, CardContent, CardDescription } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -114,16 +113,10 @@ const Schedule = () => {
       
       setWhatsappLink(link);
       
-      toast({
-        title: "Agendamento criado com sucesso!",
-        description: "Clique no botão abaixo para confirmar pelo WhatsApp."
-      });
+      toast("Agendamento criado com sucesso! Clique no botão abaixo para confirmar pelo WhatsApp.");
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
-      toast({
-        title: "Erro no agendamento",
-        description: "Não foi possível criar o agendamento. Por favor, tente novamente."
-      });
+      toast("Erro no agendamento: Não foi possível criar o agendamento. Por favor, tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
