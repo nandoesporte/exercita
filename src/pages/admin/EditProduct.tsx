@@ -6,7 +6,7 @@ import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
 import { Product } from '@/types/store';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 const EditProduct = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,8 +23,14 @@ const EditProduct = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductFormData | null>(null);
+  const [isDataFetched, setIsDataFetched] = useState(false);
 
   useEffect(() => {
+    // Evitar múltiplas chamadas se os dados já foram buscados
+    if (isDataFetched) {
+      return;
+    }
+
     const loadProduct = async () => {
       if (!id) {
         setError('ID do produto não fornecido');
@@ -52,15 +58,17 @@ const EditProduct = () => {
         
         setFormData(preparedFormData);
         setIsLoading(false);
+        setIsDataFetched(true);
       } catch (err) {
         console.error('Erro ao carregar produto:', err);
         setError('Não foi possível carregar o produto');
         setIsLoading(false);
+        setIsDataFetched(true);
       }
     };
 
     loadProduct();
-  }, [id, fetchProduct]);
+  }, [id, fetchProduct, isDataFetched]);
 
   const handleSubmit = async (data: ProductFormData) => {
     if (!id) return;

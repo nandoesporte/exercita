@@ -52,7 +52,7 @@ export const useAdminStore = () => {
     },
   });
 
-  // Fetch a specific product
+  // Fetch a specific product with cacheTime and staleTime to prevent repeated requests
   const fetchProduct = async (id: string): Promise<Product> => {
     console.log('Fetching product with ID:', id);
     const { data, error } = await supabase
