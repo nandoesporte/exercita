@@ -1,6 +1,6 @@
 
 import React from "react";
-import { toast as sonnerToast, type ToastT } from "sonner";
+import { toast as sonnerToast, type Toast as SonnerToast } from "sonner";
 
 export interface ToastProps {
   title?: React.ReactNode;
@@ -34,10 +34,6 @@ export const useToast = () => {
 
 export function Toaster() {
   return null; // This will be imported from toaster.tsx
-}
-
-export function ToastAction() {
-  return null; // Just a placeholder for type inference
 }
 
 export type Toast = ToastProps;
