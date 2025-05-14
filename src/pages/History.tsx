@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { History as HistoryIcon, Calendar, Clock, Dumbbell, Star, Flame, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -71,20 +70,12 @@ const History = () => {
         throw error;
       }
       
-      toast({
-        title: 'Treino excluído',
-        description: 'O registro de treino foi removido do seu histórico.',
-        variant: 'default',
-      });
+      toast('Treino excluído com sucesso');
       
       refetch();
     } catch (error) {
       console.error('Erro ao excluir treino:', error);
-      toast({
-        title: 'Erro ao excluir',
-        description: 'Não foi possível excluir o registro de treino.',
-        variant: 'destructive',
-      });
+      toast('Erro ao excluir registro de treino');
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);

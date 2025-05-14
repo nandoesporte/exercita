@@ -1,10 +1,9 @@
-
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 const CreateProduct = () => {
   const navigate = useNavigate();
@@ -19,18 +18,11 @@ const CreateProduct = () => {
     try {
       console.log('Creating product with data:', data);
       await createProduct(data);
-      toast({
-        title: "Produto criado com sucesso",
-        description: "O produto foi adicionado à loja.",
-      });
+      toast('Produto criado com sucesso');
       navigate('/admin/products');
     } catch (error) {
       console.error('Error creating product:', error);
-      toast({
-        title: "Erro ao criar produto",
-        description: "Ocorreu um erro ao criar o produto. Tente novamente.",
-        variant: "destructive",
-      });
+      toast('Erro ao criar produto. Tente novamente.');
     }
   };
 

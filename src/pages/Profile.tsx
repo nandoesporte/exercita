@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -10,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 const Profile = () => {
   const { profile, isLoading, uploadProfileImage } = useProfile();
@@ -47,18 +46,14 @@ const Profile = () => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: 'Please select a valid image file (JPEG, PNG, or GIF)'
-      });
+      toast('Please select a valid image file (JPEG, PNG, or GIF)');
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast({
-        title: 'Image size should be less than 5MB'
-      });
+      toast('Image size should be less than 5MB');
       return;
     }
     

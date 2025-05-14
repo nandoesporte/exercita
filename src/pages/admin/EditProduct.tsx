@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -6,7 +5,7 @@ import { useAdminStore } from '@/hooks/useAdminStore';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
 import { Product } from '@/types/store';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 const EditProduct = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,19 +79,12 @@ const EditProduct = () => {
         ...data
       });
       
-      toast({
-        title: 'Produto atualizado com sucesso',
-        variant: 'default',
-      });
+      toast('Produto atualizado com sucesso');
       
       navigate('/admin/products');
     } catch (error) {
       console.error('Error updating product:', error);
-      toast({
-        title: 'Erro ao atualizar produto',
-        description: 'Ocorreu um erro ao atualizar o produto. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast('Erro ao atualizar produto. Tente novamente.');
     }
   };
 
