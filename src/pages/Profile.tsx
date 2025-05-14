@@ -10,8 +10,7 @@ import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import PaymentInfo from '@/components/profile/PaymentInfo';
-import PaymentHistory from '@/components/profile/PaymentHistory';
+import PaymentTabs from '@/components/profile/PaymentTabs';
 
 const Profile = () => {
   const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey } = useProfile();
@@ -132,16 +131,8 @@ const Profile = () => {
           </div>
         </div>
         
-        {/* Payment Info */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-3">Pagamentos</h3>
-          <PaymentInfo pixKey={pixKey} isLoading={isLoadingPixKey} />
-        </div>
-
-        {/* Payment History */}
-        <div className="mb-8">
-          <PaymentHistory />
-        </div>
+        {/* Payment Tabs - New Component */}
+        <PaymentTabs pixKey={pixKey} isLoadingPixKey={isLoadingPixKey} />
         
         {/* Menu Items */}
         <div className="space-y-2 rounded-xl overflow-hidden bg-fitness-darkGray divide-y divide-gray-700/50">

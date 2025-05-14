@@ -1,6 +1,5 @@
 
 import { toast as originalToast } from '@/hooks/use-toast';
-import { ReactNode } from 'react';
 
 interface ToastOptions {
   title?: string;
@@ -28,7 +27,7 @@ export const toast = Object.assign(toastImpl, {
     if (typeof message === 'string') {
       originalToast(message);
     } else {
-      const options = { ...message, variant: "default" };
+      const options = { ...message, variant: "default" as const };
       toastImpl(options);
     }
   },
@@ -36,9 +35,9 @@ export const toast = Object.assign(toastImpl, {
   // Error toast variant
   error: (message: string | ToastOptions): void => {
     if (typeof message === 'string') {
-      originalToast({ description: message, variant: "destructive" });
+      originalToast({ description: message, variant: "destructive" as const });
     } else {
-      const options = { ...message, variant: "destructive" };
+      const options = { ...message, variant: "destructive" as const };
       toastImpl(options);
     }
   }
