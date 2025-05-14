@@ -1,6 +1,5 @@
 
-
-import { toast as originalToast } from '@/hooks/use-toast';
+import { toast as originalToast, type Toast, type ToastProps } from '@/hooks/use-toast';
 
 interface ToastOptions {
   title?: string;
@@ -9,16 +8,29 @@ interface ToastOptions {
   [key: string]: any; // Allow other props to be passed
 }
 
+// Utility function to format toast message based on input type
+function formatToastMessage(message: string | ToastOptions): ToastProps | string {
+  if (typeof message === 'string') {
+    return message;
+  } else {
+    // Convert our ToastOptions to the format expected by the original toast
+    const formattedProps: ToastProps = {};
+    
+    if (message.description) {
+      formattedProps.description = message.description;
+    }
+    
+    if (message.variant) {
+      formattedProps.variant = message.variant;
+    }
+    
+    return formattedProps;
+  }
+}
+
 // Base toast function
 function toastImpl(message: string | ToastOptions): void {
-  if (typeof message === 'string') {
-    // If a string is passed, use it directly
-    originalToast(message);
-  } else {
-    // If an object is passed with title/description properties, adapt it to the current toast API
-    const messageContent = message.title || message.description || '';
-    originalToast(messageContent);
-  }
+  originalToast(formatToastMessage(message));
 }
 
 // Create the toast object with success and error methods
@@ -36,11 +48,13 @@ export const toast = Object.assign(toastImpl, {
   // Error toast variant
   error: (message: string | ToastOptions): void => {
     if (typeof message === 'string') {
-      originalToast({ description: message, variant: "destructive" as const });
+      originalToast({ 
+        description: message, 
+        variant: "destructive" 
+      } as ToastProps);
     } else {
       const options = { ...message, variant: "destructive" as const };
       toastImpl(options);
     }
   }
 });
-
