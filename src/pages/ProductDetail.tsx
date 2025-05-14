@@ -146,11 +146,11 @@ const ProductDetail = () => {
           
           {/* Botões de ação */}
           <div className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col">
               <Button 
                 asChild
                 size="lg"
-                className="flex-1 bg-fitness-green hover:bg-fitness-green/80 text-white"
+                className="w-full px-8 py-6 text-base font-bold rounded-xl bg-fitness-green hover:bg-fitness-green/90 text-white shadow-md hover:shadow-xl transition-all"
                 disabled={!product.sale_url}
               >
                 <a 
@@ -158,7 +158,7 @@ const ProductDetail = () => {
                   target="_blank" 
                   rel="noopener noreferrer"
                   onClick={handleBuyClick}
-                  className="flex items-center justify-center gap-2"
+                  className="flex items-center justify-center gap-2 h-10"
                 >
                   Comprar Agora
                   <ExternalLink size={20} />

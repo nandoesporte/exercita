@@ -67,7 +67,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
               asChild
               size="sm" 
               variant="default"
-              className="bg-fitness-green hover:bg-fitness-green/80"
+              className="bg-fitness-green hover:bg-fitness-green/90 shadow-sm hover:shadow-md transition-all rounded-lg"
               disabled={!product.sale_url}
             >
               <a 
