@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, CreditCard, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Plus, Trash2, Key, Edit, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 interface PaymentMethod {
   id: string;
@@ -43,10 +43,24 @@ const PaymentMethods = () => {
     holderName: '',
     cvv: '',
   });
+  
+  // PIX management state
+  const [pixKey, setPixKey] = useState('');
+  const [pixKeyType, setPixKeyType] = useState('cpf');
+  const [isEditingPix, setIsEditingPix] = useState(false);
+  const [savedPixKey, setSavedPixKey] = useState('');
+  const [savedPixKeyType, setSavedPixKeyType] = useState('cpf');
+  
+  // Monthly fee state
+  const [monthlyFee, setMonthlyFee] = useState('');
+  const [savedMonthlyFee, setSavedMonthlyFee] = useState('');
+  const [isEditingFee, setIsEditingFee] = useState(false);
 
   const handleDelete = (id: string) => {
     setPaymentMethods(paymentMethods.filter((method) => method.id !== id));
-    toast.success('Cartão removido com sucesso');
+    toast({
+      title: 'Cartão removido com sucesso'
+    });
   };
 
   const handleSetDefault = (id: string) => {
@@ -56,7 +70,9 @@ const PaymentMethods = () => {
         isDefault: method.id === id,
       }))
     );
-    toast.success('Cartão padrão alterado');
+    toast({
+      title: 'Cartão padrão alterado'
+    });
   };
 
   const handleAddCard = (e: React.FormEvent) => {
@@ -64,7 +80,9 @@ const PaymentMethods = () => {
 
     // Validate form
     if (!newCard.cardNumber || !newCard.expiryDate || !newCard.holderName || !newCard.cvv) {
-      toast.error('Preencha todos os campos');
+      toast({
+        title: 'Preencha todos os campos'
+      });
       return;
     }
 
@@ -87,7 +105,40 @@ const PaymentMethods = () => {
       holderName: '',
       cvv: '',
     });
-    toast.success('Cartão adicionado com sucesso');
+    toast({
+      title: 'Cartão adicionado com sucesso'
+    });
+  };
+  
+  const handleSavePix = () => {
+    if (!pixKey) {
+      toast({
+        title: 'Digite uma chave PIX válida'
+      });
+      return;
+    }
+    
+    setSavedPixKey(pixKey);
+    setSavedPixKeyType(pixKeyType);
+    setIsEditingPix(false);
+    toast({
+      title: 'Chave PIX salva com sucesso'
+    });
+  };
+  
+  const handleSaveMonthlyFee = () => {
+    if (!monthlyFee) {
+      toast({
+        title: 'Digite um valor de mensalidade válido'
+      });
+      return;
+    }
+    
+    setSavedMonthlyFee(monthlyFee);
+    setIsEditingFee(false);
+    toast({
+      title: 'Valor da mensalidade salvo com sucesso'
+    });
   };
 
   return (
@@ -101,61 +152,218 @@ const PaymentMethods = () => {
         </div>
 
         <div className="space-y-6">
-          {paymentMethods.length > 0 ? (
-            <div className="space-y-4">
-              {paymentMethods.map((method) => (
-                <div
-                  key={method.id}
-                  className={`bg-fitness-darkGray p-4 rounded-lg border ${
-                    method.isDefault ? 'border-fitness-orange' : 'border-transparent'
-                  }`}
-                >
-                  <div className="flex justify-between">
-                    <div className="flex items-center">
-                      <CreditCard className="h-5 w-5 text-fitness-orange mr-3" />
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <p className="font-semibold">{method.cardNumber}</p>
-                          {method.isDefault && (
-                            <span className="bg-fitness-orange text-white text-xs px-2 py-0.5 rounded-full">
-                              Padrão
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-400">
-                          {method.type === 'credit' ? 'Crédito' : 'Débito'} • Exp: {method.expiryDate}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(method.id)}
-                      className="text-red-500 hover:text-red-400 transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                  {!method.isDefault && (
-                    <Button
-                      onClick={() => handleSetDefault(method.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2 text-fitness-orange hover:text-fitness-orange/90 hover:bg-transparent p-0"
-                    >
-                      Definir como padrão
-                    </Button>
-                  )}
+          {/* Monthly Fee Section */}
+          <div className="bg-fitness-darkGray p-4 rounded-lg">
+            <h2 className="text-lg font-semibold mb-3 flex items-center">
+              <span>Mensalidade</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="ml-auto text-fitness-orange hover:text-fitness-orange/90"
+                onClick={() => {
+                  if (isEditingFee) {
+                    handleSaveMonthlyFee();
+                  } else {
+                    setMonthlyFee(savedMonthlyFee);
+                    setIsEditingFee(true);
+                  }
+                }}
+              >
+                {isEditingFee ? <Save size={18} /> : <Edit size={18} />}
+              </Button>
+            </h2>
+            
+            {isEditingFee ? (
+              <div className="mt-2">
+                <div className="flex items-center">
+                  <span className="bg-fitness-dark text-gray-400 p-2 rounded-l-md border border-r-0 border-gray-700">R$</span>
+                  <Input
+                    type="number"
+                    placeholder="99.90"
+                    value={monthlyFee}
+                    onChange={(e) => setMonthlyFee(e.target.value)}
+                    className="rounded-l-none bg-fitness-dark border-gray-700"
+                  />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-fitness-darkGray p-6 rounded-lg text-center">
-              <CreditCard className="h-10 w-10 text-fitness-orange mx-auto mb-3" />
-              <p>Nenhum cartão cadastrado</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Adicione um cartão para pagar por serviços premium
-              </p>
-            </div>
-          )}
+                <div className="flex space-x-2 mt-3">
+                  <Button 
+                    onClick={handleSaveMonthlyFee} 
+                    className="flex-1 bg-fitness-orange hover:bg-fitness-orange/90"
+                  >
+                    Salvar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => setIsEditingFee(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-fitness-dark rounded-md">
+                {savedMonthlyFee ? (
+                  <p className="text-lg font-medium">R$ {savedMonthlyFee}</p>
+                ) : (
+                  <p className="text-gray-400">Nenhum valor definido</p>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* PIX Key Section */}
+          <div className="bg-fitness-darkGray p-4 rounded-lg">
+            <h2 className="text-lg font-semibold mb-3 flex items-center">
+              <Key size={18} className="mr-2 text-fitness-orange" />
+              <span>Chave PIX</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="ml-auto text-fitness-orange hover:text-fitness-orange/90"
+                onClick={() => {
+                  if (isEditingPix) {
+                    handleSavePix();
+                  } else {
+                    setPixKey(savedPixKey);
+                    setPixKeyType(savedPixKeyType);
+                    setIsEditingPix(true);
+                  }
+                }}
+              >
+                {isEditingPix ? <Save size={18} /> : <Edit size={18} />}
+              </Button>
+            </h2>
+            
+            {isEditingPix ? (
+              <div className="mt-2">
+                <div className="mb-3">
+                  <label htmlFor="pixKeyType" className="block text-sm mb-1">
+                    Tipo de Chave PIX
+                  </label>
+                  <select
+                    id="pixKeyType"
+                    value={pixKeyType}
+                    onChange={(e) => setPixKeyType(e.target.value)}
+                    className="w-full bg-fitness-dark border border-gray-700 rounded p-2"
+                  >
+                    <option value="cpf">CPF</option>
+                    <option value="cnpj">CNPJ</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Telefone</option>
+                    <option value="random">Chave Aleatória</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="pixKey" className="block text-sm mb-1">
+                    Chave PIX
+                  </label>
+                  <Input
+                    id="pixKey"
+                    placeholder={pixKeyType === 'email' ? 'exemplo@email.com' : '123.456.789-00'}
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                    className="bg-fitness-dark border-gray-700"
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={handleSavePix} 
+                    className="flex-1 bg-fitness-orange hover:bg-fitness-orange/90"
+                  >
+                    Salvar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => setIsEditingPix(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-fitness-dark rounded-md">
+                {savedPixKey ? (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">
+                      {savedPixKeyType === 'cpf' ? 'CPF' : 
+                       savedPixKeyType === 'cnpj' ? 'CNPJ' : 
+                       savedPixKeyType === 'email' ? 'Email' : 
+                       savedPixKeyType === 'phone' ? 'Telefone' : 'Chave Aleatória'}
+                    </p>
+                    <p className="font-medium">{savedPixKey}</p>
+                  </div>
+                ) : (
+                  <p className="text-gray-400">Nenhuma chave PIX cadastrada</p>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* Credit Card Section */}
+          <div className="bg-fitness-darkGray p-4 rounded-lg">
+            <h2 className="text-lg font-semibold mb-3 flex items-center">
+              <CreditCard size={18} className="mr-2 text-fitness-orange" />
+              <span>Cartões</span>
+            </h2>
+            
+            {paymentMethods.length > 0 ? (
+              <div className="space-y-4">
+                {paymentMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={`bg-fitness-darkGray p-4 rounded-lg border ${
+                      method.isDefault ? 'border-fitness-orange' : 'border-transparent'
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <div className="flex items-center">
+                        <CreditCard className="h-5 w-5 text-fitness-orange mr-3" />
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <p className="font-semibold">{method.cardNumber}</p>
+                            {method.isDefault && (
+                              <span className="bg-fitness-orange text-white text-xs px-2 py-0.5 rounded-full">
+                                Padrão
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-400">
+                            {method.type === 'credit' ? 'Crédito' : 'Débito'} • Exp: {method.expiryDate}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDelete(method.id)}
+                        className="text-red-500 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                    {!method.isDefault && (
+                      <Button
+                        onClick={() => handleSetDefault(method.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2 text-fitness-orange hover:text-fitness-orange/90 hover:bg-transparent p-0"
+                      >
+                        Definir como padrão
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-fitness-dark p-6 rounded-lg text-center">
+                <CreditCard className="h-10 w-10 text-fitness-orange mx-auto mb-3" />
+                <p>Nenhum cartão cadastrado</p>
+                <p className="text-sm text-gray-400 mt-1">
+                  Adicione um cartão para pagar por serviços premium
+                </p>
+              </div>
+            )}
+          </div>
 
           {showAddForm ? (
             <div className="bg-fitness-darkGray p-4 rounded-lg">
