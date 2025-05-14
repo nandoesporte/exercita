@@ -9,10 +9,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/lib/toast-wrapper';
+import { toast } from '@/components/ui/use-toast';
+import PaymentInfo from '@/components/profile/PaymentInfo';
+import PaymentHistory from '@/components/profile/PaymentHistory';
 
 const Profile = () => {
-  const { profile, isLoading, uploadProfileImage } = useProfile();
+  const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey } = useProfile();
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
@@ -128,6 +130,17 @@ const Profile = () => {
             </div>
             <p className="text-sm text-gray-500">Peso atual</p>
           </div>
+        </div>
+        
+        {/* Payment Info */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold mb-3">Pagamentos</h3>
+          <PaymentInfo pixKey={pixKey} isLoading={isLoadingPixKey} />
+        </div>
+
+        {/* Payment History */}
+        <div className="mb-8">
+          <PaymentHistory />
         </div>
         
         {/* Menu Items */}

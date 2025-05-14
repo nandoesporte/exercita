@@ -1,13 +1,20 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
+
+interface PixKey {
+  id: string;
+  key_type: 'cpf' | 'email' | 'phone' | 'random';
+  key_value: string;
+  recipient_name: string;
+  is_primary: boolean;
+}
 
 export function useProfile() {
   const { user } = useAuth();
@@ -35,6 +42,34 @@ export function useProfile() {
     enabled: !!user,
     staleTime: 1000 * 60, // Consider data stale after 1 minute
     gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
+  });
+
+  // Add function to fetch primary PIX key
+  const pixKeyQuery = useQuery({
+    queryKey: ['pixKey', 'primary'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pix_keys')
+        .select('*')
+        .eq('is_primary', true)
+        .single();
+      
+      if (error) {
+        if (error.code !== 'PGRST116') { // no rows returned
+          console.error('Erro ao buscar chave PIX:', error);
+        }
+        return null;
+      }
+      
+      return {
+        id: data.id,
+        key_type: data.key_type as 'cpf' | 'email' | 'phone' | 'random',
+        key_value: data.key_value,
+        recipient_name: data.recipient_name,
+        is_primary: data.is_primary || false,
+      } as PixKey;
+    },
+    staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes
   });
   
   const updateProfile = useMutation({
@@ -162,5 +197,7 @@ export function useProfile() {
     isUpdating: updateProfile.isPending,
     uploadProfileImage: uploadProfileImage.mutate,
     isUploadingImage: uploadProfileImage.isPending,
+    pixKey: pixKeyQuery.data,
+    isLoadingPixKey: pixKeyQuery.isLoading,
   };
 }
