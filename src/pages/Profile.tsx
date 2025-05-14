@@ -1,6 +1,7 @@
+
 import React, { useRef, useState } from 'react';
 import { 
-  User, Settings, Calendar, Clock, Heart, LogOut,
+  User, Settings, Calendar, Clock, LogOut,
   CreditCard, HelpCircle, Bell, UserPlus, ChevronRight, Camera
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 const Profile = () => {
   const { profile, isLoading, uploadProfileImage } = useProfile();
@@ -46,14 +47,18 @@ const Profile = () => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Please select a valid image file (JPEG, PNG, or GIF)');
+      toast({
+        title: 'Please select a valid image file (JPEG, PNG, or GIF)'
+      });
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast.error('Image size should be less than 5MB');
+      toast({
+        title: 'Image size should be less than 5MB'
+      });
       return;
     }
     
@@ -161,17 +166,6 @@ const Profile = () => {
             <div className="flex items-center">
               <Calendar size={20} className="mr-3 text-fitness-orange" />
               <span>Histórico de Treinos</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/health-stats"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <Heart size={20} className="mr-3 text-fitness-orange" />
-              <span>Estatísticas de Saúde</span>
             </div>
             <ChevronRight size={18} className="text-gray-400" />
           </Link>
