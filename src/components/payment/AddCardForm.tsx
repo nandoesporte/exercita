@@ -30,9 +30,7 @@ const AddCardForm = ({ onAddCard, onCancel }: AddCardFormProps) => {
 
     // Validate form
     if (!newCard.cardNumber || !newCard.expiryDate || !newCard.holderName || !newCard.cvv) {
-      toast({
-        title: 'Preencha todos os campos'
-      });
+      toast('Preencha todos os campos');
       return;
     }
 

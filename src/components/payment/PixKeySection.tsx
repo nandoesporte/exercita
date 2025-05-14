@@ -24,18 +24,14 @@ const PixKeySection = ({
 
   const handleSavePix = () => {
     if (!pixKey) {
-      toast({
-        title: 'Digite uma chave PIX válida'
-      });
+      toast('Digite uma chave PIX válida');
       return;
     }
     
     setSavedPixKey(pixKey);
     setSavedPixKeyType(pixKeyType);
     setIsEditingPix(false);
-    toast({
-      title: 'Chave PIX salva com sucesso'
-    });
+    toast('Chave PIX salva com sucesso');
   };
 
   return (

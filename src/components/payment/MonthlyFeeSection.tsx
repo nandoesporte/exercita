@@ -16,17 +16,13 @@ const MonthlyFeeSection = ({ savedMonthlyFee, setSavedMonthlyFee }: MonthlyFeeSe
 
   const handleSaveMonthlyFee = () => {
     if (!monthlyFee) {
-      toast({
-        title: 'Digite um valor de mensalidade válido'
-      });
+      toast('Digite um valor de mensalidade válido');
       return;
     }
     
     setSavedMonthlyFee(monthlyFee);
     setIsEditingFee(false);
-    toast({
-      title: 'Valor da mensalidade salvo com sucesso'
-    });
+    toast('Valor da mensalidade salvo com sucesso');
   };
 
   return (

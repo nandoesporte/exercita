@@ -21,4 +21,4 @@ export const useToast = () => {
   }
 }
 
-export { sonnerToast as toast, ToastActionElement, SonnerToaster as Toaster }
+export { sonnerToast as toast, type ToastActionElement, SonnerToaster as Toaster }

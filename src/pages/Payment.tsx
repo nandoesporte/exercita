@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CreditCard, Plus, Key, Copy, Clock, Receipt, QrCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -104,10 +103,7 @@ const Payment = () => {
         // const { data: history } = await supabase.from('payment_history').select('*').eq('user_id', user?.id).order('date', { ascending: false });
       } catch (error) {
         console.error('Error fetching payment data:', error);
-        toast({
-          title: 'Falha ao carregar dados de pagamento',
-          description: 'Tente novamente mais tarde',
-        });
+        toast('Falha ao carregar dados de pagamento');
       } finally {
         setIsLoading(false);
       }
@@ -118,16 +114,12 @@ const Payment = () => {
 
   const handleCopyPixKey = () => {
     navigator.clipboard.writeText(pixKey);
-    toast({
-      title: 'Chave PIX copiada!'
-    });
+    toast('Chave PIX copiada!');
   };
 
   const handleDelete = (id: string) => {
     setPaymentMethods(paymentMethods.filter((method) => method.id !== id));
-    toast({
-      title: 'Cartão removido com sucesso'
-    });
+    toast('Cartão removido com sucesso');
   };
 
   const handleSetDefault = (id: string) => {
@@ -137,9 +129,7 @@ const Payment = () => {
         isDefault: method.id === id,
       }))
     );
-    toast({
-      title: 'Cartão padrão alterado'
-    });
+    toast('Cartão padrão alterado');
   };
 
   const paymentHistoryColumns = [

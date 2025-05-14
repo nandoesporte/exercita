@@ -30,9 +30,7 @@ const CreditCardSection = ({
   
   const handleDelete = (id: string) => {
     setPaymentMethods(paymentMethods.filter((method) => method.id !== id));
-    toast({
-      title: 'Cartão removido com sucesso'
-    });
+    toast('Cartão removido com sucesso');
   };
 
   const handleSetDefault = (id: string) => {
@@ -42,9 +40,7 @@ const CreditCardSection = ({
         isDefault: method.id === id,
       }))
     );
-    toast({
-      title: 'Cartão padrão alterado'
-    });
+    toast('Cartão padrão alterado');
   };
 
   const handleAddCard = (newPaymentMethod: PaymentMethod) => {
@@ -53,9 +49,7 @@ const CreditCardSection = ({
       isDefault: paymentMethods.length === 0,
     }]);
     setShowAddForm(false);
-    toast({
-      title: 'Cartão adicionado com sucesso'
-    });
+    toast('Cartão adicionado com sucesso');
   };
 
   return (
