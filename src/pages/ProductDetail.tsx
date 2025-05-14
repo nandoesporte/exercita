@@ -17,8 +17,14 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDataFetched, setIsDataFetched] = useState(false);
 
   useEffect(() => {
+    // Evitar múltiplas chamadas se os dados já foram buscados
+    if (isDataFetched) {
+      return;
+    }
+
     const loadProduct = async () => {
       if (!id) {
         setError('ID do produto não fornecido');
@@ -29,17 +35,20 @@ const ProductDetail = () => {
       try {
         setIsLoading(true);
         const data = await fetchProduct(id);
+        console.log('Product loaded successfully:', data);
         setProduct(data);
         setIsLoading(false);
+        setIsDataFetched(true);
       } catch (err) {
         console.error('Erro ao carregar produto:', err);
         setError('Não foi possível carregar o produto');
         setIsLoading(false);
+        setIsDataFetched(true);
       }
     };
 
     loadProduct();
-  }, [id, fetchProduct]);
+  }, [id, fetchProduct, isDataFetched]);
 
   const handleBackClick = () => {
     navigate('/store');

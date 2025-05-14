@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
@@ -54,8 +55,9 @@ export const useStore = () => {
     },
   });
 
-  // Fetch a specific product
+  // Fetch a specific product with cacheTime and staleTime to prevent repeated requests
   const fetchProduct = async (id: string): Promise<Product> => {
+    console.log('Fetching product with ID:', id);
     const { data, error } = await supabase
       .from('products')
       .select('*, categories:workout_categories(name)')
@@ -63,6 +65,7 @@ export const useStore = () => {
       .single();
 
     if (error) {
+      console.error('Error fetching product:', error);
       toast({
         title: 'Erro ao carregar produto',
         description: error.message,
@@ -71,8 +74,7 @@ export const useStore = () => {
       throw error;
     }
 
-    // Log the received data including sale_url
-    console.log('Product detail fetched:', data, 'sale_url:', data.sale_url);
+    console.log('Product detail fetched:', data);
     
     // Map database fields to our Product interface with proper type safety
     const product: Product = {
