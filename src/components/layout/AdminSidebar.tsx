@@ -1,86 +1,60 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, Dumbbell, CalendarDays, FileText, Settings,
-  BarChart, LogOut, ShoppingBag, Calendar, CreditCard
-} from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
+import { Home, Users, Settings, ListChecks, Book } from 'lucide-react';
 
-interface AdminSidebarProps {
-  onNavItemClick?: () => void;
-}
-
-const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
+const AdminSidebar = ({ onNavItemClick }: { onNavItemClick?: () => void }) => {
   const location = useLocation();
-  const { signOut } = useAuth();
 
-  const navItems = [
-    { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
-    { icon: Users, path: '/admin/users', label: 'Usuários' },
-    { icon: Dumbbell, path: '/admin/exercises', label: 'Exercícios' },
-    { icon: Dumbbell, path: '/admin/workouts', label: 'Treinos' },
-    { icon: ShoppingBag, path: '/admin/products', label: 'Loja' },
-    { icon: Calendar, path: '/admin/schedule', label: 'Agendamento' },
-    { icon: CalendarDays, path: '/admin/appointments', label: 'Agendamentos' },
-    { icon: CreditCard, path: '/admin/payments', label: 'Pagamentos' },
-    { icon: FileText, path: '/admin/blog', label: 'Blog' },
-    { icon: BarChart, path: '/admin/analytics', label: 'Estatísticas' },
-    { icon: Settings, path: '/admin/settings', label: 'Configurações' },
+  const navigationItems = [
+    {
+      name: 'Dashboard',
+      href: '/admin',
+      icon: Home
+    },
+    {
+      name: 'Usuários',
+      href: '/admin/users',
+      icon: Users
+    },
+    {
+      name: 'Workouts',
+      href: '/admin/workouts',
+      icon: ListChecks
+    },
+    {
+      name: 'Biblioteca de Exercícios',
+      href: '/admin/exercise-library',
+      icon: Book
+    },
+    {
+      name: 'Configurações',
+      href: '/admin/settings',
+      icon: Settings
+    },
   ];
 
-  const handleLogout = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log("Logout button clicked in AdminSidebar");
-    await signOut();
-  };
-
-  const handleNavClick = () => {
-    if (onNavItemClick) {
-      onNavItemClick();
-    }
-  };
-
   return (
-    <aside className="flex flex-col bg-card border-r border-border h-full w-full md:w-64 p-4">
-      <div className="flex items-center mb-8 px-2">
-        <span className="text-2xl font-bold text-fitness-green">FitFlow</span>
-      </div>
-
-      <nav className="flex-1 space-y-1">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={handleNavClick}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                isActive 
-                  ? 'bg-fitness-green text-white' 
-                  : 'text-foreground hover:bg-muted'
-              )}
-            >
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+    <div className="w-64 flex-shrink-0 border-r border-border bg-secondary py-4">
+      <nav className="flex flex-col h-full">
+        <div className="px-4 pb-4">
+          <span className="block text-sm font-semibold text-muted-foreground">Administração</span>
+        </div>
+        <ul className="space-y-1 flex-1">
+          {navigationItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                to={item.href}
+                className={`flex items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground ${location.pathname === item.href ? 'bg-accent text-accent-foreground' : 'text-foreground'}`}
+                onClick={onNavItemClick}
+              >
+                <item.icon className="mr-2 h-4 w-4" />
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </nav>
-
-      <div className="border-t border-border pt-4 mt-4">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 w-full text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-        >
-          <LogOut size={20} />
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -166,7 +165,7 @@ export function useAdminExercises() {
     },
   });
 
-  // Create bucket check function
+  // Add this function to check if the storage bucket exists
   const checkStorageBucket = async () => {
     try {
       const { data, error } = await supabase.storage.getBucket('exercises');
