@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
-  CreditCard, HelpCircle, Bell, UserPlus, ChevronRight, Camera
+  HelpCircle, Bell, UserPlus, ChevronRight, Camera
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
@@ -188,17 +188,6 @@ const Profile = () => {
             <div className="flex items-center">
               <Bell size={20} className="mr-3 text-fitness-orange" />
               <span>Preferências de Notificações</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/payment"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <CreditCard size={20} className="mr-3 text-fitness-orange" />
-              <span>Métodos de Pagamento</span>
             </div>
             <ChevronRight size={18} className="text-gray-400" />
           </Link>

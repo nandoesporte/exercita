@@ -23,7 +23,6 @@ import Schedule from "@/pages/Schedule";
 import AccountInfo from "@/pages/AccountInfo";
 import Settings from "@/pages/Settings";
 import WorkoutHistory from "@/pages/WorkoutHistory";
-import HealthStats from "@/pages/HealthStats";
 import Reminders from "@/pages/Reminders";
 import Notifications from "@/pages/Notifications";
 import PaymentMethods from "@/pages/PaymentMethods";
@@ -41,6 +40,7 @@ import ProductManagement from "@/pages/admin/ProductManagement";
 import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
 import ScheduleManagement from "@/pages/admin/ScheduleManagement";
+import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 
 const App = () => {
   console.log("App component rendering");
@@ -71,7 +71,6 @@ const App = () => {
           <Route path="/account" element={<AccountInfo />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/workout-history" element={<WorkoutHistory />} />
-          <Route path="/health-stats" element={<HealthStats />} />
           <Route path="/reminders" element={<Reminders />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/payment" element={<PaymentMethods />} />
@@ -95,6 +94,7 @@ const App = () => {
           <Route path="products/new" element={<CreateProduct />} />
           <Route path="products/:id/edit" element={<EditProduct />} />
           <Route path="schedule" element={<ScheduleManagement />} />
+          <Route path="payments" element={<PaymentMethodManagement />} />
         </Route>
         
         {/* 404 */}

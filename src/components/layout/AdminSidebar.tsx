@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Dumbbell, CalendarDays, FileText, Settings,
-  BarChart, LogOut, ShoppingBag, Calendar
+  BarChart, LogOut, ShoppingBag, Calendar, CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
     { icon: ShoppingBag, path: '/admin/products', label: 'Loja' },
     { icon: Calendar, path: '/admin/schedule', label: 'Agendamento' },
     { icon: CalendarDays, path: '/admin/appointments', label: 'Agendamentos' },
+    { icon: CreditCard, path: '/admin/payments', label: 'Pagamentos' },
     { icon: FileText, path: '/admin/blog', label: 'Blog' },
     { icon: BarChart, path: '/admin/analytics', label: 'Estatísticas' },
     { icon: Settings, path: '/admin/settings', label: 'Configurações' },
