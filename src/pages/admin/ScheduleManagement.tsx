@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +16,7 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Loader2, Upload } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
@@ -67,7 +68,8 @@ const ScheduleManagement = () => {
         }
       } catch (error) {
         console.error('Error fetching trainer data:', error);
-        toast("Erro ao carregar dados", {
+        toast({
+          title: "Erro ao carregar dados",
           description: "Não foi possível carregar as informações do personal trainer."
         });
       } finally {
@@ -103,12 +105,14 @@ const ScheduleManagement = () => {
 
       setPhotoUrl(data.publicUrl);
       
-      toast("Foto enviada com sucesso", {
+      toast({
+        title: "Foto enviada com sucesso",
         description: "A foto do perfil foi atualizada."
       });
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast("Erro no upload", {
+      toast({
+        title: "Erro no upload",
         description: "Não foi possível enviar a foto. Tente novamente."
       });
     } finally {
@@ -163,12 +167,14 @@ const ScheduleManagement = () => {
 
       if (saveError) throw saveError;
 
-      toast("Salvo com sucesso", {
+      toast({
+        title: "Salvo com sucesso",
         description: "As informações do personal trainer foram atualizadas."
       });
     } catch (error) {
       console.error('Error saving trainer data:', error);
-      toast("Erro ao salvar", {
+      toast({
+        title: "Erro ao salvar",
         description: "Não foi possível salvar as informações. Tente novamente."
       });
     } finally {

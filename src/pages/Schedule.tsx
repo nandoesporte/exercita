@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardHeader, CardContent, CardDescription } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -114,12 +114,14 @@ const Schedule = () => {
       
       setWhatsappLink(link);
       
-      toast("Agendamento criado com sucesso!", {
+      toast({
+        title: "Agendamento criado com sucesso!",
         description: "Clique no botão abaixo para confirmar pelo WhatsApp."
       });
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
-      toast("Erro no agendamento", {
+      toast({
+        title: "Erro no agendamento",
         description: "Não foi possível criar o agendamento. Por favor, tente novamente."
       });
     } finally {
