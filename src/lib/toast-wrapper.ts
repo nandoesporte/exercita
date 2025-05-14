@@ -9,8 +9,8 @@ interface ToastOptions {
   [key: string]: any; // Allow other props to be passed
 }
 
-// This wrapper function handles both the old format and new format
-export function toast(message: string | ToastOptions): void {
+// Base toast function
+function toastImpl(message: string | ToastOptions): void {
   if (typeof message === 'string') {
     // If a string is passed, use it directly
     originalToast(message);
@@ -20,3 +20,26 @@ export function toast(message: string | ToastOptions): void {
     originalToast(messageContent);
   }
 }
+
+// Create the toast object with success and error methods
+export const toast = Object.assign(toastImpl, {
+  // Success toast variant
+  success: (message: string | ToastOptions): void => {
+    if (typeof message === 'string') {
+      originalToast(message);
+    } else {
+      const options = { ...message, variant: "default" };
+      toastImpl(options);
+    }
+  },
+  
+  // Error toast variant
+  error: (message: string | ToastOptions): void => {
+    if (typeof message === 'string') {
+      originalToast({ description: message, variant: "destructive" });
+    } else {
+      const options = { ...message, variant: "destructive" };
+      toastImpl(options);
+    }
+  }
+});
