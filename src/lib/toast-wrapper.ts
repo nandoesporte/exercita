@@ -1,4 +1,5 @@
 
+
 import { toast as originalToast } from '@/hooks/use-toast';
 
 interface ToastOptions {
@@ -42,3 +43,4 @@ export const toast = Object.assign(toastImpl, {
     }
   }
 });
+
