@@ -1,6 +1,6 @@
 
 import React from "react";
-import { toast as sonnerToast, type ToastOptions } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
 export interface ToastProps {
   title?: React.ReactNode;
