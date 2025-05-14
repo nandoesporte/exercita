@@ -40,6 +40,7 @@ import ExerciseManagement from "@/pages/admin/ExerciseManagement";
 import ProductManagement from "@/pages/admin/ProductManagement";
 import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
+import ScheduleManagement from "@/pages/admin/ScheduleManagement";
 
 const App = () => {
   console.log("App component rendering");
@@ -93,6 +94,7 @@ const App = () => {
           <Route path="products" element={<ProductManagement />} />
           <Route path="products/new" element={<CreateProduct />} />
           <Route path="products/:id/edit" element={<EditProduct />} />
+          <Route path="schedule" element={<ScheduleManagement />} />
         </Route>
         
         {/* 404 */}

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,9 +27,10 @@ import { toast } from '@/components/ui/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardHeader, CardContent, CardDescription } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { supabase } from '@/integrations/supabase/client';
 
-// Número de WhatsApp do Personal Trainer
-const PERSONAL_WHATSAPP = "44997270698";
+// Default fallback WhatsApp number if not loaded from DB
+const DEFAULT_WHATSAPP = "44997270698";
 
 const scheduleFormSchema = z.object({
   name: z.string().min(3, { message: 'Nome deve ter pelo menos 3 caracteres' }),
@@ -40,9 +41,52 @@ const scheduleFormSchema = z.object({
 
 type ScheduleFormValues = z.infer<typeof scheduleFormSchema>;
 
+// Interface for Personal Trainer data
+interface PersonalTrainer {
+  name: string;
+  credentials: string;
+  bio: string;
+  whatsapp: string;
+  photo_url: string | null;
+}
+
 const Schedule = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [whatsappLink, setWhatsappLink] = useState('');
+  const [trainer, setTrainer] = useState<PersonalTrainer | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch trainer data when component mounts
+  useEffect(() => {
+    const fetchTrainerData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('personal_trainers')
+          .select('*')
+          .eq('is_primary', true)
+          .single();
+
+        if (error) {
+          console.error('Error fetching trainer data:', error);
+          return;
+        }
+
+        setTrainer({
+          name: data.name || 'Carlos Silva',
+          credentials: data.credentials || 'Personal Trainer - CREF 123456',
+          bio: data.bio || 'Especialista em treinamento funcional e hipertrofia, com mais de 10 anos de experiência ajudando pessoas a alcançarem seus objetivos de forma saudável.',
+          whatsapp: data.whatsapp || DEFAULT_WHATSAPP,
+          photo_url: data.photo_url
+        });
+      } catch (error) {
+        console.error('Error in trainer data fetch:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrainerData();
+  }, []);
 
   const form = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleFormSchema),
@@ -64,8 +108,9 @@ const Schedule = () => {
       const message = `Olá! Gostaria de agendar uma consultoria:\n\n*Nome:* ${data.name}\n*Data:* ${formattedDate}\n*Hora:* ${data.time}\n*Objetivo:* ${data.goal}`;
       
       // Cria o link para o WhatsApp com a mensagem
+      const whatsappNumber = trainer?.whatsapp || DEFAULT_WHATSAPP;
       const encodedMessage = encodeURIComponent(message);
-      const link = `https://wa.me/${PERSONAL_WHATSAPP}?text=${encodedMessage}`;
+      const link = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
       
       setWhatsappLink(link);
       
@@ -91,6 +136,20 @@ const Schedule = () => {
     '13:00', '14:00', '15:00', '16:00', '17:00',
   ];
 
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="container max-w-4xl mx-auto py-10 flex justify-center">
+        <div className="animate-pulse space-y-6 w-full">
+          <div className="h-32 bg-gray-200 rounded-lg w-full"></div>
+          <div className="h-12 bg-gray-200 rounded-lg w-3/4 mx-auto"></div>
+          <div className="h-4 bg-gray-200 rounded-lg w-1/2 mx-auto"></div>
+          <div className="h-64 bg-gray-200 rounded-lg w-full"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container max-w-4xl mx-auto pb-10">
       {/* Personal Trainer Profile Card */}
@@ -100,22 +159,26 @@ const Schedule = () => {
             <AspectRatio ratio={1/1} className="bg-muted">
               <div className="h-full w-full p-2">
                 <Avatar className="h-full w-full rounded-xl">
-                  <AvatarImage 
-                    src="/placeholder.svg" 
-                    alt="Carlos Silva" 
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="text-4xl bg-fitness-green text-white">CS</AvatarFallback>
+                  {trainer?.photo_url ? (
+                    <AvatarImage 
+                      src={trainer.photo_url} 
+                      alt={trainer.name} 
+                      className="object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="text-4xl bg-fitness-green text-white">
+                      {trainer?.name?.charAt(0) || 'P'}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
               </div>
             </AspectRatio>
           </div>
           <div className="md:col-span-2 p-6 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold text-white mb-2">Carlos Silva</h2>
-            <p className="text-fitness-green font-medium mb-4">Personal Trainer - CREF 123456</p>
+            <h2 className="text-2xl font-bold text-white mb-2">{trainer?.name}</h2>
+            <p className="text-fitness-green font-medium mb-4">{trainer?.credentials}</p>
             <CardDescription className="text-muted-foreground text-base">
-              Especialista em treinamento funcional e hipertrofia, com mais de 10 anos 
-              de experiência ajudando pessoas a alcançarem seus objetivos de forma saudável.
+              {trainer?.bio}
             </CardDescription>
           </div>
         </div>
@@ -281,7 +344,7 @@ const Schedule = () => {
                 </div>
                 <h2 className="text-2xl font-bold">Agendamento Realizado!</h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  Para confirmar seu agendamento com o Personal Trainer Carlos Silva, clique no botão abaixo para enviar os detalhes pelo WhatsApp.
+                  Para confirmar seu agendamento com {trainer?.name || 'o Personal Trainer'}, clique no botão abaixo para enviar os detalhes pelo WhatsApp.
                 </p>
               </div>
 
