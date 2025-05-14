@@ -1,4 +1,7 @@
 
-import { useToast, toast, type ToastProps, type Toast, Toaster, type ToastActionElement } from "@/hooks/use-toast";
+import { toast } from "sonner"
 
-export { useToast, toast, Toaster, type ToastProps, type Toast, type ToastActionElement }
+export { toast }
+
+// Re-export the types and hooks from toast library
+export type { ToastProps } from "sonner"

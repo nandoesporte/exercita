@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { Loader2, Upload } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 // Schema for the form validation
 const trainerFormSchema = z.object({
@@ -199,7 +200,7 @@ const ScheduleManagement = () => {
           <div className="space-y-6">
             {/* Photo Upload Section */}
             <div className="space-y-3">
-              <FormLabel>Foto do Perfil</FormLabel>
+              <Label htmlFor="photo-upload">Foto do Perfil</Label>
               <div className="flex items-center gap-6">
                 <div className="w-32 h-32 rounded-lg overflow-hidden bg-muted relative">
                   {photoUrl ? (
@@ -218,6 +219,7 @@ const ScheduleManagement = () => {
                   <div className="mb-3">
                     <Button variant="outline" className="relative" disabled={uploading}>
                       <input 
+                        id="photo-upload"
                         type="file" 
                         accept="image/*" 
                         className="absolute inset-0 opacity-0 cursor-pointer" 
