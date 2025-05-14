@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -119,8 +120,7 @@ const Schedule = () => {
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
       toast("Erro no agendamento", {
-        description: "Não foi possível criar o agendamento. Por favor, tente novamente.",
-        variant: "destructive"
+        description: "Não foi possível criar o agendamento. Por favor, tente novamente."
       });
     } finally {
       setIsSubmitting(false);
@@ -174,7 +174,7 @@ const Schedule = () => {
           <div className="md:col-span-2 p-6 flex flex-col justify-center">
             <h2 className="text-2xl font-bold text-white mb-2">{trainer?.name}</h2>
             <p className="text-fitness-green font-medium mb-4">{trainer?.credentials}</p>
-            <CardDescription className="text-muted-foreground text-base">
+            <CardDescription className="text-gray-300 text-base">
               {trainer?.bio}
             </CardDescription>
           </div>
@@ -186,7 +186,7 @@ const Schedule = () => {
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-fitness-green to-fitness-blue">
             Agende sua Consultoria
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-gray-300 max-w-2xl mx-auto">
             Agende uma consulta personalizada para discutir seus objetivos e criar um plano de treinamento ideal para você.
           </p>
         </div>
@@ -340,7 +340,7 @@ const Schedule = () => {
                   <MessageCircle className="h-10 w-10" />
                 </div>
                 <h2 className="text-2xl font-bold">Agendamento Realizado!</h2>
-                <p className="text-muted-foreground max-w-md mx-auto">
+                <p className="text-gray-300 max-w-md mx-auto">
                   Para confirmar seu agendamento com {trainer?.name || 'o Personal Trainer'}, clique no botão abaixo para enviar os detalhes pelo WhatsApp.
                 </p>
               </div>

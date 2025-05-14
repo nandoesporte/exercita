@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,8 +68,7 @@ const ScheduleManagement = () => {
       } catch (error) {
         console.error('Error fetching trainer data:', error);
         toast("Erro ao carregar dados", {
-          description: "Não foi possível carregar as informações do personal trainer.",
-          variant: "destructive"
+          description: "Não foi possível carregar as informações do personal trainer."
         });
       } finally {
         setLoading(false);
@@ -111,8 +109,7 @@ const ScheduleManagement = () => {
     } catch (error) {
       console.error('Error uploading photo:', error);
       toast("Erro no upload", {
-        description: "Não foi possível enviar a foto. Tente novamente.",
-        variant: "destructive"
+        description: "Não foi possível enviar a foto. Tente novamente."
       });
     } finally {
       setUploading(false);
@@ -172,8 +169,7 @@ const ScheduleManagement = () => {
     } catch (error) {
       console.error('Error saving trainer data:', error);
       toast("Erro ao salvar", {
-        description: "Não foi possível salvar as informações. Tente novamente.",
-        variant: "destructive"
+        description: "Não foi possível salvar as informações. Tente novamente."
       });
     } finally {
       setLoading(false);
