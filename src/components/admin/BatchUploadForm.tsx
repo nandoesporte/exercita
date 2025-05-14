@@ -12,10 +12,10 @@ interface BatchUploadFormProps {
 
 interface ExerciseData {
   name: string;
-  description?: string;
-  category_id?: string;
-  image_url?: string;
-  video_url?: string;
+  description?: string | null;
+  category_id?: string | null;
+  image_url?: string | null;
+  video_url?: string | null;
 }
 
 const BatchUploadForm: React.FC<BatchUploadFormProps> = ({ onComplete, categories }) => {
