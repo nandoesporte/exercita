@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddCardForm from './AddCardForm';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 interface PaymentMethod {
   id: string;

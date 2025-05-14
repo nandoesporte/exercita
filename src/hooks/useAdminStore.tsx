@@ -1,8 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory, ProductFormData } from '@/types/store';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 export const useAdminStore = () => {
   const queryClient = useQueryClient();
@@ -22,11 +21,7 @@ export const useAdminStore = () => {
 
       if (error) {
         console.error('Error fetching products:', error);
-        toast({
-          title: 'Erro ao carregar produtos',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao carregar produtos');
         return [];
       }
 
@@ -63,11 +58,7 @@ export const useAdminStore = () => {
 
     if (error) {
       console.error('Error fetching product:', error);
-      toast({
-        title: 'Erro ao carregar produto',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast('Erro ao carregar produto');
       throw error;
     }
 
@@ -106,11 +97,7 @@ export const useAdminStore = () => {
 
       if (error) {
         console.error('Error fetching categories:', error);
-        toast({
-          title: 'Erro ao carregar categorias',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao carregar categorias');
         return [];
       }
 
@@ -144,20 +131,13 @@ export const useAdminStore = () => {
 
       if (error) {
         console.error('Error creating product:', error);
-        toast({
-          title: 'Erro ao criar produto',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao criar produto');
         throw error;
       }
 
       console.log('Product created successfully:', data);
       
-      toast({
-        title: 'Produto criado com sucesso',
-        variant: 'default',
-      });
+      toast('Produto criado com sucesso');
 
       // Map database fields to our Product interface
       const newProduct: Product = {
@@ -212,20 +192,13 @@ export const useAdminStore = () => {
 
       if (error) {
         console.error('Error updating product:', error);
-        toast({
-          title: 'Erro ao atualizar produto',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao atualizar produto');
         throw error;
       }
 
       console.log('Product updated successfully:', data);
       
-      toast({
-        title: 'Produto atualizado com sucesso',
-        variant: 'default',
-      });
+      toast('Produto atualizado com sucesso');
 
       // Map database fields to our Product interface
       const updatedProduct: Product = {
@@ -261,18 +234,11 @@ export const useAdminStore = () => {
         .eq('id', id);
 
       if (error) {
-        toast({
-          title: 'Erro ao excluir produto',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao excluir produto');
         throw error;
       }
 
-      toast({
-        title: 'Produto excluído com sucesso',
-        variant: 'default',
-      });
+      toast('Produto excluído com sucesso');
 
       return id;
     },

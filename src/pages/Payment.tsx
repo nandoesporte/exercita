@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CreditCard, Plus, Key, Copy, Clock, Receipt, QrCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 import { DataTable } from '@/components/ui/data-table';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { supabase } from '@/integrations/supabase/client';

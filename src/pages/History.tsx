@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { History as HistoryIcon, Calendar, Clock, Dumbbell, Star, Flame, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useWorkoutHistory, WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,

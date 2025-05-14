@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Edit, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 interface MonthlyFeeSectionProps {
   savedMonthlyFee: string;

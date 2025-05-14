@@ -1,8 +1,7 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 export const useStore = () => {
   // Fetch all products
@@ -21,11 +20,7 @@ export const useStore = () => {
 
       if (error) {
         console.error('Error fetching products:', error);
-        toast({
-          title: 'Erro ao carregar produtos',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao carregar produtos');
         return [];
       }
 
@@ -66,11 +61,7 @@ export const useStore = () => {
 
     if (error) {
       console.error('Error fetching product:', error);
-      toast({
-        title: 'Erro ao carregar produto',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast('Erro ao carregar produto');
       throw error;
     }
 
@@ -110,11 +101,7 @@ export const useStore = () => {
         .order('name');
 
       if (error) {
-        toast({
-          title: 'Erro ao carregar categorias',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao carregar categorias');
         return [];
       }
 
@@ -138,11 +125,7 @@ export const useStore = () => {
 
       if (error) {
         console.error('Error fetching featured products:', error);
-        toast({
-          title: 'Erro ao carregar produtos em destaque',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast('Erro ao carregar produtos em destaque');
         return [];
       }
 
