@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Clock, MessageSquare, Send, User, WhatsApp } from 'lucide-react';
+import { CalendarIcon, Clock, MessageSquare, Send, User, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 // Número de WhatsApp do administrador/treinador
 const ADMIN_WHATSAPP = "5511999999999"; // Substitua pelo número correto
@@ -66,10 +66,17 @@ const Schedule = () => {
       
       setWhatsappLink(link);
       
-      toast.success("Agendamento criado com sucesso! Clique no botão abaixo para confirmar pelo WhatsApp.");
+      toast({
+        title: "Agendamento criado com sucesso!",
+        description: "Clique no botão abaixo para confirmar pelo WhatsApp.",
+      });
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
-      toast.error("Não foi possível criar o agendamento. Por favor, tente novamente.");
+      toast({
+        variant: "destructive",
+        title: "Erro no agendamento",
+        description: "Não foi possível criar o agendamento. Por favor, tente novamente.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -236,7 +243,7 @@ const Schedule = () => {
           <div className="fitness-card p-6 bg-fitness-darkGray rounded-xl shadow-lg text-center space-y-8">
             <div className="space-y-4">
               <div className="mx-auto bg-green-100 text-green-800 rounded-full w-16 h-16 flex items-center justify-center">
-                <WhatsApp className="h-8 w-8" />
+                <MessageCircle className="h-8 w-8" />
               </div>
               <h2 className="text-2xl font-bold">Agendamento Realizado!</h2>
               <p className="text-muted-foreground">
@@ -254,7 +261,7 @@ const Schedule = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2"
               >
-                <WhatsApp className="h-5 w-5" />
+                <MessageCircle className="h-5 w-5" />
                 Confirmar pelo WhatsApp
               </a>
             </Button>

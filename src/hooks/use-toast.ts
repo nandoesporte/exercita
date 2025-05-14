@@ -1,11 +1,4 @@
 
-import { Toast, type ToastProps } from "@/components/ui/toast"
-import {
-  useToast,
-  toast,
-  type ToastActionElement,
-  Toaster
-} from "@/hooks/use-toast.tsx"
-
-export { useToast, toast, Toaster }
-export type { Toast, ToastProps, ToastActionElement }
+// This file now just re-exports from use-toast.tsx to avoid circular dependencies
+export { useToast, toast, Toaster, type ToastActionElement } from "./use-toast.tsx";
+export type { Toast, ToastProps } from "@/components/ui/toast";

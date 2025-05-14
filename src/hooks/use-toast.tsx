@@ -1,7 +1,7 @@
+
 import * as React from "react";
 import {
   Toast,
-  ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast";
 
@@ -12,7 +12,7 @@ type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
+  action?: React.ReactElement;
 };
 
 const actionTypes = {
@@ -188,9 +188,12 @@ function useToast() {
   };
 }
 
+// Export action element type
+export type ToastActionElement = React.ReactElement;
+
 export { useToast, toast };
 
-// Toaster.tsx
+// Toaster component
 export function Toaster() {
   const { toasts } = useToast();
 
