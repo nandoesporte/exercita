@@ -339,7 +339,7 @@ const Schedule = () => {
                 <div className="mx-auto bg-fitness-green/10 text-fitness-green rounded-full w-20 h-20 flex items-center justify-center">
                   <MessageCircle className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-bold">Agendamento Realizado!</h2>
+                <h2 className="text-2xl font-bold text-white">Agendamento Realizado!</h2>
                 <p className="text-gray-300 max-w-md mx-auto">
                   Para confirmar seu agendamento com {trainer?.name || 'o Personal Trainer'}, clique no botão abaixo para enviar os detalhes pelo WhatsApp.
                 </p>
@@ -363,7 +363,7 @@ const Schedule = () => {
               <Button 
                 variant="ghost" 
                 onClick={() => setWhatsappLink('')}
-                className="w-full hover:bg-fitness-darkGray/50"
+                className="w-full hover:bg-fitness-darkGray/50 text-white"
               >
                 Fazer outro agendamento
               </Button>
