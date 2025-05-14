@@ -1,5 +1,6 @@
 
-import { toast as originalToast, type Toast, type ToastProps } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
+import type { ToastProps } from '@/hooks/use-toast';
 
 interface ToastOptions {
   title?: string;
@@ -8,29 +9,19 @@ interface ToastOptions {
   [key: string]: any; // Allow other props to be passed
 }
 
-// Utility function to format toast message based on input type
-function formatToastMessage(message: string | ToastOptions): ToastProps | string {
-  if (typeof message === 'string') {
-    return message;
-  } else {
-    // Convert our ToastOptions to the format expected by the original toast
-    const formattedProps: ToastProps = {};
-    
-    if (message.description) {
-      formattedProps.description = message.description;
-    }
-    
-    if (message.variant) {
-      formattedProps.variant = message.variant;
-    }
-    
-    return formattedProps;
-  }
-}
-
-// Base toast function
+// Base toast function that handles both string and object inputs
 function toastImpl(message: string | ToastOptions): void {
-  originalToast(formatToastMessage(message));
+  if (typeof message === 'string') {
+    // If a string is passed, use it directly
+    sonnerToast(message);
+  } else {
+    // If an object is passed, convert it to the format expected by sonner
+    const { description, variant, ...otherProps } = message;
+    sonnerToast(description || '', {
+      ...(variant && { variant }),
+      ...otherProps
+    });
+  }
 }
 
 // Create the toast object with success and error methods
@@ -38,23 +29,28 @@ export const toast = Object.assign(toastImpl, {
   // Success toast variant
   success: (message: string | ToastOptions): void => {
     if (typeof message === 'string') {
-      originalToast(message);
+      sonnerToast.success(message);
     } else {
-      const options = { ...message, variant: "default" as const };
-      toastImpl(options);
+      const { description, ...otherProps } = message;
+      sonnerToast.success(description || '', otherProps);
     }
   },
   
   // Error toast variant
   error: (message: string | ToastOptions): void => {
     if (typeof message === 'string') {
-      originalToast({ 
-        description: message, 
-        variant: "destructive" 
-      } as ToastProps);
+      sonnerToast.error(message);
     } else {
-      const options = { ...message, variant: "destructive" as const };
-      toastImpl(options);
+      const { description, ...otherProps } = message;
+      sonnerToast.error(description || '', otherProps);
     }
-  }
+  },
+  
+  // Add direct access to the original toast methods
+  dismiss: sonnerToast.dismiss,
+  info: sonnerToast.info,
+  warning: sonnerToast.warning,
+  loading: sonnerToast.loading,
+  custom: sonnerToast.custom,
+  promise: sonnerToast.promise
 });
