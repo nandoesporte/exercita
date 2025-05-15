@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
@@ -12,17 +11,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Upload } from 'lucide-react';
 import { toast } from '@/lib/toast-wrapper';
 
-// Define the fixed exercise categories
+// Define the fixed exercise categories with all required properties
 const EXERCISE_CATEGORIES = [
-  { id: "aerobico", name: "Aeróbico" },
-  { id: "peito", name: "Peito" },
-  { id: "costas", name: "Costas" },
-  { id: "membros-inferiores", name: "Membros Inferiores" },
-  { id: "gluteos", name: "Glúteos" },
-  { id: "biceps", name: "Bíceps" },
-  { id: "triceps", name: "Tríceps" },
-  { id: "abdominal", name: "Abdominal" },
-  { id: "ombros", name: "Ombros" }
+  { id: "aerobico", name: "Aeróbico", color: "#00CB7E", icon: "activity", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "peito", name: "Peito", color: "#FF5A5F", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "costas", name: "Costas", color: "#3B82F6", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "membros-inferiores", name: "Membros Inferiores", color: "#8B5CF6", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "gluteos", name: "Glúteos", color: "#EC4899", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "biceps", name: "Bíceps", color: "#F59E0B", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "triceps", name: "Tríceps", color: "#10B981", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "abdominal", name: "Abdominal", color: "#6366F1", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "ombros", name: "Ombros", color: "#EF4444", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
 ];
 
 export default function ExerciseLibrary() {
