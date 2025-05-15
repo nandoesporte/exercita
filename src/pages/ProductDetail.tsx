@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
@@ -56,7 +57,8 @@ const ProductDetail = () => {
   const handleBuyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!product?.sale_url) {
       e.preventDefault();
-      toast("Link de compra não disponível", {
+      toast({
+        title: "Link de compra não disponível",
         description: "Este produto não possui um link de compra configurado.",
         variant: "destructive"
       });

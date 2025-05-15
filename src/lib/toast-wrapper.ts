@@ -1,15 +1,16 @@
 
 // Import the toast from sonner
-import { toast as sonnerToast, type Toast, type ToastT } from "sonner";
+import { toast as sonnerToast } from "sonner";
+import type { ToastOptions } from "sonner";
 
 // Create a callable toast function that also has additional methods
-const createToast = ((message: string, options?: ToastT) => {
+const createToast = ((message: string, options?: ToastOptions) => {
   return sonnerToast(message, options);
-}) as ((message: string, options?: ToastT) => string | number) & {
-  success: (message: string, options?: ToastT) => string | number;
-  error: (message: string, options?: ToastT) => string | number;
-  info: (message: string, options?: ToastT) => string | number;
-  warning: (message: string, options?: ToastT) => string | number;
+}) as ((message: string, options?: ToastOptions) => string | number) & {
+  success: (message: string, options?: ToastOptions) => string | number;
+  error: (message: string, options?: ToastOptions) => string | number;
+  info: (message: string, options?: ToastOptions) => string | number;
+  warning: (message: string, options?: ToastOptions) => string | number;
   promise: <T>(
     promise: Promise<T>,
     messages: {
@@ -17,11 +18,11 @@ const createToast = ((message: string, options?: ToastT) => {
       success: string | ((data: T) => string);
       error: string | ((error: Error) => string);
     },
-    options?: ToastT
+    options?: ToastOptions
   ) => Promise<T>;
   custom: (
     message: string,
-    options?: ToastT & {
+    options?: ToastOptions & {
       icon?: JSX.Element;
       description?: string;
     }
@@ -46,14 +47,13 @@ createToast.promise = <T>(
     success: string | ((data: T) => string);
     error: string | ((error: Error) => string);
   },
-  options?: ToastT
+  options?: ToastOptions
 ) => {
-  sonnerToast.promise(promise, messages, options);
-  return promise;
+  return sonnerToast.promise(promise, messages, options);
 };
 createToast.custom = (
   message: string,
-  options?: ToastT & {
+  options?: ToastOptions & {
     icon?: JSX.Element;
     description?: string;
   }
@@ -64,4 +64,3 @@ createToast.dismiss = () => sonnerToast.dismiss();
 
 // Export the callable toast function with methods
 export const toast = createToast;
-export type { Toast, ToastT };
