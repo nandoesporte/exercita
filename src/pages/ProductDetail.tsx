@@ -57,8 +57,7 @@ const ProductDetail = () => {
     if (!product?.sale_url) {
       e.preventDefault();
       toast("Link de compra não disponível", {
-        description: "Este produto não possui um link de compra configurado.",
-        variant: "destructive"
+        description: "Este produto não possui um link de compra configurado."
       });
     }
   };
