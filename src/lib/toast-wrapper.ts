@@ -1,7 +1,6 @@
 
 import { toast as sonnerToast } from 'sonner';
-import type { ToastProps } from '@/hooks/use-toast';
-import { ExternalToast } from 'sonner';
+import type { ExternalToast } from 'sonner';
 
 // Define our simplified toast options interface
 interface ToastOptions {
@@ -22,7 +21,6 @@ function convertToExternalToast(options: ToastOptions): ExternalToast {
   
   // For sonner, we pass title directly in the object
   if (title !== undefined) {
-    // @ts-ignore - We know title is valid for sonner even if TypeScript doesn't recognize it
     externalToast.title = title;
   }
   

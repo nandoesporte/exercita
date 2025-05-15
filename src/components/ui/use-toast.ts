@@ -1,7 +1,3 @@
 
-import { toast } from "@/lib/toast-wrapper";
-
-export { toast };
-
-// Re-export the types from sonner
-export type { ToasterProps } from "sonner";
+// Re-export toast from the hooks directory
+export { toast, type ToasterProps } from "@/hooks/use-toast";

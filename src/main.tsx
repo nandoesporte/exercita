@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster as SonnerToaster, toast as sonnerToast } from 'sonner'
+import { toast } from "sonner";
 
 // Add type declaration for the global deferredPromptEvent
 declare global {
@@ -46,9 +46,9 @@ const Main = () => {
   // Add listener for online/offline status
   const handleOfflineStatus = () => {
     if (!navigator.onLine) {
-      sonnerToast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
+      toast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
     } else {
-      sonnerToast.success('Conexão restabelecida.');
+      toast.success('Conexão restabelecida.');
     }
   };
 
@@ -61,7 +61,7 @@ const Main = () => {
 
     // Check initial status
     if (!navigator.onLine) {
-      sonnerToast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
+      toast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
     }
 
     return () => {
@@ -78,7 +78,6 @@ const Main = () => {
           <TooltipProvider>
             <AuthProvider>
               <Toaster />
-              <SonnerToaster position="bottom-center" richColors closeButton />
               <App />
             </AuthProvider>
           </TooltipProvider>
