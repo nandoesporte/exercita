@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Plus, Upload } from 'lucide-react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
@@ -9,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BatchUploadForm from '@/components/admin/BatchUploadForm';
 import { Input } from "@/components/ui/input";
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 const ExerciseLibrary = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
