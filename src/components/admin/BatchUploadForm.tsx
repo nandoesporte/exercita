@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import Papa from 'papaparse';
+import { toast } from '@/components/ui/use-toast';
 
 interface BatchUploadFormProps {
   onComplete: () => void;
@@ -52,6 +53,11 @@ const BatchUploadForm: React.FC<BatchUploadFormProps> = ({ onComplete, categorie
       },
       error: (error) => {
         console.error('Error parsing CSV:', error);
+        toast({
+          title: "Erro ao analisar CSV",
+          description: "Ocorreu um erro ao processar o arquivo CSV.",
+          variant: "destructive"
+        });
       }
     });
   };
@@ -83,9 +89,18 @@ const BatchUploadForm: React.FC<BatchUploadFormProps> = ({ onComplete, categorie
         setUploadProgress(Math.round((completed / total) * 100));
       }
       
+      toast({
+        title: "Upload concluído",
+        description: `${completed} exercícios foram importados com sucesso.`,
+      });
       onComplete();
     } catch (error) {
       console.error('Error uploading exercises:', error);
+      toast({
+        title: "Erro ao importar exercícios",
+        description: "Ocorreu um erro durante o upload dos exercícios.",
+        variant: "destructive"
+      });
     } finally {
       setUploading(false);
     }

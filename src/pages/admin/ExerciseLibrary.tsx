@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Plus, Upload } from 'lucide-react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
@@ -234,10 +233,6 @@ const ExerciseLibrary = () => {
             <BatchUploadForm
               onComplete={() => {
                 setIsBatchUploadOpen(false);
-                toast({
-                  title: "Upload concluído",
-                  description: "Os exercícios foram carregados com sucesso.",
-                });
               }}
               categories={categories}
             />
