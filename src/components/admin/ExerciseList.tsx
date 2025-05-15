@@ -2,12 +2,21 @@
 import React from 'react';
 import { ArrowUp, ArrowDown, Trash2, Edit, Weight, Calendar, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AdminExercise } from '@/hooks/useAdminExercises';
 
+// Create a more flexible type that can handle both AdminExercise and WorkoutExercise
 interface ExerciseListProps {
-  exercises: AdminExercise[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  exercises: Array<{
+    id: string;
+    name?: string;
+    category?: { name?: string; } | null;
+    description?: string;
+    [key: string]: any; // Allow for additional properties
+  }>;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onMoveUp?: (id: string, position: number) => void;
+  onMoveDown?: (id: string, position: number) => void;
+  onRemove?: (id: string) => void;
   isLoading: boolean;
 }
 
@@ -15,6 +24,9 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
   exercises,
   onEdit,
   onDelete,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
   isLoading,
 }) => {
   if (isLoading) {
@@ -33,6 +45,8 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
     );
   }
 
+  const handleDelete = onDelete || onRemove;
+
   return (
     <div className="space-y-3">
       {exercises.map((exercise, index) => (
@@ -45,37 +59,93 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
                 {index + 1}
               </div>
-              <h3 className="font-medium">{exercise.name || "Exercício desconhecido"}</h3>
+              <h3 className="font-medium">{exercise.name || (exercise.exercise && exercise.exercise.name) || "Exercício desconhecido"}</h3>
             </div>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(exercise.id)}
-                className="h-8 w-8"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(exercise.id)}
-                className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {onMoveUp && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onMoveUp(exercise.id, index + 1)}
+                  disabled={index === 0}
+                  className="h-8 w-8"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+              )}
+              {onMoveDown && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onMoveDown(exercise.id, index + 1)}
+                  disabled={index === exercises.length - 1}
+                  className="h-8 w-8"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              )}
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(exercise.id)}
+                  className="h-8 w-8"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+              {handleDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(exercise.id)}
+                  className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-2 text-sm">
-            {exercise.description && (
+            {(exercise.description || (exercise.exercise && exercise.exercise.description)) && (
               <div className="col-span-2">
-                <span className="text-muted-foreground">Descrição:</span> {exercise.description}
+                <span className="text-muted-foreground">Descrição:</span> {exercise.description || (exercise.exercise && exercise.exercise.description)}
               </div>
             )}
-            {exercise.category && (
+            {(exercise.category || (exercise.exercise && exercise.exercise.category)) && (
               <div>
-                <span className="text-muted-foreground">Categoria:</span> {exercise.category.name}
+                <span className="text-muted-foreground">Categoria:</span> {(exercise.category && exercise.category.name) || (exercise.exercise && exercise.exercise.category && exercise.exercise.category.name)}
+              </div>
+            )}
+            {exercise.sets && (
+              <div>
+                <span className="text-muted-foreground">Séries:</span> {exercise.sets}
+              </div>
+            )}
+            {exercise.reps && (
+              <div>
+                <span className="text-muted-foreground">Repetições:</span> {exercise.reps}
+              </div>
+            )}
+            {exercise.duration && (
+              <div>
+                <span className="text-muted-foreground">Duração:</span> {exercise.duration}s
+              </div>
+            )}
+            {exercise.rest && (
+              <div>
+                <span className="text-muted-foreground">Descanso:</span> {exercise.rest}s
+              </div>
+            )}
+            {exercise.weight && (
+              <div>
+                <span className="text-muted-foreground">Peso:</span> {exercise.weight}kg
+              </div>
+            )}
+            {exercise.day_of_week && (
+              <div>
+                <span className="text-muted-foreground">Dia:</span> {exercise.day_of_week}
               </div>
             )}
           </div>

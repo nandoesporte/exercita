@@ -19,13 +19,13 @@ const toast = Object.assign(
       sonnerToast.custom(content, options),
     promise: <T>(
       promise: Promise<T>, 
-      messages: { 
+      options: { 
         loading: string; 
         success: string | ((data: T) => string); 
         error: string | ((error: unknown) => string);
       },
-      options?: ExternalToast
-    ) => sonnerToast.promise(promise, messages, options)
+      externalOptions?: ExternalToast
+    ) => sonnerToast.promise(promise, options, externalOptions)
   }
 );
 
