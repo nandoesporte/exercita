@@ -1,76 +1,78 @@
 
 import { toast as sonnerToast } from 'sonner';
-import type { ExternalToast } from 'sonner';
+import type { ToastProps } from '@/hooks/use-toast';
+import { ExternalToast } from 'sonner';
 
 // Define our simplified toast options interface
 interface ToastOptions {
-  description?: React.ReactNode;
-  action?: React.ReactNode;
-  cancel?: React.ReactNode;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
-  duration?: number;
+  title?: string;
+  description?: string;
+  variant?: "default" | "destructive";
+  [key: string]: any; // Allow other props to be passed
 }
 
-// Create a wrapper function for sonner toast
-export const toast = {
-  // Standard toast
-  default(message: string, options?: ToastOptions) {
-    // Convert our options to sonner's ExternalToast type
-    const externalToast: ExternalToast = { ...options };
-    return sonnerToast(message, externalToast);
-  },
+// Convert our app's toast options to Sonner's expected format
+function convertToExternalToast(options: ToastOptions): ExternalToast {
+  const { variant, description, title, ...rest } = options;
   
-  // Success toast
-  success(message: string, options?: ToastOptions) {
-    return sonnerToast.success(message, options);
-  },
+  // Create a properly formatted ExternalToast object
+  const externalToast: ExternalToast = {
+    ...rest
+  };
   
-  // Error toast
-  error(message: string, options?: ToastOptions) {
-    return sonnerToast.error(message, options);
-  },
-  
-  // Warning toast
-  warning(message: string, options?: ToastOptions) {
-    return sonnerToast.warning(message, options);
-  },
-  
-  // Info toast
-  info(message: string, options?: ToastOptions) {
-    return sonnerToast.info(message, options);
-  },
-  
-  // Custom toast with title
-  custom(title: string, message?: string, options?: ToastOptions) {
-    if (message) {
-      return sonnerToast(title, { 
-        description: message,
-        ...options 
-      });
-    }
-    return sonnerToast(title, options);
-  },
-  
-  // Loading toast
-  loading(message: string, options?: ToastOptions) {
-    return sonnerToast.loading(message, options);
-  },
-  
-  // Promise toast
-  promise<T>(
-    promise: Promise<T>,
-    messages: {
-      loading: string;
-      success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
-    },
-    options?: ToastOptions
-  ) {
-    return sonnerToast.promise(promise, messages, options);
-  },
-  
-  // Dismiss all toasts
-  dismiss() {
-    return sonnerToast.dismiss();
+  // For sonner, we pass title directly in the object
+  if (title !== undefined) {
+    // @ts-ignore - We know title is valid for sonner even if TypeScript doesn't recognize it
+    externalToast.title = title;
   }
-};
+  
+  // Map our variant to Sonner's style if needed
+  if (variant === "destructive") {
+    externalToast.style = { background: 'var(--destructive)', color: 'var(--destructive-foreground)' };
+  }
+  
+  return externalToast;
+}
+
+// Base toast function that handles both string and object inputs
+function toastImpl(message: string | ToastOptions): void {
+  if (typeof message === 'string') {
+    // If a string is passed, use it directly
+    sonnerToast(message);
+  } else {
+    // Extract description for the primary message
+    const { description, ...options } = message;
+    sonnerToast(description || '', convertToExternalToast(options));
+  }
+}
+
+// Create the toast object with success and error methods
+export const toast = Object.assign(toastImpl, {
+  // Success toast variant
+  success: (message: string | ToastOptions): void => {
+    if (typeof message === 'string') {
+      sonnerToast.success(message);
+    } else {
+      const { description, ...options } = message;
+      sonnerToast.success(description || '', convertToExternalToast(options));
+    }
+  },
+  
+  // Error toast variant
+  error: (message: string | ToastOptions): void => {
+    if (typeof message === 'string') {
+      sonnerToast.error(message);
+    } else {
+      const { description, ...options } = message;
+      sonnerToast.error(description || '', convertToExternalToast(options));
+    }
+  },
+  
+  // Add direct access to the original toast methods
+  dismiss: sonnerToast.dismiss,
+  info: sonnerToast.info,
+  warning: sonnerToast.warning,
+  loading: sonnerToast.loading,
+  custom: sonnerToast.custom,
+  promise: sonnerToast.promise
+});

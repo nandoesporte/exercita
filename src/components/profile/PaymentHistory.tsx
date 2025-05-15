@@ -1,81 +1,131 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui/use-toast';
 
-// Sample payment history data
-const payments = [
-  {
-    id: '1',
-    date: new Date(2023, 4, 15),
-    amount: 99.90,
-    status: 'completed',
-    description: 'Mensalidade Maio 2023'
-  },
-  {
-    id: '2',
-    date: new Date(2023, 3, 15),
-    amount: 99.90,
-    status: 'completed',
-    description: 'Mensalidade Abril 2023'
-  },
-  {
-    id: '3',
-    date: new Date(2023, 2, 15),
-    amount: 99.90,
-    status: 'completed',
-    description: 'Mensalidade Março 2023'
-  }
-];
+interface Payment {
+  id: string;
+  created_at: string;
+  total_amount: number;
+  status: string;
+}
 
 const PaymentHistory: React.FC = () => {
-  const formatDate = (date: Date) => {
-    return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
-  };
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
-  const getStatusBadge = (status: string) => {
+  useEffect(() => {
+    const fetchPayments = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          throw error;
+        }
+        
+        setPayments(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar pagamentos:', error);
+        toast({
+          description: "Erro ao carregar histórico de pagamentos",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPayments();
+  }, [user]);
+
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Pago</Badge>;
+        return 'text-green-500';
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pendente</Badge>;
-      case 'failed':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Falhou</Badge>;
+        return 'text-yellow-500';
+      case 'cancelled':
+      case 'refunded':
+        return 'text-red-500';
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return 'text-gray-400';
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'Pago';
+      case 'pending':
+        return 'Pendente';
+      case 'cancelled':
+        return 'Cancelado';
+      case 'refunded':
+        return 'Reembolsado';
+      default:
+        return status;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-32">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-fitness-orange"></div>
+      </div>
+    );
+  }
+
+  if (payments.length === 0) {
+    return (
+      <div className="text-center p-6 bg-fitness-darkGray rounded-lg">
+        <p className="text-gray-400">Nenhum pagamento registrado</p>
+      </div>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Histórico de Pagamentos</CardTitle>
-        <CardDescription>Seus pagamentos recentes</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {payments.length > 0 ? (
-          <div className="space-y-4">
+    <div className="bg-fitness-darkGray rounded-lg overflow-hidden">
+      <div className="p-4 border-b border-gray-700">
+        <h3 className="text-lg font-semibold">Histórico de Pagamentos</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-fitness-dark">
+            <tr>
+              <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">Data</th>
+              <th className="py-3 px-4 text-right text-sm font-medium text-gray-300">Valor</th>
+              <th className="py-3 px-4 text-right text-sm font-medium text-gray-300">Status</th>
+            </tr>
+          </thead>
+          <tbody>
             {payments.map((payment) => (
-              <div key={payment.id} className="flex items-center justify-between pb-4 border-b border-gray-100">
-                <div>
-                  <p className="font-medium">{payment.description}</p>
-                  <p className="text-sm text-gray-500">{formatDate(payment.date)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">{formatCurrency(payment.amount)}</p>
-                  <div className="mt-1">{getStatusBadge(payment.status)}</div>
-                </div>
-              </div>
+              <tr key={payment.id} className="border-t border-gray-800">
+                <td className="py-3 px-4 text-sm">
+                  {format(new Date(payment.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                </td>
+                <td className="py-3 px-4 text-sm text-right">
+                  R$ {payment.total_amount.toFixed(2).replace('.', ',')}
+                </td>
+                <td className={`py-3 px-4 text-sm text-right ${getStatusColor(payment.status)}`}>
+                  {getStatusLabel(payment.status)}
+                </td>
+              </tr>
             ))}
-          </div>
-        ) : (
-          <p className="text-center py-6 text-gray-500">Nenhum pagamento encontrado</p>
-        )}
-      </CardContent>
-    </Card>
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 

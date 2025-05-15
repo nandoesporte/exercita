@@ -1,7 +1,4 @@
 
-// Re-export from sonner
-import { toast } from "sonner";
-import type { ToasterProps } from "sonner";
-
-export { toast };
-export type { ToasterProps };
+// This file now just re-exports from use-toast.tsx to avoid circular dependencies
+export { useToast, toast, Toaster } from "./use-toast.tsx";
+export type { Toast, ToastProps, ToastActionElement } from "./use-toast.tsx";
