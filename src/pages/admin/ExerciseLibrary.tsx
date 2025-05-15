@@ -86,7 +86,17 @@ export default function ExerciseLibrary() {
   
   const handleBatchSubmit = async (data: any) => {
     try {
-      await batchCreateExercises(data);
+      // Make sure each exercise has a valid category_id
+      const validatedData = data.map((exercise: any) => {
+        // Ensure the category_id is a valid ID from our predefined categories
+        const category = EXERCISE_CATEGORIES.find(cat => cat.id === exercise.category_id);
+        if (!category) {
+          throw new Error(`Categoria inválida: ${exercise.category_id}`);
+        }
+        return exercise;
+      });
+      
+      await batchCreateExercises(validatedData);
       setIsBatchUploadOpen(false);
       toast.success("Exercícios importados com sucesso!");
     } catch (error: any) {

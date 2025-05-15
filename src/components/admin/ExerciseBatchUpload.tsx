@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,7 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface ExerciseBatchUploadProps {
   onSubmit: (data: any[]) => Promise<void>;
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; color: string; icon: string; created_at: string; updated_at: string }[];
 }
 
 export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploadProps) {
@@ -154,11 +155,11 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
 
           updateFileStatus(i, { status: 'success', uploadedUrl: publicUrl, uploadProgress: 100 });
           
-          // Add to results
+          // Add to results - Use the category_id directly without any transformation
           results.push({
             name: fileData.name,
             description: null,
-            category_id: values.category_id,
+            category_id: values.category_id, // Use the ID directly as selected in the form
             image_url: publicUrl,
             video_url: null,
           });
