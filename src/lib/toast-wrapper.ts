@@ -15,17 +15,19 @@ const toast = Object.assign(
     warning: (message: string, options?: ExternalToast) => sonnerToast.warning(message, options),
     loading: (message: string, options?: ExternalToast) => sonnerToast.loading(message, options),
     dismiss: (toastId?: string | number) => sonnerToast.dismiss(toastId),
+    // Fix the custom method signature to match sonner's requirements
     custom: (content: React.ReactNode, options?: ExternalToast) => 
       sonnerToast.custom(content, options),
+    // Fix the promise method to match sonner's API
     promise: <T>(
       promise: Promise<T>, 
-      options: { 
+      { loading, success, error }: { 
         loading: string; 
         success: string | ((data: T) => string); 
         error: string | ((error: unknown) => string);
       },
-      externalOptions?: ExternalToast
-    ) => sonnerToast.promise(promise, options, externalOptions)
+      options?: ExternalToast
+    ) => sonnerToast.promise(promise, { loading, success, error }, options)
   }
 );
 
