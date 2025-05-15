@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Copy } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
@@ -19,8 +18,8 @@ const PaymentInfo: React.FC<PixKeyProps> = ({ pixKey, isLoading }) => {
   const handleCopyToClipboard = () => {
     if (pixKey?.key_value) {
       navigator.clipboard.writeText(pixKey.key_value);
-      toast({
-        description: "Chave PIX copiada para a área de transferência!",
+      toast("Chave PIX copiada", { 
+        description: "Chave PIX copiada para a área de transferência!" 
       });
     }
   };

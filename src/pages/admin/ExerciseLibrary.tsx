@@ -1,12 +1,11 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseFilter } from '@/components/admin/ExerciseFilter';
-import { ExerciseBatchUpload } from '@/components/admin/ExerciseBatchUpload';
-import { ExerciseList } from '@/components/admin/ExerciseList';
-import { ExerciseForm } from '@/components/admin/ExerciseForm';
+import ExerciseBatchUpload from '@/components/admin/ExerciseBatchUpload';
+import ExerciseList from '@/components/admin/ExerciseList';
+import ExerciseForm from '@/components/admin/ExerciseForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Upload } from 'lucide-react';
@@ -76,9 +75,13 @@ export default function ExerciseLibrary() {
     try {
       await batchCreateExercises(data);
       setIsBatchUploadOpen(false);
-      toast.success("Exercícios importados com sucesso!");
+      toast("Sucesso", { 
+        description: "Exercícios importados com sucesso!" 
+      });
     } catch (error: any) {
-      toast.error(`Erro ao importar exercícios: ${error.message}`);
+      toast("Erro", { 
+        description: `Erro ao importar exercícios: ${error.message}` 
+      });
     }
   };
 

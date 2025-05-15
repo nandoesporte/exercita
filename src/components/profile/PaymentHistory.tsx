@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -37,9 +36,8 @@ const PaymentHistory: React.FC = () => {
         setPayments(data || []);
       } catch (error) {
         console.error('Erro ao buscar pagamentos:', error);
-        toast({
-          description: "Erro ao carregar histórico de pagamentos",
-          variant: "destructive",
+        toast("Erro ao carregar histórico", {
+          description: "Erro ao carregar histórico de pagamentos"
         });
       } finally {
         setIsLoading(false);

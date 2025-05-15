@@ -2,7 +2,7 @@
 import { toast as sonnerToast } from "sonner";
 import type { ExternalToast } from "sonner";
 
-// Create a wrapper around the sonner toast to preserve method calls
+// Create a wrapper around the sonner toast
 const toast = Object.assign(
   // Default toast function
   (message: string, options?: ExternalToast) => sonnerToast(message, options),
@@ -14,18 +14,16 @@ const toast = Object.assign(
     warning: (message: string, options?: ExternalToast) => sonnerToast.warning(message, options),
     loading: (message: string, options?: ExternalToast) => sonnerToast.loading(message, options),
     dismiss: (toastId?: string) => sonnerToast.dismiss(toastId),
-    custom: (message: string, options?: ExternalToast) => sonnerToast.custom(message, options),
+    custom: (message: React.ReactNode, options?: ExternalToast) => sonnerToast.custom(message, options),
     promise: <T>(
       promise: Promise<T>, 
       messages: { 
         loading: string; 
         success: string | ((data: T) => string); 
-        error: string | ((error: Error) => string);
+        error: string | ((error: unknown) => string);
       },
       options?: ExternalToast
-    ) => {
-      return sonnerToast.promise(promise, messages, options);
-    }
+    ) => sonnerToast.promise(promise, messages, options)
   }
 );
 
