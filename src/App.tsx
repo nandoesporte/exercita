@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { checkAuthSession } from './integrations/supabase/client';
 
@@ -55,41 +55,39 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Store />} /> {/* Use Store as default landing page */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
-        <Route path="/workouts" element={<Workouts />} />
-        <Route path="/workouts/:id" element={<WorkoutDetail />} />
-        <Route path="/store" element={<Store />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/schedule" element={<Schedule />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/payment-methods" element={<PaymentMethods />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Store />} /> {/* Use Store as default landing page */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
+      <Route path="/workouts" element={<Workouts />} />
+      <Route path="/workouts/:id" element={<WorkoutDetail />} />
+      <Route path="/store" element={<Store />} />
+      <Route path="/products/:id" element={<ProductDetail />} />
+      <Route path="/schedule" element={<Schedule />} />
+      <Route path="/payment" element={<Payment />} />
+      <Route path="/payment-methods" element={<PaymentMethods />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="workouts" element={<WorkoutManagement />} />
-          <Route path="workouts/create" element={<CreateWorkout />} />
-          <Route path="workouts/:id/edit" element={<EditWorkout />} />
-          <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
-          <Route path="exercises" element={<ExerciseManagement />} />
-          <Route path="library" element={<ExerciseLibrary />} />
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="products/create" element={<CreateProduct />} />
-          <Route path="products/:id/edit" element={<EditProduct />} />
-          <Route path="payments" element={<PaymentMethodManagement />} />
-          <Route path="schedule" element={<ScheduleManagement />} />
-          {/* Add more admin routes here */}
-        </Route>
+      {/* Admin Routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="workouts" element={<WorkoutManagement />} />
+        <Route path="workouts/create" element={<CreateWorkout />} />
+        <Route path="workouts/:id/edit" element={<EditWorkout />} />
+        <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
+        <Route path="exercises" element={<ExerciseManagement />} />
+        <Route path="library" element={<ExerciseLibrary />} />
+        <Route path="products" element={<ProductManagement />} />
+        <Route path="products/create" element={<CreateProduct />} />
+        <Route path="products/:id/edit" element={<EditProduct />} />
+        <Route path="payments" element={<PaymentMethodManagement />} />
+        <Route path="schedule" element={<ScheduleManagement />} />
+        {/* Add more admin routes here */}
+      </Route>
 
-        {/* Redirect to Home if route is not found */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+      {/* Redirect to Home if route is not found */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

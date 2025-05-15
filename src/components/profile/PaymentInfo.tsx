@@ -1,10 +1,12 @@
 
 import React from 'react';
-import { Copy } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
+import { RotateCw, Plus } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import PixKeySection from '@/components/payment/PixKeySection';
 
-interface PixKeyProps {
+interface PaymentInfoProps {
   pixKey: {
     id: string;
     key_type: 'cpf' | 'email' | 'phone' | 'random';
@@ -15,73 +17,31 @@ interface PixKeyProps {
   isLoading: boolean;
 }
 
-const PaymentInfo: React.FC<PixKeyProps> = ({ pixKey, isLoading }) => {
-  const handleCopyToClipboard = () => {
-    if (pixKey?.key_value) {
-      navigator.clipboard.writeText(pixKey.key_value);
-      toast({
-        description: "Chave PIX copiada para a área de transferência!",
-      });
-    }
-  };
-
-  const getKeyTypeLabel = (type: 'cpf' | 'email' | 'phone' | 'random') => {
-    switch (type) {
-      case 'cpf': return 'CPF';
-      case 'email': return 'Email';
-      case 'phone': return 'Telefone';
-      case 'random': return 'Chave Aleatória';
-      default: return 'Chave PIX';
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-20">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-fitness-orange"></div>
-      </div>
-    );
-  }
-
-  if (!pixKey) {
-    return (
-      <div className="flex flex-col items-center justify-center p-4 text-center bg-fitness-darkGray rounded-lg">
-        <p className="mb-2 text-gray-400">Nenhuma chave PIX cadastrada</p>
-        <p className="text-xs text-gray-500">Contacte o administrador para informações de pagamento</p>
-      </div>
-    );
-  }
-
+const PaymentInfo: React.FC<PaymentInfoProps> = ({ pixKey, isLoading }) => {
   return (
-    <div className="bg-fitness-darkGray p-4 rounded-lg">
-      <div className="mb-3">
-        <h3 className="text-lg font-semibold text-white">Informações de Pagamento</h3>
-        <p className="text-sm text-gray-400">Utilize a chave PIX abaixo para pagamento</p>
-      </div>
-      
-      <div className="space-y-2">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-400">Favorecido</span>
-          <span className="font-medium">{pixKey.recipient_name}</span>
-        </div>
-        
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-400">{getKeyTypeLabel(pixKey.key_type)}</span>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{pixKey.key_value}</span>
-            <Button 
-              size="icon" 
-              variant="ghost" 
-              className="h-6 w-6 text-fitness-orange hover:text-fitness-orange/80 hover:bg-fitness-dark/50"
-              onClick={handleCopyToClipboard}
-            >
-              <Copy size={14} />
-              <span className="sr-only">Copiar chave PIX</span>
+    <Card>
+      <CardHeader>
+        <CardTitle>Chave PIX</CardTitle>
+        <CardDescription>Gerenciar suas chaves PIX para pagamentos</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="w-full h-12" />
+            <Skeleton className="w-3/4 h-12" />
+          </div>
+        ) : pixKey ? (
+          <PixKeySection pixKey={pixKey} />
+        ) : (
+          <div className="text-center py-6">
+            <p className="text-muted-foreground mb-4">Nenhuma chave PIX encontrada</p>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Adicionar chave PIX
             </Button>
           </div>
-        </div>
-      </div>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
