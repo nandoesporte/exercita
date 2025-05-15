@@ -1,7 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { toast } from '@/lib/toast-wrapper';
+import { toast } from 'sonner';
 
 export type AdminExercise = Database['public']['Tables']['exercises']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -165,92 +166,6 @@ export function useAdminExercises() {
     },
   });
 
-  // Batch processing 
-  const processExerciseBatch = useMutation({
-    mutationFn: async (formData: FormData) => {
-      try {
-        // Get the file from formData
-        const file = formData.get('file') as File;
-        const categoryId = formData.get('categoryId') as string;
-        
-        if (!file) {
-          throw new Error('No file provided');
-        }
-        
-        let exercises: ExerciseFormData[] = [];
-        
-        // Process file based on type
-        if (file.type === 'application/json') {
-          const text = await file.text();
-          const data = JSON.parse(text);
-          exercises = Array.isArray(data) ? data : [data];
-        } else if (file.type === 'text/csv') {
-          const text = await file.text();
-          const lines = text.split('\n');
-          const headers = lines[0].split(',').map(h => h.trim());
-          
-          exercises = lines.slice(1)
-            .filter(line => line.trim() !== '')
-            .map(line => {
-              const values = line.split(',');
-              const exercise: any = {};
-              
-              headers.forEach((header, i) => {
-                if (header === 'name' || 
-                    header === 'description' || 
-                    header === 'image_url' || 
-                    header === 'video_url' || 
-                    header === 'category_id') {
-                  exercise[header] = values[i]?.trim() || null;
-                }
-              });
-              
-              // Set default category_id if provided
-              if (categoryId && !exercise.category_id) {
-                exercise.category_id = categoryId;
-              }
-              
-              return exercise;
-            });
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-          // For xlsx processing, you would typically use a library like xlsx
-          // This is a placeholder - you might need to add a dependency and implement xlsx parsing
-          throw new Error('XLSX parsing not implemented yet');
-        } else {
-          throw new Error('Unsupported file format');
-        }
-        
-        // Validate exercises have required fields
-        const validExercises = exercises.filter(ex => ex.name);
-        
-        if (validExercises.length === 0) {
-          throw new Error('No valid exercises found in file');
-        }
-        
-        // Insert exercises in batch
-        const { data, error } = await supabase
-          .from('exercises')
-          .insert(validExercises);
-          
-        if (error) {
-          throw error;
-        }
-        
-        return { count: validExercises.length };
-      } catch (error: any) {
-        console.error('Error in processExerciseBatch:', error);
-        throw error;
-      }
-    },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-exercises'] });
-      toast.success(`${result.count} exercícios importados com sucesso`);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Falha ao processar arquivo');
-    }
-  });
-
   // Create bucket check function
   const checkStorageBucket = async () => {
     try {
@@ -278,8 +193,6 @@ export function useAdminExercises() {
     isDeleting: deleteExercise.isPending,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
-    checkStorageBucket,
-    processExerciseBatch: processExerciseBatch.mutate,
-    isBatchProcessing: processExerciseBatch.isPending
+    checkStorageBucket
   };
 }
