@@ -21,13 +21,13 @@ const toast = Object.assign(
     // Fix the promise method to match sonner's API
     promise: <T>(
       promise: Promise<T>, 
-      { loading, success, error }: { 
+      messages: { 
         loading: string; 
         success: string | ((data: T) => string); 
         error: string | ((error: unknown) => string);
       },
       options?: ExternalToast
-    ) => sonnerToast.promise(promise, { loading, success, error }, options)
+    ) => sonnerToast.promise(promise, messages, options)
   }
 );
 
