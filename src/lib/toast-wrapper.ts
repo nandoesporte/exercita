@@ -1,6 +1,6 @@
 
 // Import the toast from sonner
-import { toast as sonnerToast, type ToastT } from "sonner";
+import { toast as sonnerToast, type Toast, type ToastT } from "sonner";
 
 // Create a callable toast function that also has additional methods
 const createToast = ((message: string, options?: ToastT) => {
@@ -48,7 +48,7 @@ createToast.promise = <T>(
   },
   options?: ToastT
 ) => {
-  sonnerToast.promise(promise, messages);
+  sonnerToast.promise(promise, messages, options);
   return promise;
 };
 createToast.custom = (
@@ -64,4 +64,4 @@ createToast.dismiss = () => sonnerToast.dismiss();
 
 // Export the callable toast function with methods
 export const toast = createToast;
-export type { ToastT };
+export type { Toast, ToastT };
