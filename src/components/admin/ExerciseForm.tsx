@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-wrapper';
 
 // Define form schema with Zod
 const formSchema = z.object({
@@ -50,9 +50,16 @@ interface ExerciseFormProps {
     image_url?: string | null;
     video_url?: string | null;
   };
+  preSelectedCategory?: string | null;
 }
 
-const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: ExerciseFormProps) => {
+const ExerciseForm = ({ 
+  onSubmit, 
+  isLoading, 
+  categories, 
+  initialData,
+  preSelectedCategory 
+}: ExerciseFormProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [gifPreview, setGifPreview] = useState<string | null>(initialData?.image_url || null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -62,7 +69,7 @@ const ExerciseForm = ({ onSubmit, isLoading, categories, initialData }: Exercise
     defaultValues: {
       name: initialData?.name || "",
       description: initialData?.description || "",
-      category_id: initialData?.category_id || null,
+      category_id: initialData?.category_id || preSelectedCategory || null,
       image_url: initialData?.image_url || "",
       video_url: initialData?.video_url || "",
     },

@@ -14,8 +14,9 @@ const toast = Object.assign(
     info: (message: string, options?: ExternalToast) => sonnerToast.info(message, options),
     warning: (message: string, options?: ExternalToast) => sonnerToast.warning(message, options),
     loading: (message: string, options?: ExternalToast) => sonnerToast.loading(message, options),
-    dismiss: (toastId?: string) => sonnerToast.dismiss(toastId),
-    custom: (content: React.ReactNode, options?: ExternalToast) => sonnerToast.custom(content, options),
+    dismiss: (toastId?: string | number) => sonnerToast.dismiss(toastId),
+    custom: (content: React.ReactNode, options?: ExternalToast) => 
+      sonnerToast.custom(content, options),
     promise: <T>(
       promise: Promise<T>, 
       messages: { 

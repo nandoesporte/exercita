@@ -1,50 +1,20 @@
 
 import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, Weight, Calendar, FileText } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Edit, Weight, Calendar, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface Exercise {
-  id: string;
-  exercise?: {
-    id: string;
-    name: string;
-    description?: string | null;
-  };
-  sets?: number;
-  reps?: number | null;
-  duration?: number | null;
-  rest?: number | null;
-  weight?: number | null;
-  order_position: number;
-  day_of_week?: string | null;
-  is_title_section?: boolean;
-  section_title?: string | null;
-}
+import { AdminExercise } from '@/hooks/useAdminExercises';
 
 interface ExerciseListProps {
-  exercises: Exercise[];
-  onRemove: (id: string) => void;
-  onMoveUp: (id: string, currentPosition: number) => void;
-  onMoveDown: (id: string, currentPosition: number) => void;
+  exercises: AdminExercise[];
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   isLoading: boolean;
 }
 
-// Map day_of_week to Portuguese display names
-const dayTranslations: Record<string, string> = {
-  monday: 'Segunda',
-  tuesday: 'Terça',
-  wednesday: 'Quarta',
-  thursday: 'Quinta',
-  friday: 'Sexta',
-  saturday: 'Sábado',
-  sunday: 'Domingo',
-};
-
 const ExerciseList: React.FC<ExerciseListProps> = ({
   exercises,
-  onRemove,
-  onMoveUp,
-  onMoveDown,
+  onEdit,
+  onDelete,
   isLoading,
 }) => {
   if (isLoading) {
@@ -72,44 +42,24 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              {exercise.is_title_section ? (
-                <div className="bg-primary/20 text-primary flex items-center justify-center">
-                  <FileText className="h-4 w-4" />
-                </div>
-              ) : (
-                <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
-                  {index + 1}
-                </div>
-              )}
-              {exercise.is_title_section ? (
-                <h3 className="font-semibold text-primary">{exercise.section_title}</h3>
-              ) : (
-                <h3 className="font-medium">{exercise.exercise?.name || "Exercício desconhecido"}</h3>
-              )}
+              <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                {index + 1}
+              </div>
+              <h3 className="font-medium">{exercise.name || "Exercício desconhecido"}</h3>
             </div>
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onMoveUp(exercise.id, exercise.order_position)}
-                disabled={index === 0}
+                onClick={() => onEdit(exercise.id)}
                 className="h-8 w-8"
               >
-                <ArrowUp className="h-4 w-4" />
+                <Edit className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onMoveDown(exercise.id, exercise.order_position)}
-                disabled={index === exercises.length - 1}
-                className="h-8 w-8"
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onRemove(exercise.id)}
+                onClick={() => onDelete(exercise.id)}
                 className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4" />
@@ -117,37 +67,18 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
             </div>
           </div>
           
-          {!exercise.is_title_section && (
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">Séries:</span> {exercise.sets}
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            {exercise.description && (
+              <div className="col-span-2">
+                <span className="text-muted-foreground">Descrição:</span> {exercise.description}
               </div>
+            )}
+            {exercise.category && (
               <div>
-                {exercise.reps ? (
-                  <><span className="text-muted-foreground">Repetições:</span> {exercise.reps}</>
-                ) : exercise.duration ? (
-                  <><span className="text-muted-foreground">Duração:</span> {exercise.duration}s</>
-                ) : null}
+                <span className="text-muted-foreground">Categoria:</span> {exercise.category.name}
               </div>
-              {exercise.rest && (
-                <div>
-                  <span className="text-muted-foreground">Descanso:</span> {exercise.rest}s
-                </div>
-              )}
-              {exercise.weight && (
-                <div className="flex items-center gap-1">
-                  <Weight className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Carga:</span> {exercise.weight} kg
-                </div>
-              )}
-              {exercise.day_of_week && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">Dia:</span> {dayTranslations[exercise.day_of_week] || exercise.day_of_week}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ))}
     </div>
