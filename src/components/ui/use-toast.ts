@@ -1,6 +1,7 @@
 
 import { toast as sonnerToast } from "sonner";
 import type { ExternalToast } from "sonner";
+import React from "react";
 
 // Create a wrapper around the sonner toast
 const toast = Object.assign(
@@ -14,7 +15,7 @@ const toast = Object.assign(
     warning: (message: string, options?: ExternalToast) => sonnerToast.warning(message, options),
     loading: (message: string, options?: ExternalToast) => sonnerToast.loading(message, options),
     dismiss: (toastId?: string) => sonnerToast.dismiss(toastId),
-    custom: (message: React.ReactNode, options?: ExternalToast) => sonnerToast.custom(message, options),
+    custom: (content: React.ReactNode, options?: ExternalToast) => sonnerToast.custom(content, options),
     promise: <T>(
       promise: Promise<T>, 
       messages: { 

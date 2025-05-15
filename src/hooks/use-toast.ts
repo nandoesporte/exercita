@@ -1,4 +1,5 @@
 
-// This file now just re-exports from use-toast.tsx to avoid circular dependencies
-export { toast, Toaster } from "./use-toast.tsx";
-export type { Toast, ToastProps, ToastActionElement } from "./use-toast.tsx";
+// This file now just re-exports from lib/toast-wrapper to avoid circular dependencies
+export { toast } from "@/lib/toast-wrapper";
+export type { Toast, ToastProps, ToastActionElement } from "@/components/ui/toast";
+export { Toaster } from "@/components/ui/sonner";

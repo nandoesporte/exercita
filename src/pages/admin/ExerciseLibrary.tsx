@@ -3,13 +3,13 @@ import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseFilter } from '@/components/admin/ExerciseFilter';
-import ExerciseBatchUpload from '@/components/admin/ExerciseBatchUpload';
+import { ExerciseBatchUpload } from '@/components/admin/ExerciseBatchUpload';
 import ExerciseList from '@/components/admin/ExerciseList';
 import ExerciseForm from '@/components/admin/ExerciseForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Upload } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 
 export default function ExerciseLibrary() {
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -75,13 +75,9 @@ export default function ExerciseLibrary() {
     try {
       await batchCreateExercises(data);
       setIsBatchUploadOpen(false);
-      toast("Sucesso", { 
-        description: "Exercícios importados com sucesso!" 
-      });
+      toast("Exercícios importados com sucesso!");
     } catch (error: any) {
-      toast("Erro", { 
-        description: `Erro ao importar exercícios: ${error.message}` 
-      });
+      toast.error(`Erro ao importar exercícios: ${error.message}`);
     }
   };
 

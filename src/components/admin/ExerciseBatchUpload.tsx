@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
@@ -357,3 +356,6 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
     </div>
   );
 }
+
+// Make sure we're exporting the component correctly
+export default ExerciseBatchUpload;
