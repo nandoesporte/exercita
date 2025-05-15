@@ -38,13 +38,15 @@ const BatchUploadForm: React.FC<BatchUploadFormProps> = ({ onComplete, categorie
     Papa.parse<Record<string, string>>(file, {
       header: true,
       complete: (results) => {
-        const validData = results.data.filter(item => item.name).map(item => ({
-          name: item.name,
-          description: item.description || null,
-          category_id: item.category_id || null,
-          image_url: item.image_url || null,
-          video_url: item.video_url || null
-        })) as ExerciseData[];
+        const validData = results.data
+          .filter(item => item.name)
+          .map(item => ({
+            name: item.name,
+            description: item.description || null,
+            category_id: item.category_id || null,
+            image_url: item.image_url || null,
+            video_url: item.video_url || null
+          })) as ExerciseData[];
         
         setPreviewData(validData);
       },
