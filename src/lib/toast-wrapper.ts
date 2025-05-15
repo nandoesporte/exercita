@@ -20,7 +20,7 @@ const toast = Object.assign(
     custom: (content: React.ReactNode, options?: ExternalToast) => 
       sonnerToast(content as string, options),
     
-    // Fix the promise method to use direct parameter passing
+    // Fix the promise method to correctly pass arguments according to sonner's API
     promise: <T>(
       promise: Promise<T>, 
       messages: { 
@@ -29,7 +29,16 @@ const toast = Object.assign(
         error: string | ((error: unknown) => string);
       },
       options?: ExternalToast
-    ) => sonnerToast.promise(promise, messages as any, options)
+    ) => {
+      // In sonner, promise() expects the messages object as part of the options
+      const promiseOptions = {
+        ...options,
+        loading: messages.loading,
+        success: messages.success,
+        error: messages.error
+      };
+      return sonnerToast.promise(promise, promiseOptions);
+    }
   }
 );
 
