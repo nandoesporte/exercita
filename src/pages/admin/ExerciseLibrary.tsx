@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Upload } from 'lucide-react';
 import { toast } from '@/lib/toast-wrapper';
+
+// Define the fixed exercise categories
+const EXERCISE_CATEGORIES = [
+  { id: "aerobico", name: "Aeróbico" },
+  { id: "peito", name: "Peito" },
+  { id: "costas", name: "Costas" },
+  { id: "membros-inferiores", name: "Membros Inferiores" },
+  { id: "gluteos", name: "Glúteos" },
+  { id: "biceps", name: "Bíceps" },
+  { id: "triceps", name: "Tríceps" },
+  { id: "abdominal", name: "Abdominal" },
+  { id: "ombros", name: "Ombros" }
+];
 
 export default function ExerciseLibrary() {
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -39,7 +53,7 @@ export default function ExerciseLibrary() {
     : null;
   
   const filteredExercises = exercises.filter(exercise => {
-    // Filter by category if a category is selected
+    // Filter by category if active tab is not "all"
     if (activeTab !== "all" && exercise.category?.id !== activeTab) {
       return false;
     }
@@ -75,11 +89,14 @@ export default function ExerciseLibrary() {
     try {
       await batchCreateExercises(data);
       setIsBatchUploadOpen(false);
-      toast("Exercícios importados com sucesso!");
+      toast.success("Exercícios importados com sucesso!");
     } catch (error: any) {
       toast.error(`Erro ao importar exercícios: ${error.message}`);
     }
   };
+
+  // Use the predefined categories instead of those from the API
+  const exerciseCategories = EXERCISE_CATEGORIES;
 
   if (error) {
     return (
@@ -106,7 +123,7 @@ export default function ExerciseLibrary() {
       </div>
       
       <ExerciseFilter 
-        categories={categories}
+        categories={exerciseCategories}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
       />
@@ -114,7 +131,7 @@ export default function ExerciseLibrary() {
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4 flex flex-wrap">
           <TabsTrigger value="all">Todos</TabsTrigger>
-          {categories.map((category) => (
+          {exerciseCategories.map((category) => (
             <TabsTrigger key={category.id} value={category.id}>
               {category.name}
             </TabsTrigger>
@@ -144,7 +161,7 @@ export default function ExerciseLibrary() {
                 setIsCreateDialogOpen(false);
               }}
               isLoading={isCreating}
-              categories={categories}
+              categories={exerciseCategories}
               preSelectedCategory={selectedCategory}
             />
           </ScrollArea>
@@ -168,7 +185,7 @@ export default function ExerciseLibrary() {
                   setIsEditDialogOpen(false);
                 }}
                 isLoading={isUpdating}
-                categories={categories}
+                categories={exerciseCategories}
                 initialData={selectedExercise}
               />
             </ScrollArea>
@@ -185,7 +202,7 @@ export default function ExerciseLibrary() {
           <ScrollArea className="max-h-[70vh] pr-4">
             <ExerciseBatchUpload 
               onSubmit={handleBatchSubmit} 
-              categories={categories}
+              categories={exerciseCategories}
             />
           </ScrollArea>
         </DialogContent>
