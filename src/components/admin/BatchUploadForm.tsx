@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { FileUploader } from "react-drag-drop-files";
-import { Upload, FileText, X, Check } from 'lucide-react';
+import { Upload, FileText, X, Check, Trash } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -107,7 +107,7 @@ const BatchUploadForm: React.FC<BatchUploadFormProps> = ({
             <SelectValue placeholder="Selecione uma categoria" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Sem categoria</SelectItem>
+            <SelectItem value="">Sem categoria</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
