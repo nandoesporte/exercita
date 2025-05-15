@@ -2,7 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export type AdminExercise = Database['public']['Tables']['exercises']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -37,7 +38,7 @@ export function useAdminExercises() {
           .order('name');
         
         if (error) {
-          throw new Error(`Error fetching exercises: ${error.message}`);
+          throw new Error(`Erro ao buscar exercícios: ${error.message}`);
         }
         
         return data as AdminExercise[];
@@ -64,7 +65,7 @@ export function useAdminExercises() {
           .single();
         
         if (error) {
-          throw new Error(`Error creating exercise: ${error.message}`);
+          throw new Error(`Erro ao criar exercício: ${error.message}`);
         }
         
         return data;
@@ -75,10 +76,37 @@ export function useAdminExercises() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-exercises'] });
-      toast.success('Exercise created successfully');
+      toast.success('Exercício criado com sucesso');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create exercise');
+      toast.error(error.message || 'Falha ao criar exercício');
+    }
+  });
+
+  const batchCreateExercises = useMutation({
+    mutationFn: async (exercises: ExerciseFormData[]) => {
+      try {
+        const { data, error } = await supabase
+          .from('exercises')
+          .insert(exercises)
+          .select();
+        
+        if (error) {
+          throw new Error(`Erro ao criar exercícios em lote: ${error.message}`);
+        }
+        
+        return data;
+      } catch (error: any) {
+        console.error('Error in batchCreateExercises:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-exercises'] });
+      toast.success('Exercícios criados com sucesso em lote');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Falha ao criar exercícios em lote');
     }
   });
 
@@ -102,7 +130,7 @@ export function useAdminExercises() {
           .single();
         
         if (error) {
-          throw new Error(`Error updating exercise: ${error.message}`);
+          throw new Error(`Erro ao atualizar exercício: ${error.message}`);
         }
         
         return data;
@@ -113,10 +141,10 @@ export function useAdminExercises() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-exercises'] });
-      toast.success('Exercise updated successfully');
+      toast.success('Exercício atualizado com sucesso');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update exercise');
+      toast.error(error.message || 'Falha ao atualizar exercício');
     }
   });
 
@@ -129,7 +157,7 @@ export function useAdminExercises() {
           .eq('id', id);
         
         if (error) {
-          throw new Error(`Error deleting exercise: ${error.message}`);
+          throw new Error(`Erro ao excluir exercício: ${error.message}`);
         }
       } catch (error: any) {
         console.error('Error in deleteExercise:', error);
@@ -138,10 +166,10 @@ export function useAdminExercises() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-exercises'] });
-      toast.success('Exercise deleted successfully');
+      toast.success('Exercício excluído com sucesso');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete exercise');
+      toast.error(error.message || 'Falha ao excluir exercício');
     }
   });
 
@@ -155,7 +183,7 @@ export function useAdminExercises() {
           .order('name');
         
         if (error) {
-          throw new Error(`Error fetching workout categories: ${error.message}`);
+          throw new Error(`Erro ao buscar categorias: ${error.message}`);
         }
         
         return data;
@@ -166,13 +194,20 @@ export function useAdminExercises() {
     },
   });
 
-  // Create bucket check function
+  // Create or check storage bucket
   const checkStorageBucket = async () => {
     try {
       const { data, error } = await supabase.storage.getBucket('exercises');
       if (error && error.message.includes('not found')) {
-        console.warn("Exercise storage bucket does not exist");
-        return false;
+        // Create bucket if it doesn't exist
+        const { error: createError } = await supabase.storage.createBucket('exercises', {
+          public: true
+        });
+        if (createError) {
+          console.error("Error creating storage bucket:", createError);
+          return false;
+        }
+        return true;
       }
       return !!data;
     } catch (error) {
@@ -187,6 +222,8 @@ export function useAdminExercises() {
     error: exercisesQuery.error,
     createExercise: createExercise.mutate,
     isCreating: createExercise.isPending,
+    batchCreateExercises: batchCreateExercises.mutate,
+    isBatchCreating: batchCreateExercises.isPending,
     updateExercise: updateExercise.mutate,
     isUpdating: updateExercise.isPending,
     deleteExercise: deleteExercise.mutate,

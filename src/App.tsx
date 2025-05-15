@@ -1,5 +1,5 @@
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -41,6 +41,7 @@ import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
 import ScheduleManagement from "@/pages/admin/ScheduleManagement";
 import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
+import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 
 const App = () => {
   console.log("App component rendering");
@@ -90,6 +91,7 @@ const App = () => {
           <Route path="workouts/:id/edit" element={<EditWorkout />} />
           <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
           <Route path="exercises" element={<ExerciseManagement />} />
+          <Route path="exercises/library" element={<ExerciseLibrary />} />
           <Route path="products" element={<ProductManagement />} />
           <Route path="products/new" element={<CreateProduct />} />
           <Route path="products/:id/edit" element={<EditProduct />} />

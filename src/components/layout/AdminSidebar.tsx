@@ -19,7 +19,15 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
   const navItems = [
     { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
     { icon: Users, path: '/admin/users', label: 'Usuários' },
-    { icon: Dumbbell, path: '/admin/exercises', label: 'Exercícios' },
+    { 
+      icon: Dumbbell, 
+      path: '/admin/exercises', 
+      label: 'Exercícios',
+      children: [
+        { path: '/admin/exercises', label: 'Gerenciar Exercícios' },
+        { path: '/admin/exercises/library', label: 'Biblioteca de Exercícios' },
+      ]
+    },
     { icon: Dumbbell, path: '/admin/workouts', label: 'Treinos' },
     { icon: ShoppingBag, path: '/admin/products', label: 'Loja' },
     { icon: Calendar, path: '/admin/schedule', label: 'Agendamento' },
@@ -42,6 +50,21 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
     }
   };
 
+  // Function to determine if a path is active or one of its children is active
+  const isPathActive = (path: string, childPaths?: string[]) => {
+    if (location.pathname === path) return true;
+    if (childPaths) {
+      return childPaths.some(childPath => location.pathname === childPath);
+    }
+    return false;
+  };
+
+  // Function to determine if a submenu should be expanded
+  const shouldExpand = (item: any) => {
+    if (!item.children) return false;
+    return item.children.some((child: any) => location.pathname === child.path);
+  };
+
   return (
     <aside className="flex flex-col bg-card border-r border-border h-full w-full md:w-64 p-4">
       <div className="flex items-center mb-8 px-2">
@@ -50,23 +73,65 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
 
       <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = isPathActive(item.path, item.children?.map(c => c.path));
+          const isExpanded = shouldExpand(item);
           
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={handleNavClick}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                isActive 
-                  ? 'bg-fitness-green text-white' 
-                  : 'text-foreground hover:bg-muted'
+            <div key={item.path} className="space-y-1">
+              {/* Main Menu Item */}
+              {item.children ? (
+                // If the item has children, render a dropdown menu
+                <>
+                  <div
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer",
+                      isActive 
+                        ? 'bg-fitness-green text-white' 
+                        : 'text-foreground hover:bg-muted'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon size={20} />
+                      <span>{item.label}</span>
+                    </div>
+                  </div>
+
+                  {/* Submenu Items */}
+                  <div className="pl-10 space-y-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.path}
+                        to={child.path}
+                        onClick={handleNavClick}
+                        className={cn(
+                          "flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors",
+                          location.pathname === child.path
+                            ? 'bg-fitness-green/20 text-fitness-green font-medium' 
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <span>{child.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                // Regular menu item without children
+                <Link
+                  to={item.path}
+                  onClick={handleNavClick}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                    isActive 
+                      ? 'bg-fitness-green text-white' 
+                      : 'text-foreground hover:bg-muted'
+                  )}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
               )}
-            >
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </Link>
+            </div>
           );
         })}
       </nav>

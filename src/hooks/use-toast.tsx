@@ -1,29 +1,7 @@
 
-import * as React from "react"
-import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps } from "sonner"
+// Re-export from @/components/ui/use-toast
+export { toast, useToast } from "@/components/ui/use-toast";
+export type { Toast, ToastProps, ToastActionElement } from "@/components/ui/use-toast";
 
-// Define toast props interface for typescript
-export interface ToastProps {
-  description?: React.ReactNode
-  action?: React.ReactNode
-  variant?: "default" | "destructive"
-  title?: React.ReactNode
-}
-
-// Export the Toast type
-export type Toast = string | ToastProps
-
-// Define ToastActionElement type
-export type ToastActionElement = React.ReactElement<unknown>
-
-// Custom hook for toast
-export const useToast = () => {
-  return {
-    toast: sonnerToast,
-    dismiss: sonnerToast.dismiss,
-    error: sonnerToast.error,
-  }
-}
-
-// Export for direct usage without the hook
-export { sonnerToast as toast, SonnerToaster as Toaster }
+// Export the Toaster component for use in App.tsx
+export { Toaster } from 'sonner';
