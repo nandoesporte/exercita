@@ -4,8 +4,15 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
 
-// Export the provider directly rather than creating a wrapper component
-const TooltipProvider = TooltipPrimitive.Provider
+const TooltipProvider = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Provider>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>
+>(({ children, ...props }, ref) => (
+  <TooltipPrimitive.Provider ref={ref} {...props}>
+    {children}
+  </TooltipPrimitive.Provider>
+))
+TooltipProvider.displayName = "TooltipProvider"
 
 const Tooltip = TooltipPrimitive.Root
 
