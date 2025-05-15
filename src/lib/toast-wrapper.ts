@@ -1,76 +1,71 @@
 
-import { toast as sonnerToast } from 'sonner';
-import type { ExternalToast } from 'sonner';
+// Import the toast from sonner
+import { toast as sonnerToast } from "sonner";
+import type { ToastOptions } from "sonner";
 
-// Define our simplified toast options interface
-interface ToastOptions {
-  description?: React.ReactNode;
-  action?: React.ReactNode;
-  cancel?: React.ReactNode;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
-  duration?: number;
-}
+// Helper function to create a function with consistent params
+const createToastFunction = (
+  fn: (message: string, options?: ToastOptions) => string | number
+) => {
+  return (message: string, options?: ToastOptions): string | number => {
+    return fn(message, options);
+  };
+};
 
-// Create a wrapper function for sonner toast
+// Define our unified toast API
 export const toast = {
-  // Standard toast
-  default(message: string, options?: ToastOptions) {
-    // Convert our options to sonner's ExternalToast type
-    const externalToast: ExternalToast = { ...options };
-    return sonnerToast(message, externalToast);
-  },
-  
+  // Default toast
+  default: createToastFunction((message, options) => {
+    return sonnerToast(message, options);
+  }),
+
   // Success toast
-  success(message: string, options?: ToastOptions) {
+  success: createToastFunction((message, options) => {
     return sonnerToast.success(message, options);
-  },
-  
+  }),
+
   // Error toast
-  error(message: string, options?: ToastOptions) {
+  error: createToastFunction((message, options) => {
     return sonnerToast.error(message, options);
-  },
-  
-  // Warning toast
-  warning(message: string, options?: ToastOptions) {
-    return sonnerToast.warning(message, options);
-  },
-  
+  }),
+
   // Info toast
-  info(message: string, options?: ToastOptions) {
+  info: createToastFunction((message, options) => {
     return sonnerToast.info(message, options);
-  },
-  
-  // Custom toast with title
-  custom(title: string, message?: string, options?: ToastOptions) {
-    if (message) {
-      return sonnerToast(title, { 
-        description: message,
-        ...options 
-      });
-    }
-    return sonnerToast(title, options);
-  },
-  
-  // Loading toast
-  loading(message: string, options?: ToastOptions) {
-    return sonnerToast.loading(message, options);
-  },
-  
+  }),
+
+  // Warning toast
+  warning: createToastFunction((message, options) => {
+    return sonnerToast(message, {
+      ...options,
+      className: "bg-yellow-100 border-yellow-400 text-yellow-800",
+    });
+  }),
+
   // Promise toast
-  promise<T>(
+  promise: <T>(
     promise: Promise<T>,
     messages: {
       loading: string;
       success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
+      error: string | ((error: Error) => string);
     },
     options?: ToastOptions
-  ) {
+  ) => {
     return sonnerToast.promise(promise, messages, options);
   },
-  
+
+  // Custom toast
+  custom: (
+    message: string,
+    options?: ToastOptions & {
+      icon?: JSX.Element;
+      description?: string;
+    }
+  ) => {
+    return sonnerToast(message, options);
+  },
+
   // Dismiss all toasts
-  dismiss() {
-    return sonnerToast.dismiss();
-  }
+  dismiss: () => sonnerToast.dismiss(),
 };
