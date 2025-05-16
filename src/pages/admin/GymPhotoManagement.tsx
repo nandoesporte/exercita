@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
 import { Button } from '@/components/ui/button';
-import { Check, X, Eye, User, Gallery } from 'lucide-react';
+import { Check, X, Eye, User, GalleryHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,7 +37,7 @@ const GymPhotoManagement = () => {
   return (
     <div className="container p-4 max-w-7xl mx-auto">
       <div className="flex items-center gap-3 mb-2">
-        <Gallery className="h-7 w-7 text-fitness-green" />
+        <GalleryHorizontal className="h-7 w-7 text-fitness-green" />
         <h1 className="text-3xl font-bold text-white tracking-tight">
           Gerenciamento de Fotos
         </h1>
@@ -157,7 +157,7 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
             <DialogContent className="max-w-4xl bg-fitness-darkGray border-gray-700">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Gallery className="h-5 w-5" /> Foto da Academia
+                  <GalleryHorizontal className="h-5 w-5" /> Foto da Academia
                 </DialogTitle>
               </DialogHeader>
               <div className="mt-4">
