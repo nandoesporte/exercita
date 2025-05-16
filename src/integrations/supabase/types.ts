@@ -647,6 +647,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          raw_user_meta_data: Json
+          created_at: string
+          last_sign_in_at: string
+          banned_until: string
+        }[]
+      }
       handle_kiwify_webhook: {
         Args: { payload: Json }
         Returns: Json
@@ -654,6 +665,10 @@ export type Database = {
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      toggle_user_active_status: {
+        Args: { user_id: string; is_active: boolean }
+        Returns: undefined
       }
     }
     Enums: {

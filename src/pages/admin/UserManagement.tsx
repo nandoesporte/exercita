@@ -11,6 +11,20 @@ import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+// Define types for our functions' responses
+type UserData = {
+  id: string;
+  email: string;
+  raw_user_meta_data: {
+    first_name?: string;
+    last_name?: string;
+    [key: string]: any;
+  };
+  created_at: string;
+  last_sign_in_at: string | null;
+  banned_until: string | null;
+};
+
 const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const queryClient = useQueryClient();
@@ -20,7 +34,7 @@ const UserManagement = () => {
     queryKey: ['admin-users'],
     queryFn: async () => {
       // Fetch users from auth.users through a custom function
-      const { data: userData, error } = await supabase.rpc('get_all_users');
+      const { data, error } = await supabase.rpc('get_all_users') as { data: UserData[] | null, error: any };
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -28,7 +42,7 @@ const UserManagement = () => {
         return [];
       }
       
-      return userData || [];
+      return data || [];
     }
   });
 
@@ -61,7 +75,7 @@ const UserManagement = () => {
     if (!searchQuery.trim()) return users;
     
     const query = searchQuery.toLowerCase().trim();
-    return users.filter((user: any) => {
+    return users.filter((user: UserData) => {
       const email = user.email?.toLowerCase() || '';
       const firstName = user.raw_user_meta_data?.first_name?.toLowerCase() || '';
       const lastName = user.raw_user_meta_data?.last_name?.toLowerCase() || '';
@@ -75,7 +89,7 @@ const UserManagement = () => {
     {
       accessorKey: 'user',
       header: 'Usuário',
-      cell: ({ row }: { row: { original: any } }) => {
+      cell: ({ row }: { row: { original: UserData } }) => {
         const user = row.original;
         const firstName = user.raw_user_meta_data?.first_name || '';
         const lastName = user.raw_user_meta_data?.last_name || '';
@@ -99,14 +113,14 @@ const UserManagement = () => {
     {
       accessorKey: 'created_at',
       header: 'Data de Registro',
-      cell: ({ row }: { row: { original: any } }) => {
+      cell: ({ row }: { row: { original: UserData } }) => {
         return format(new Date(row.original.created_at), 'dd/MM/yyyy');
       }
     },
     {
       accessorKey: 'last_sign_in_at',
       header: 'Último Login',
-      cell: ({ row }: { row: { original: any } }) => {
+      cell: ({ row }: { row: { original: UserData } }) => {
         const lastSignIn = row.original.last_sign_in_at;
         return lastSignIn ? format(new Date(lastSignIn), 'dd/MM/yyyy HH:mm') : 'Nunca';
       }
@@ -114,7 +128,7 @@ const UserManagement = () => {
     {
       accessorKey: 'is_active',
       header: 'Status',
-      cell: ({ row }: { row: { original: any } }) => {
+      cell: ({ row }: { row: { original: UserData } }) => {
         const isActive = !row.original.banned_until;
         
         return (
