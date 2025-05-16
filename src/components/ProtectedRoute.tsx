@@ -6,10 +6,10 @@ import { checkAuthSession } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  adminOnly?: boolean;
+  isAdminRoute?: boolean;
 }
 
-const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
   
@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
       user: !!user, 
       userId: user?.id,
       isAdmin, 
-      adminOnly,
+      adminOnly: isAdminRoute,
       loading
     });
     
@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
         }
       });
     }
-  }, [user, loading, isAdmin, adminOnly, location.pathname]);
+  }, [user, loading, isAdmin, isAdminRoute, location.pathname]);
 
   if (loading) {
     return (
@@ -52,7 +52,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
   }
 
   // For admin routes, check admin status
-  if (adminOnly && !isAdmin) {
+  if (isAdminRoute && !isAdmin) {
     // Add more descriptive console.log for debugging
     console.log("Access denied: User is not an admin", { 
       userId: user.id, 

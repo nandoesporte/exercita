@@ -1,3 +1,4 @@
+
 import { Toaster } from "sonner";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -85,7 +86,7 @@ const App = () => {
         </Route>
         
         {/* Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute isAdminRoute><AdminLayout /></ProtectedRoute>}>
+        <Route path="/admin" element={<ProtectedRoute isAdminRoute={true}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           {/* Workouts */}
           <Route path="workouts" element={<WorkoutManagement />} />

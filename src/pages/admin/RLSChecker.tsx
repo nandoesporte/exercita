@@ -1,255 +1,197 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DataTable } from '@/components/ui/data-table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, ShieldAlert, ShieldCheck, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Shield, ShieldAlert, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-type TableRLSStatus = {
+// Interface for table data
+interface TableData {
   table_name: string;
   has_rls: boolean;
   row_count: number;
-};
+}
 
+// Component for showing tables without RLS
 const RLSChecker = () => {
   const queryClient = useQueryClient();
-  const [errorRetries, setErrorRetries] = useState(0);
 
-  // Fetch tables and their RLS status
-  const { data: tables, isLoading, error, refetch } = useQuery({
-    queryKey: ['rls-status', errorRetries],
+  // Fetch tables without RLS
+  const { data: tables, isLoading, error } = useQuery({
+    queryKey: ['tables-rls-status'],
     queryFn: async () => {
       try {
-        console.log('Fetching RLS status for tables...');
         const { data, error } = await supabase.rpc('get_tables_without_rls');
         
         if (error) {
-          console.error('Error fetching RLS status:', error);
-          toast.error('Erro ao verificar status de RLS nas tabelas');
           throw error;
         }
         
-        return data as TableRLSStatus[];
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        throw err;
+        return data as TableData[];
+      } catch (error: any) {
+        console.error('Error fetching tables without RLS:', error);
+        throw error;
       }
-    },
-    retry: 1,
-    staleTime: 5 * 60 * 1000,
+    }
   });
-  
-  // Enable RLS for a table
-  const enableRLS = useMutation({
+
+  // Mutation to enable RLS
+  const enableRLSMutation = useMutation({
     mutationFn: async (tableName: string) => {
-      const { error } = await supabase.rpc('admin_enable_rls', {
-        table_name: tableName
-      });
-      
-      if (error) throw error;
-      
-      return tableName;
-    },
-    onSuccess: (tableName) => {
-      queryClient.invalidateQueries({ queryKey: ['rls-status'] });
-      toast.success(`RLS ativado para a tabela ${tableName}`);
-    },
-    onError: (error: any) => {
-      console.error('Error enabling RLS:', error);
-      toast.error(error.message || 'Erro ao ativar RLS');
-    }
-  });
-
-  // Manual retry handler with loading state
-  const [isRetrying, setIsRetrying] = useState(false);
-  
-  const handleManualRetry = async () => {
-    setIsRetrying(true);
-    try {
-      await refetch();
-      toast.success('Dados recarregados com sucesso');
-    } catch (err) {
-      toast.error('Falha ao tentar recarregar os dados. Por favor, tente novamente.');
-    } finally {
-      setIsRetrying(false);
-      setErrorRetries(prev => prev + 1);
-    }
-  };
-
-  // Calculate stats
-  const tablesWithoutRLS = tables?.filter(t => !t.has_rls).length || 0;
-  const totalTables = tables?.length || 0;
-  const securityScore = totalTables ? Math.round(((totalTables - tablesWithoutRLS) / totalTables) * 100) : 0;
-
-  const columns = [
-    {
-      accessorKey: 'table_name',
-      header: 'Tabela',
-      cell: ({ row }: { row: { original: TableRLSStatus } }) => (
-        <span className="font-medium">{row.original.table_name}</span>
-      ),
-    },
-    {
-      accessorKey: 'has_rls',
-      header: 'Status RLS',
-      cell: ({ row }: { row: { original: TableRLSStatus } }) => {
-        const hasRLS = row.original.has_rls;
-        return (
-          <div className="flex items-center gap-2">
-            {hasRLS ? (
-              <>
-                <ShieldCheck className="h-5 w-5 text-green-500" />
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  Protegida
-                </Badge>
-              </>
-            ) : (
-              <>
-                <ShieldAlert className="h-5 w-5 text-red-500" />
-                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                  Não Protegida
-                </Badge>
-              </>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'row_count',
-      header: 'Linhas',
-      cell: ({ row }: { row: { original: TableRLSStatus } }) => {
-        return (
-          <span>{row.original.row_count.toLocaleString()}</span>
-        );
-      },
-    },
-    {
-      accessorKey: 'actions',
-      header: 'Ações',
-      cell: ({ row }: { row: { original: TableRLSStatus } }) => {
-        if (row.original.has_rls) {
-          return (
-            <Badge variant="outline" className="bg-green-50 text-green-700">
-              RLS Ativado
-            </Badge>
-          );
+      try {
+        const { data, error } = await supabase.rpc('admin_enable_rls', {
+          table_name: tableName
+        });
+        
+        if (error) {
+          throw error;
         }
         
-        return (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => enableRLS.mutate(row.original.table_name)}
-            disabled={enableRLS.isPending && enableRLS.variables === row.original.table_name}
-            className="flex items-center gap-2"
-          >
-            {enableRLS.isPending && enableRLS.variables === row.original.table_name ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <Shield className="h-4 w-4" />
-            )}
-            Ativar RLS
-          </Button>
-        );
-      },
+        return data;
+      } catch (error: any) {
+        console.error('Error enabling RLS:', error);
+        throw error;
+      }
     },
-  ];
+    onSuccess: (_, tableName) => {
+      toast.success(`RLS habilitado com sucesso na tabela ${tableName}`);
+      queryClient.invalidateQueries({ queryKey: ['tables-rls-status'] });
+    },
+    onError: (error) => {
+      toast.error(`Erro ao habilitar RLS: ${error.message}`);
+    }
+  });
+
+  // Handle enabling RLS
+  const handleEnableRLS = (tableName: string) => {
+    enableRLSMutation.mutate(tableName);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="bg-red-50 border-red-200">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center">
+              <ShieldAlert className="h-12 w-12 text-red-500 mb-2" />
+              <h2 className="text-xl font-bold text-red-700">Erro ao verificar RLS</h2>
+              <p className="text-sm text-red-600">{(error as Error).message}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="container p-4 max-w-7xl mx-auto">
-      <div className="flex items-center gap-3 mb-2">
-        <Shield className="h-7 w-7 text-fitness-green" />
-        <h1 className="text-3xl font-bold text-[#000000] tracking-tight">
-          Verificador de RLS
-        </h1>
-      </div>
-      
-      <p className="text-lg text-[#000000e6] dark:text-gray-300 mb-6 max-w-3xl leading-relaxed">
-        Verifique o status de Row Level Security (RLS) das tabelas no seu banco de dados. 
-        O RLS é essencial para garantir que os usuários só possam acessar os dados que deveriam ter permissão.
-      </p>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total de Tabelas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTables}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Tabelas sem RLS</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${tablesWithoutRLS > 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {tablesWithoutRLS}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Pontuação de Segurança</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${securityScore < 80 ? 'text-orange-500' : 'text-green-600'}`}>
-              {securityScore}%
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Action Button */}
-      <div className="flex justify-end mb-4">
-        <Button 
-          variant="outline" 
-          onClick={handleManualRetry}
-          disabled={isRetrying}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
-          Atualizar Dados
-        </Button>
-      </div>
-      
-      {error ? (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-          <AlertTriangle className="h-10 w-10 mx-auto text-red-500 mb-2" />
-          <p className="text-red-800 dark:text-red-200 mb-4 font-medium text-lg">
-            Ocorreu um erro ao verificar o status de RLS.
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Verificador de Row Level Security (RLS)</h1>
+          <p className="text-muted-foreground">
+            Verifique e ative a segurança em nível de linha nas tabelas do banco de dados.
           </p>
-          <p className="text-red-700 dark:text-red-300 mb-6 max-w-md mx-auto">
-            Não foi possível conectar ao servidor ou ocorreu um problema ao buscar os dados das tabelas. 
-            Por favor, tente novamente.
+        </div>
+        <Shield className="h-8 w-8 text-fitness-green" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Status das Tabelas</CardTitle>
+          <CardDescription>
+            Verifique quais tabelas têm RLS habilitado e quais precisam ser configuradas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="relative overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  <th scope="col" className="px-6 py-3">Tabela</th>
+                  <th scope="col" className="px-6 py-3">Registros</th>
+                  <th scope="col" className="px-6 py-3">Status RLS</th>
+                  <th scope="col" className="px-6 py-3">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tables && tables.length > 0 ? (
+                  tables.map((table) => (
+                    <tr key={table.table_name} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                      <td className="px-6 py-4 font-medium">{table.table_name}</td>
+                      <td className="px-6 py-4">{table.row_count}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {table.has_rls ? (
+                            <>
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-green-600">Ativo</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShieldAlert className="h-4 w-4 text-amber-500" />
+                              <span className="text-amber-600">Inativo</span>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {!table.has_rls && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleEnableRLS(table.table_name)}
+                            disabled={enableRLSMutation.isPending}
+                            className="flex items-center gap-1"
+                          >
+                            <Shield className="h-4 w-4" />
+                            Habilitar RLS
+                          </Button>
+                        )}
+                        {table.has_rls && (
+                          <span className="text-green-600 text-sm">Protegido</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-4 text-center">
+                      Nenhuma tabela encontrada ou todas já estão protegidas com RLS.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>O que é Row Level Security?</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p>
+            Row Level Security (RLS) é um recurso de segurança do PostgreSQL que permite controlar quais linhas podem ser acessadas por quais usuários.
+            Isso é crucial para garantir que os usuários só possam visualizar ou modificar dados aos quais têm permissão explícita.
           </p>
-          <Button 
-            variant="destructive" 
-            onClick={handleManualRetry}
-            disabled={isRetrying}
-            className="mx-auto flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
-            Tentar novamente
-          </Button>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-fitness-darkGray rounded-lg shadow">
-          <DataTable
-            columns={columns}
-            data={tables || []}
-            isLoading={isLoading || isRetrying}
-          />
-        </div>
-      )}
+          <p>
+            Quando habilitado, o RLS restringe o acesso aos dados com base em políticas definidas, que podem ser configuradas para diferentes níveis de acesso.
+          </p>
+          <p className="font-semibold">
+            Recomendamos habilitar o RLS em todas as tabelas que contêm dados sensíveis ou específicos do usuário.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 };

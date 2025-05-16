@@ -3,7 +3,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  DumbellIcon, 
+  DumbbellIcon, 
   Gift, 
   ImageIcon, 
   Clock, 
@@ -14,7 +14,15 @@ import {
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-const AdminSidebar = () => {
+interface AdminSidebarProps {
+  onNavItemClick?: () => void;
+}
+
+const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
+  const handleClick = () => {
+    if (onNavItemClick) onNavItemClick();
+  };
+  
   return (
     <div className="h-full py-6 px-3 border-r bg-white dark:bg-fitness-darkGray shadow-sm flex flex-col">
       <div className="flex-1">
@@ -28,6 +36,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
@@ -45,8 +54,9 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
-              <DumbellIcon className="h-4 w-4" />
+              <DumbbellIcon className="h-4 w-4" />
               Treinos
             </NavLink>
             
@@ -56,8 +66,9 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
-              <DumbellIcon className="h-4 w-4" />
+              <DumbbellIcon className="h-4 w-4" />
               Exercícios
             </NavLink>
             
@@ -67,6 +78,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <Gift className="h-4 w-4" />
               Produtos
@@ -78,6 +90,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <ImageIcon className="h-4 w-4" />
               Fotos da Academia
@@ -89,6 +102,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <Clock className="h-4 w-4" />
               Agenda
@@ -100,6 +114,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <CalendarIcon className="h-4 w-4" />
               Consultas
@@ -111,6 +126,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <CreditCard className="h-4 w-4" />
               Métodos de Pagamento
@@ -122,6 +138,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <Users className="h-4 w-4" />
               Usuários
@@ -133,6 +150,7 @@ const AdminSidebar = () => {
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
                 ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
               }
+              onClick={handleClick}
             >
               <Shield className="h-4 w-4" />
               Verificador de RLS
