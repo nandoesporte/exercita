@@ -1,4 +1,3 @@
-
 import { Toaster } from "sonner";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -45,6 +44,8 @@ import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
 import UserManagement from "@/pages/admin/UserManagement"; // Import the new UserManagement component
+import AppointmentManagement from "@/pages/admin/AppointmentManagement"; // Import the new AppointmentManagement component
+import RLSChecker from './pages/admin/RLSChecker'; // Import the new RLS checker page
 
 const App = () => {
   console.log("App component rendering");
@@ -84,25 +85,31 @@ const App = () => {
         </Route>
         
         {/* Admin Routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute adminOnly>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
+        <Route path="/admin" element={<ProtectedRoute isAdminRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
+          {/* Workouts */}
           <Route path="workouts" element={<WorkoutManagement />} />
-          <Route path="workouts/new" element={<CreateWorkout />} />
+          <Route path="workouts/create" element={<CreateWorkout />} />
           <Route path="workouts/:id/edit" element={<EditWorkout />} />
           <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
+          {/* Exercises */}
           <Route path="exercises" element={<ExerciseManagement />} />
           <Route path="exercises/library" element={<ExerciseLibrary />} />
+          {/* Products */}
           <Route path="products" element={<ProductManagement />} />
-          <Route path="products/new" element={<CreateProduct />} />
+          <Route path="products/create" element={<CreateProduct />} />
           <Route path="products/:id/edit" element={<EditProduct />} />
+          {/* Photos */}
+          <Route path="photos" element={<GymPhotoManagement />} />
+          {/* Scheduling */}
           <Route path="schedule" element={<ScheduleManagement />} />
-          <Route path="payments" element={<PaymentMethodManagement />} />
-          <Route path="gym-photos" element={<GymPhotoManagement />} />
-          <Route path="users" element={<UserManagement />} /> {/* Add new route for UserManagement */}
+          <Route path="appointments" element={<AppointmentManagement />} />
+          {/* Payment */}
+          <Route path="payment-methods" element={<PaymentMethodManagement />} />
+          {/* Users */}
+          <Route path="users" element={<UserManagement />} />
+          {/* RLS Checker */}
+          <Route path="rls-checker" element={<RLSChecker />} />
         </Route>
         
         {/* 404 */}

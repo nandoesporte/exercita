@@ -1,152 +1,155 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, Dumbbell, CalendarDays, FileText, Settings,
-  BarChart, LogOut, ShoppingBag, Calendar, CreditCard, Image
+  LayoutDashboard, 
+  DumbellIcon, 
+  Gift, 
+  ImageIcon, 
+  Clock, 
+  CalendarIcon, 
+  CreditCard, 
+  Users, 
+  Shield
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
-interface AdminSidebarProps {
-  onNavItemClick?: () => void;
-}
-
-const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
-  const location = useLocation();
-  const { signOut } = useAuth();
-
-  const navItems = [
-    { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
-    { icon: Users, path: '/admin/users', label: 'Usuários' },
-    { 
-      icon: Dumbbell, 
-      path: '/admin/exercises', 
-      label: 'Exercícios',
-      children: [
-        { path: '/admin/exercises', label: 'Gerenciar Exercícios' },
-        { path: '/admin/exercises/library', label: 'Biblioteca de Exercícios' },
-      ]
-    },
-    { icon: Dumbbell, path: '/admin/workouts', label: 'Treinos' },
-    { icon: ShoppingBag, path: '/admin/products', label: 'Loja' },
-    { icon: Calendar, path: '/admin/schedule', label: 'Agendamento' },
-    { icon: CalendarDays, path: '/admin/appointments', label: 'Agendamentos' },
-    { icon: CreditCard, path: '/admin/payments', label: 'Pagamentos' },
-    { icon: Image, path: '/admin/gym-photos', label: 'Fotos de Academias' },
-    { icon: FileText, path: '/admin/blog', label: 'Blog' },
-    { icon: BarChart, path: '/admin/analytics', label: 'Estatísticas' },
-    { icon: Settings, path: '/admin/settings', label: 'Configurações' },
-  ];
-
-  const handleLogout = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log("Logout button clicked in AdminSidebar");
-    await signOut();
-  };
-
-  const handleNavClick = () => {
-    if (onNavItemClick) {
-      onNavItemClick();
-    }
-  };
-
-  // Function to determine if a path is active or one of its children is active
-  const isPathActive = (path: string, childPaths?: string[]) => {
-    if (location.pathname === path) return true;
-    if (childPaths) {
-      return childPaths.some(childPath => location.pathname === childPath);
-    }
-    return false;
-  };
-
-  // Function to determine if a submenu should be expanded
-  const shouldExpand = (item: any) => {
-    if (!item.children) return false;
-    return item.children.some((child: any) => location.pathname === child.path);
-  };
-
+const AdminSidebar = () => {
   return (
-    <aside className="flex flex-col bg-card border-r border-border h-full w-full md:w-64 p-4">
-      <div className="flex items-center mb-8 px-2">
-        <span className="text-2xl font-bold text-fitness-green">FitFlow</span>
+    <div className="h-full py-6 px-3 border-r bg-white dark:bg-fitness-darkGray shadow-sm flex flex-col">
+      <div className="flex-1">
+        <div className="mb-4">
+          <h2 className="text-l font-semibold tracking-tight px-4">App</h2>
+          <Separator className="my-2" />
+          <nav className="space-y-1">
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </NavLink>
+          </nav>
+        </div>
+        
+        <div className="mb-4">
+          <h2 className="text-l font-semibold tracking-tight px-4">Funcionalidades</h2>
+          <Separator className="my-2" />
+          <nav className="space-y-1">
+            <NavLink
+              to="/admin/workouts"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <DumbellIcon className="h-4 w-4" />
+              Treinos
+            </NavLink>
+            
+            <NavLink
+              to="/admin/exercises"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <DumbellIcon className="h-4 w-4" />
+              Exercícios
+            </NavLink>
+            
+            <NavLink
+              to="/admin/products"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <Gift className="h-4 w-4" />
+              Produtos
+            </NavLink>
+            
+            <NavLink
+              to="/admin/photos"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <ImageIcon className="h-4 w-4" />
+              Fotos da Academia
+            </NavLink>
+            
+            <NavLink
+              to="/admin/schedule"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <Clock className="h-4 w-4" />
+              Agenda
+            </NavLink>
+            
+            <NavLink
+              to="/admin/appointments"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <CalendarIcon className="h-4 w-4" />
+              Consultas
+            </NavLink>
+            
+            <NavLink
+              to="/admin/payment-methods"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <CreditCard className="h-4 w-4" />
+              Métodos de Pagamento
+            </NavLink>
+            
+            <NavLink
+              to="/admin/users"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <Users className="h-4 w-4" />
+              Usuários
+            </NavLink>
+            
+            <NavLink
+              to="/admin/rls-checker"
+              className={({ isActive }) => 
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
+                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
+              }
+            >
+              <Shield className="h-4 w-4" />
+              Verificador de RLS
+            </NavLink>
+          </nav>
+        </div>
       </div>
-
-      <nav className="flex-1 space-y-1">
-        {navItems.map((item) => {
-          const isActive = isPathActive(item.path, item.children?.map(c => c.path));
-          const isExpanded = shouldExpand(item);
-          
-          return (
-            <div key={item.path} className="space-y-1">
-              {/* Main Menu Item */}
-              {item.children ? (
-                // If the item has children, render a dropdown menu
-                <>
-                  <div
-                    className={cn(
-                      "flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer",
-                      isActive 
-                        ? 'bg-fitness-green text-white' 
-                        : 'text-foreground hover:bg-muted'
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon size={20} />
-                      <span>{item.label}</span>
-                    </div>
-                  </div>
-
-                  {/* Submenu Items */}
-                  <div className="pl-10 space-y-1">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.path}
-                        to={child.path}
-                        onClick={handleNavClick}
-                        className={cn(
-                          "flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors",
-                          location.pathname === child.path
-                            ? 'bg-fitness-green/20 text-fitness-green font-medium' 
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                        )}
-                      >
-                        <span>{child.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                // Regular menu item without children
-                <Link
-                  to={item.path}
-                  onClick={handleNavClick}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                    isActive 
-                      ? 'bg-fitness-green text-white' 
-                      : 'text-foreground hover:bg-muted'
-                  )}
-                >
-                  <item.icon size={20} />
-                  <span>{item.label}</span>
-                </Link>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-
-      <div className="border-t border-border pt-4 mt-4">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 w-full text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-        >
-          <LogOut size={20} />
-          <span>Sair</span>
-        </button>
+      
+      {/* Admin Info */}
+      <div className="mt-auto">
+        <Separator className="my-4" />
+        <div className="flex flex-col px-3 py-2">
+          <span className="text-xs text-muted-foreground">Academia Fitness</span>
+          <span className="text-xs text-muted-foreground">Painel Administrativo</span>
+        </div>
       </div>
-    </aside>
+    </div>
   );
 };
 
