@@ -102,7 +102,7 @@ const EditWorkoutExercises = () => {
   const isActionLoading = isAddingExercise || isRemovingExercise || isUpdatingExerciseOrder;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       <div className="flex items-center gap-4">
         <button 
           onClick={handleBackClick}
@@ -124,8 +124,8 @@ const EditWorkoutExercises = () => {
       ) : (
         <>
           {/* Day of Week Filter - Dropdown for mobile, Tabs for desktop */}
-          <div className="mb-6">
-            <div className="flex items-center mb-2">
+          <div className="mb-8">
+            <div className="flex items-center mb-3">
               <Calendar className="mr-2 h-4 w-4" />
               <h2 className="font-medium">Filtrar por dia</h2>
             </div>
@@ -156,7 +156,7 @@ const EditWorkoutExercises = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div className="bg-card rounded-lg border border-border p-6">
               <h2 className="text-xl font-semibold mb-4">Lista de Exercícios</h2>
               <ExerciseList 
