@@ -1,109 +1,138 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import UserLayout from '@/components/layout/UserLayout';
+import AdminLayout from '@/components/layout/AdminLayout';
+import Index from '@/pages/Index';
+import Login from '@/pages/Login';
+import SignUp from '@/pages/SignUp';
+import Profile from '@/pages/Profile';
+import Settings from '@/pages/Settings';
+import Admin from '@/pages/Admin';
+import Workouts from '@/pages/Workouts';
+import Workout from '@/pages/Workout';
+import EditWorkoutExercises from '@/pages/admin/EditWorkoutExercises';
+import AdminWorkouts from '@/pages/admin/AdminWorkouts';
+import AdminExercises from '@/pages/admin/AdminExercises';
+import CreateWorkout from '@/pages/admin/CreateWorkout';
+import EditWorkout from '@/pages/admin/EditWorkout';
+import CreateExercise from '@/pages/admin/CreateExercise';
+import EditExercise from '@/pages/admin/EditExercise';
+import AdminUsers from '@/pages/admin/AdminUsers';
+import Account from '@/pages/Account';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import FindGym from '@/pages/FindGym';
+import { Toaster } from "@/components/ui/toaster"
+import { checkAuthSession } from '@/integrations/supabase/client';
+import WorkoutHistory from './pages/WorkoutHistory';
+import Reminders from './pages/Reminders';
+import Notifications from './pages/Notifications';
+import Invite from './pages/Invite';
+import Help from './pages/Help';
+import GymPhotoManagement from './pages/admin/GymPhotoManagement';
+import GymPhotos from './pages/GymPhotos';
 
-import { Toaster } from "sonner";
-import { Routes, Route } from "react-router-dom";
-import ProtectedRoute from "@/components/ProtectedRoute";
+function App() {
+  const [isPWA, setIsPWA] = useState(false);
 
-// Import layouts
-import UserLayout from "@/components/layout/UserLayout";
-import AdminLayout from "@/components/layout/AdminLayout";
+  useEffect(() => {
+    // Function to determine if running as a standalone PWA
+    const isRunningAsPWA = () => {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             (window.navigator as any).standalone ||
+             document.referrer.includes('android-app://');
+    };
 
-// User pages
-import Index from "@/pages/Index";
-import Workouts from "@/pages/Workouts";
-import WorkoutDetail from "@/pages/WorkoutDetail";
-import History from "@/pages/History";
-import Profile from "@/pages/Profile";
-import Login from "@/pages/Login";
-import NotFound from "@/pages/NotFound";
-import Store from "@/pages/Store";
-import ProductDetail from "@/pages/ProductDetail";
-import Schedule from "@/pages/Schedule";
+    setIsPWA(isRunningAsPWA());
 
-// Profile related pages
-import AccountInfo from "@/pages/AccountInfo";
-import Settings from "@/pages/Settings";
-import WorkoutHistory from "@/pages/WorkoutHistory";
-import Reminders from "@/pages/Reminders";
-import Notifications from "@/pages/Notifications";
-import PaymentMethods from "@/pages/PaymentMethods";
-import InviteFriends from "@/pages/InviteFriends";
-import HelpCenter from "@/pages/HelpCenter";
+    // Optionally, listen for changes in the display mode
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt) => {
+      setIsPWA(evt.matches);
+    });
+  }, []);
 
-// Admin pages
-import Dashboard from "@/pages/admin/Dashboard";
-import WorkoutManagement from "@/pages/admin/WorkoutManagement";
-import CreateWorkout from "@/pages/admin/CreateWorkout";
-import EditWorkout from "@/pages/admin/EditWorkout";
-import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
-import ExerciseManagement from "@/pages/admin/ExerciseManagement";
-import ProductManagement from "@/pages/admin/ProductManagement";
-import CreateProduct from "@/pages/admin/CreateProduct";
-import EditProduct from "@/pages/admin/EditProduct";
-import ScheduleManagement from "@/pages/admin/ScheduleManagement";
-import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
-import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
+  const ProtectedRoute = ({ children, isAdmin }: { children: React.ReactNode, isAdmin?: boolean }) => {
+    const { user, loading } = useAuth();
 
-const App = () => {
-  console.log("App component rendering");
-  
+    if (loading) {
+      return <div>Loading...</div>; // You can replace this with a spinner or loading indicator
+    }
+
+    if (!user) {
+      // Redirect to login if not authenticated
+      return <Navigate to="/login" replace />;
+    }
+
+    if (isAdmin) {
+      // Check if the user has admin privileges
+      const { isAdmin: isAdminUser } = useAuth();
+      if (!isAdminUser) {
+        // Redirect to unauthorized page or home page if not an admin
+        return <Navigate to="/" replace />;
+      }
+    }
+
+    return <>{children}</>;
+  };
+
   return (
-    <>
-      <Toaster />
+    <Router>
       <Routes>
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        
-        {/* User Routes */}
-        <Route element={
-          <ProtectedRoute>
-            <UserLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/" element={<Index />} />
-          <Route path="/workouts" element={<Workouts />} />
-          <Route path="/workout/:id" element={<WorkoutDetail />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/store" element={<Store />} />
-          <Route path="/store/:id" element={<ProductDetail />} />
-          <Route path="/schedule" element={<Schedule />} />
+        <Route path="/" element={<UserLayout />}>
+          <Route index element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/workouts" element={<ProtectedRoute><Workouts /></ProtectedRoute>} />
+          <Route path="/workout/:id" element={<ProtectedRoute><Workout /></ProtectedRoute>} />
+          <Route path="/workout-history" element={<ProtectedRoute><WorkoutHistory /></ProtectedRoute>} />
+          <Route path="/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/invite" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
+          <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
+          <Route path="/find-gym" element={<ProtectedRoute><FindGym /></ProtectedRoute>} />
           
-          {/* Profile related pages */}
-          <Route path="/account" element={<AccountInfo />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/workout-history" element={<WorkoutHistory />} />
-          <Route path="/reminders" element={<Reminders />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/payment" element={<PaymentMethods />} />
-          <Route path="/invite" element={<InviteFriends />} />
-          <Route path="/help" element={<HelpCenter />} />
+          {/* Add the gym photos route */}
+          <Route path="/gym-photos" element={<GymPhotos />} />
+          
+          {/* Add the gym photos route */}
         </Route>
         
-        {/* Admin Routes */}
+        {/* Admin routes */}
         <Route path="/admin" element={
-          <ProtectedRoute adminOnly>
+          <ProtectedRoute isAdmin>
             <AdminLayout />
           </ProtectedRoute>
         }>
-          <Route index element={<Dashboard />} />
-          <Route path="workouts" element={<WorkoutManagement />} />
-          <Route path="workouts/new" element={<CreateWorkout />} />
-          <Route path="workouts/:id/edit" element={<EditWorkout />} />
-          <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
-          <Route path="exercises" element={<ExerciseManagement />} />
-          <Route path="exercises/library" element={<ExerciseLibrary />} />
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="products/new" element={<CreateProduct />} />
-          <Route path="products/:id/edit" element={<EditProduct />} />
-          <Route path="schedule" element={<ScheduleManagement />} />
-          <Route path="payments" element={<PaymentMethodManagement />} />
+          <Route index element={<Admin />} />
+          <Route path="workouts" element={<AdminWorkouts />} />
+          <Route path="workouts/create" element={<CreateWorkout />} />
+          <Route path="workouts/edit/:id" element={<EditWorkout />} />
+          <Route path="workouts/exercises/:id" element={<EditWorkoutExercises />} />
+          <Route path="exercises" element={<AdminExercises />} />
+          <Route path="exercises/create" element={<CreateExercise />} />
+          <Route path="exercises/edit/:id" element={<EditExercise />} />
+          <Route path="users" element={<AdminUsers />} />
+          
+          {/* Add gym photo management route */}
+          <Route path="gym-photos" element={<GymPhotoManagement />} />
+          
+          {/* Add gym photo management route */}
         </Route>
-        
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+      <Toaster />
+      {isPWA && (
+        <div className="fixed bottom-0 left-0 w-full bg-gray-800 text-white text-center p-2">
+          You're running the PWA version of this app!
+        </div>
+      )}
+    </Router>
   );
-};
+}
 
 export default App;

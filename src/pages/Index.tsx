@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronRight } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { 
@@ -199,23 +199,23 @@ const Index = () => {
         </Carousel>
       </section>
       
-      {/* Minha Academia Seção */}
+      {/* Minha Academia Seção - Updated to "Envie fotos da sua academia" */}
       <section>
         <h2 className="text-xl font-bold mb-4">Minha Academia</h2>
         
         <Card className="bg-fitness-darkGray border-none text-white">
           <CardContent className="p-4">
             <Link 
-              to="/find-gym" 
+              to="/gym-photos" 
               className="flex items-center justify-between p-3 hover:bg-fitness-dark rounded-lg transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="bg-fitness-orange h-10 w-10 rounded-full flex items-center justify-center">
-                  <MapPin className="text-white" size={20} />
+                  <Camera className="text-white" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold">Encontrar Minha Academia</h3>
-                  <p className="text-sm text-gray-300">Obtenha treinos com base na sua academia</p>
+                  <h3 className="font-bold">Envie Fotos da Sua Academia</h3>
+                  <p className="text-sm text-gray-300">Compartilhe fotos e veja outras academias</p>
                 </div>
               </div>
               <ChevronRight size={20} className="text-gray-300" />
