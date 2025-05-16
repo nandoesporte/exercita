@@ -13,6 +13,10 @@ export type GymPhoto = {
   created_at: string;
   approved: boolean;
   user_id: string;
+  profiles?: {
+    first_name: string;
+    last_name: string;
+  } | null;
 };
 
 export function useGymPhotos() {
@@ -152,18 +156,42 @@ export function useGymPhotos() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      // First fetch all photos
+      const { data: photoData, error: photoError } = await supabase
         .from('user_gym_photos')
-        .select('*, profiles(first_name, last_name)')
+        .select('*')
         .order('created_at', { ascending: false });
         
-      if (error) {
+      if (photoError) {
         toast.error('Erro ao carregar fotos');
-        console.error('Error fetching all gym photos:', error);
+        console.error('Error fetching all gym photos:', photoError);
         return [];
       }
       
-      return data;
+      // Then fetch all user profiles
+      const userIds = photoData.map(photo => photo.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', userIds);
+        
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+      
+      // Create a map of user profiles by ID
+      const profilesMap = (profilesData || []).reduce((map, profile) => {
+        map[profile.id] = profile;
+        return map;
+      }, {});
+      
+      // Combine the data
+      const photosWithProfiles = photoData.map(photo => ({
+        ...photo,
+        profiles: profilesMap[photo.user_id] || null
+      }));
+      
+      return photosWithProfiles;
     },
     enabled: !!user
   });
