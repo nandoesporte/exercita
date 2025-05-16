@@ -48,8 +48,6 @@ type UserData = {
   banned_until: string | null;
 };
 
-type AdminCreateUserResponse = string;
-
 // Schema for new user form
 const newUserSchema = z.object({
   email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
@@ -87,7 +85,7 @@ const UserManagement = () => {
       try {
         console.log('Fetching users data...');
         // Fetch users from auth.users through a custom function
-        const { data, error } = await supabase.rpc('get_all_users') as { data: UserData[] | null, error: any };
+        const { data, error } = await supabase.rpc('get_all_users');
         
         if (error) {
           console.error('Error fetching users:', error);
@@ -140,14 +138,12 @@ const UserManagement = () => {
       };
       
       // Use our custom RPC function to create the user
-      const { data, error: createError } = await supabase.rpc<AdminCreateUserResponse>(
-        'admin_create_user', 
-        userData
-      );
+      // We need to manually type the response since TypeScript doesn't know about our custom function
+      const { data, error: createError } = await supabase.rpc('admin_create_user', userData);
       
       if (createError) throw createError;
       
-      const userId = data;
+      const userId = data as string;
       
       // If admin flag is set, update the profile
       if (values.isAdmin && userId) {
@@ -199,6 +195,7 @@ const UserManagement = () => {
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
       // Use our custom RPC function to delete the user
+      // We need to manually pass the parameters in the correct format
       const { error } = await supabase.rpc('admin_delete_user', {
         user_id: userId
       });
