@@ -1,8 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast-wrapper';
 import { v4 as uuidv4 } from 'uuid';
 
 export type AdminExercise = Database['public']['Tables']['exercises']['Row'] & {
@@ -13,6 +12,14 @@ export type ExerciseFormData = {
   name: string;
   description?: string | null;
   category_id?: string | null;
+  image_url?: string | null;
+  video_url?: string | null;
+};
+
+export type BatchExerciseFormData = {
+  name: string;
+  description?: string | null;
+  category_id: string;
   image_url?: string | null;
   video_url?: string | null;
 };
@@ -84,8 +91,17 @@ export function useAdminExercises() {
   });
 
   const batchCreateExercises = useMutation({
-    mutationFn: async (exercises: ExerciseFormData[]) => {
+    mutationFn: async (exercises: BatchExerciseFormData[]) => {
       try {
+        console.log("Batch creating exercises with data:", exercises);
+        
+        // Validate that all category_ids are valid UUIDs
+        for (const exercise of exercises) {
+          if (!isValidUUID(exercise.category_id)) {
+            throw new Error(`Invalid category ID format: ${exercise.category_id}`);
+          }
+        }
+        
         const { data, error } = await supabase
           .from('exercises')
           .insert(exercises)
@@ -214,6 +230,12 @@ export function useAdminExercises() {
       console.error("Error checking storage bucket:", error);
       return false;
     }
+  };
+
+  // Helper function to validate UUID format
+  const isValidUUID = (uuid: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   };
 
   return {

@@ -6,7 +6,7 @@ import { ExerciseFilter } from '@/components/admin/ExerciseFilter';
 import { ExerciseBatchUpload } from '@/components/admin/ExerciseBatchUpload';
 import ExerciseList from '@/components/admin/ExerciseList';
 import ExerciseForm from '@/components/admin/ExerciseForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Upload } from 'lucide-react';
 import { toast } from '@/lib/toast-wrapper';
@@ -86,14 +86,21 @@ export default function ExerciseLibrary() {
   
   const handleBatchSubmit = async (data: any) => {
     try {
-      // Make sure each exercise has a valid category_id
+      // Generate proper UUIDs for the predefined categories if using string IDs
       const validatedData = data.map((exercise: any) => {
-        // Ensure the category_id is a valid ID from our predefined categories
-        const category = EXERCISE_CATEGORIES.find(cat => cat.id === exercise.category_id);
-        if (!category) {
+        // If the category_id matches one of our predefined categories by name, use its UUID
+        const foundCategory = EXERCISE_CATEGORIES.find(cat => cat.id === exercise.category_id);
+        
+        if (!foundCategory) {
           throw new Error(`Categoria inválida: ${exercise.category_id}`);
         }
-        return exercise;
+        
+        // Return the exercise with the valid category_id
+        return {
+          ...exercise,
+          // We're now ensuring category_id is a valid UUID from the form
+          category_id: exercise.category_id
+        };
       });
       
       await batchCreateExercises(validatedData);
@@ -207,11 +214,14 @@ export default function ExerciseLibrary() {
         <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Upload em Lote de Exercícios</DialogTitle>
+            <DialogDescription>
+              Faça upload de múltiplas imagens para criar exercícios em lote. Você deve selecionar uma categoria válida.
+            </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] pr-4">
             <ExerciseBatchUpload 
               onSubmit={handleBatchSubmit} 
-              categories={exerciseCategories}
+              categories={EXERCISE_CATEGORIES}
             />
           </ScrollArea>
         </DialogContent>

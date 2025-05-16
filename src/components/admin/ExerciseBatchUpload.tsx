@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +29,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
-  category_id: z.string().min(1, { message: "Selecione uma categoria" }),
+  category_id: z.string().uuid({ message: "Precisa ser um ID válido" }),
   files: z.array(
     z.object({
       file: z.any(),
@@ -155,11 +154,11 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
 
           updateFileStatus(i, { status: 'success', uploadedUrl: publicUrl, uploadProgress: 100 });
           
-          // Add to results - Use the category_id directly without any transformation
+          // Ensure we're using the UUID from the category_id field
           results.push({
             name: fileData.name,
             description: null,
-            category_id: values.category_id, // Use the ID directly as selected in the form
+            category_id: values.category_id, // This will now be a valid UUID from the form
             image_url: publicUrl,
             video_url: null,
           });
@@ -168,6 +167,7 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
         }
       }
 
+      console.log("Submitting batch with data:", results);
       await onSubmit(results);
 
     } catch (error: any) {
