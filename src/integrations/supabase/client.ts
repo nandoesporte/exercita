@@ -80,6 +80,47 @@ type CustomDatabase = Database & {
       };
     } & Database['public']['Tables'];
   };
+  
+  // Add custom functions
+  public: {
+    Functions: {
+      is_admin: {
+        Args: { user_id: string };
+        Returns: boolean;
+      };
+      get_all_users: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          email: string;
+          raw_user_meta_data: Json;
+          created_at: string;
+          last_sign_in_at: string;
+          banned_until: string;
+        }[];
+      };
+      handle_kiwify_webhook: {
+        Args: { payload: Json };
+        Returns: Json;
+      };
+      toggle_user_active_status: {
+        Args: { user_id: string; is_active: boolean };
+        Returns: undefined;
+      };
+      get_tables_without_rls: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          table_name: string;
+          has_rls: boolean;
+          row_count: number;
+        }[];
+      };
+      admin_enable_rls: {
+        Args: { table_name: string };
+        Returns: undefined;
+      };
+    } & Database['public']['Functions'];
+  };
 };
 
 export const supabase = createClient<CustomDatabase>(
