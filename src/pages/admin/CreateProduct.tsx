@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminStore } from '@/hooks/useAdminStore';
@@ -16,12 +17,12 @@ const CreateProduct = () => {
   
   const handleCreateProduct = async (data: ProductFormData) => {
     try {
-      console.log('Creating product with data:', data);
+      console.log('Criando produto com dados:', data);
       await createProduct(data);
       toast('Produto criado com sucesso');
       navigate('/admin/products');
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error('Erro ao criar produto:', error);
       toast('Erro ao criar produto. Tente novamente.');
     }
   };

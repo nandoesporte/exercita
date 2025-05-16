@@ -193,7 +193,7 @@ export default function ExerciseLibrary() {
           <ScrollArea className="max-h-[70vh] pr-4">
             <ExerciseBatchUpload 
               onSubmit={handleBatchSubmit} 
-              categories={categories} // Use categories from the database
+              categories={categories}
             />
           </ScrollArea>
         </DialogContent>

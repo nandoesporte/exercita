@@ -38,7 +38,7 @@ const AdminLayout = () => {
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="md:hidden">
                     <Menu size={24} />
-                    <span className="sr-only">Toggle menu</span>
+                    <span className="sr-only">Alternar menu</span>
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-[80%] max-w-xs">
@@ -54,7 +54,7 @@ const AdminLayout = () => {
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl">Exercita</span>
-                <span className="text-xs text-muted-foreground">Admin Dashboard</span>
+                <span className="text-xs text-muted-foreground">Painel Administrativo</span>
               </div>
             </div>
           </div>

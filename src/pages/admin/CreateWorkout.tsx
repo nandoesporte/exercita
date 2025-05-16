@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -18,7 +19,7 @@ const CreateWorkout = () => {
   
   const handleCreateWorkout = (data: WorkoutFormData) => {
     if (data.days_of_week && data.days_of_week.length === 0) {
-      toast('Consider selecting days of the week for the workout schedule');
+      toast('Considere selecionar dias da semana para o cronograma de treinos');
     }
     
     createWorkout(data, {
@@ -39,14 +40,14 @@ const CreateWorkout = () => {
         >
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold">Create New Workout</h1>
+        <h1 className="text-2xl font-bold">Criar Novo Treino</h1>
       </div>
       
       <div className="bg-card rounded-lg border border-border p-6">
         {isLoading && !categories.length ? (
           <div className="py-10 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-muted-foreground">Loading...</p>
+            <p className="mt-2 text-muted-foreground">Carregando...</p>
           </div>
         ) : (
           <WorkoutForm 

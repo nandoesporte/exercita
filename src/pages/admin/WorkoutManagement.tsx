@@ -60,17 +60,17 @@ const WorkoutManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Workout Management</h1>
+        <h1 className="text-2xl font-bold">Gerenciamento de Treinos</h1>
         <Button onClick={handleCreateNew}>
           <Plus className="mr-2 h-4 w-4" />
-          Create New
+          Criar Novo
         </Button>
       </div>
       
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input 
-          placeholder="Search workouts..." 
+          placeholder="Buscar treinos..." 
           className="pl-10"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -81,19 +81,19 @@ const WorkoutManagement = () => {
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-sm text-muted-foreground">Loading workouts...</p>
+            <p className="mt-2 text-sm text-muted-foreground">Carregando treinos...</p>
           </div>
         ) : filteredWorkouts.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium">Title</th>
-                  <th className="text-left py-3 px-4 font-medium">Level</th>
-                  <th className="text-left py-3 px-4 font-medium">Duration</th>
-                  <th className="text-left py-3 px-4 font-medium">Category</th>
-                  <th className="text-center py-3 px-4 font-medium">Recommended</th>
-                  <th className="text-right py-3 px-4 font-medium">Actions</th>
+                  <th className="text-left py-3 px-4 font-medium">Título</th>
+                  <th className="text-left py-3 px-4 font-medium">Nível</th>
+                  <th className="text-left py-3 px-4 font-medium">Duração</th>
+                  <th className="text-left py-3 px-4 font-medium">Categoria</th>
+                  <th className="text-center py-3 px-4 font-medium">Recomendado</th>
+                  <th className="text-right py-3 px-4 font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,7 +102,7 @@ const WorkoutManagement = () => {
                     <td className="py-3 px-4">{workout.title}</td>
                     <td className="py-3 px-4 capitalize">{workout.level}</td>
                     <td className="py-3 px-4">{workout.duration} min</td>
-                    <td className="py-3 px-4">{workout.category?.name || 'Uncategorized'}</td>
+                    <td className="py-3 px-4">{workout.category?.name || 'Sem categoria'}</td>
                     <td className="py-3 px-4 text-center">
                       {workout.is_recommended && <Star className="h-4 w-4 text-amber-400 inline" />}
                     </td>
@@ -115,7 +115,7 @@ const WorkoutManagement = () => {
                           className={workout.is_recommended ? "border-amber-400 text-amber-500" : ""}
                         >
                           <UserCheck className="h-4 w-4" />
-                          <span className="sr-only">Manage Recommendations</span>
+                          <span className="sr-only">Gerenciar Recomendações</span>
                         </Button>
                         <Button
                           variant="outline"
@@ -123,7 +123,7 @@ const WorkoutManagement = () => {
                           onClick={() => handleEditExercises(workout.id)}
                         >
                           <Dumbbell className="h-4 w-4" />
-                          <span className="sr-only">Edit Exercises</span>
+                          <span className="sr-only">Editar Exercícios</span>
                         </Button>
                         <Button
                           variant="outline"
@@ -131,7 +131,7 @@ const WorkoutManagement = () => {
                           onClick={() => handleEdit(workout.id)}
                         >
                           <PenSquare className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
+                          <span className="sr-only">Editar</span>
                         </Button>
                         <Button
                           variant="outline"
@@ -139,7 +139,7 @@ const WorkoutManagement = () => {
                           onClick={() => handleDeleteClick(workout.id)}
                         >
                           <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
+                          <span className="sr-only">Excluir</span>
                         </Button>
                       </div>
                     </td>
@@ -150,8 +150,8 @@ const WorkoutManagement = () => {
           </div>
         ) : (
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">No workouts found</p>
-            <Button variant="link" onClick={handleCreateNew}>Create your first workout</Button>
+            <p className="text-muted-foreground">Nenhum treino encontrado</p>
+            <Button variant="link" onClick={handleCreateNew}>Crie seu primeiro treino</Button>
           </div>
         )}
       </div>
@@ -159,19 +159,19 @@ const WorkoutManagement = () => {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the 
-              selected workout and all associated data.
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente o
+              treino selecionado e todos os dados associados.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmDelete}
               className="bg-destructive hover:bg-destructive/90"
             >
-              Delete
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

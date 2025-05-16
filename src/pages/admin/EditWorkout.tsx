@@ -71,7 +71,7 @@ const EditWorkout = () => {
         >
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold">Edit Workout</h1>
+        <h1 className="text-2xl font-bold">Editar Treino</h1>
       </div>
       
       <div className="bg-card border border-border rounded-lg p-6">

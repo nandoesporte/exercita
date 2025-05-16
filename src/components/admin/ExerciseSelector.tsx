@@ -53,7 +53,7 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
       </Tabs>
       
       {/* Exercise List */}
-      <ScrollArea className={isMobile ? "h-[300px]" : "h-[400px]"} thumbSize={4}>
+      <ScrollArea className={isMobile ? "h-[300px]" : "h-[400px]"}>
         {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
