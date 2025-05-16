@@ -4,12 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { User, UserCheck, UserX, Search, RefreshCw } from 'lucide-react';
+import { User, UserCheck, UserX, Search, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 // Define types for our functions' responses
 type UserData = {
@@ -33,17 +34,24 @@ const UserManagement = () => {
   const { data: users, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      // Fetch users from auth.users through a custom function
-      const { data, error } = await supabase.rpc('get_all_users') as { data: UserData[] | null, error: any };
-      
-      if (error) {
-        console.error('Error fetching users:', error);
-        toast.error('Erro ao carregar usuários');
-        throw error; // This will make the query state indicate an error
+      try {
+        // Fetch users from auth.users through a custom function
+        const { data, error } = await supabase.rpc('get_all_users') as { data: UserData[] | null, error: any };
+        
+        if (error) {
+          console.error('Error fetching users:', error);
+          toast.error('Erro ao carregar usuários');
+          throw error; // This will make the query state indicate an error
+        }
+        
+        return data || [];
+      } catch (err) {
+        console.error('Unexpected error fetching users:', err);
+        throw err;
       }
-      
-      return data || [];
-    }
+    },
+    retry: 1, // Only retry once
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Toggle user active status
@@ -190,8 +198,13 @@ const UserManagement = () => {
       
       {error ? (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-          <p className="text-red-800 dark:text-red-200 mb-4">
+          <AlertTriangle className="h-10 w-10 mx-auto text-red-500 mb-2" />
+          <p className="text-red-800 dark:text-red-200 mb-4 font-medium text-lg">
             Ocorreu um erro ao carregar os usuários.
+          </p>
+          <p className="text-red-700 dark:text-red-300 mb-6 max-w-md mx-auto">
+            Não foi possível conectar ao servidor ou ocorreu um problema ao buscar os dados dos usuários. 
+            Por favor, tente novamente.
           </p>
           <Button 
             variant="destructive" 
