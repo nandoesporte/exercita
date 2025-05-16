@@ -7,6 +7,14 @@ import { useWorkout } from '@/hooks/useWorkouts';
 import ExerciseList from '@/components/admin/ExerciseList';
 import AddExerciseForm from '@/components/admin/AddExerciseForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Define the days of week options
 const daysOfWeek = [
@@ -25,6 +33,7 @@ const EditWorkoutExercises = () => {
   const navigate = useNavigate();
   const { data: workout, isLoading: isWorkoutLoading } = useWorkout(id);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<string | null>(null);
+  const isMobile = useIsMobile();
   
   const { 
     exercises,
@@ -114,21 +123,37 @@ const EditWorkoutExercises = () => {
         </div>
       ) : (
         <>
-          {/* Day of Week Filter Tabs */}
+          {/* Day of Week Filter - Dropdown for mobile, Tabs for desktop */}
           <div className="mb-6">
             <div className="flex items-center mb-2">
               <Calendar className="mr-2 h-4 w-4" />
               <h2 className="font-medium">Filtrar por dia</h2>
             </div>
-            <Tabs defaultValue="all" onValueChange={handleDayChange}>
-              <TabsList className="flex overflow-x-auto w-full">
-                {daysOfWeek.map((day) => (
-                  <TabsTrigger key={day.id} value={day.id} className="flex-shrink-0">
-                    {day.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+            
+            {isMobile ? (
+              <Select defaultValue="all" onValueChange={handleDayChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecionar dia" />
+                </SelectTrigger>
+                <SelectContent>
+                  {daysOfWeek.map((day) => (
+                    <SelectItem key={day.id} value={day.id}>
+                      {day.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Tabs defaultValue="all" onValueChange={handleDayChange}>
+                <TabsList className="flex overflow-x-auto w-full">
+                  {daysOfWeek.map((day) => (
+                    <TabsTrigger key={day.id} value={day.id} className="flex-shrink-0">
+                      {day.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
