@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import UserLayout from '@/components/layout/UserLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -64,7 +64,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <>
       <Routes>
         <Route path="/" element={<UserLayout />}>
           <Route index element={<Index />} />
@@ -108,7 +108,7 @@ function App() {
           You're running the PWA version of this app!
         </div>
       )}
-    </Router>
+    </>
   );
 }
 
