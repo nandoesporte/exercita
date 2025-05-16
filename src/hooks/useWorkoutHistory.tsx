@@ -82,13 +82,16 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
           duration: 0, 
           calories: 0, 
           image_url: null, 
-          category_id: null 
+          category_id: null,
+          // Add the category property to avoid TypeScript errors
+          category: null
         };
     
-    // Extract the category if it exists
-    const categoryData = Array.isArray(workoutData.category) && workoutData.category.length > 0 
-      ? workoutData.category[0] 
-      : undefined;
+    // Extract the category if it exists and if the workout has a category property
+    let categoryData = null;
+    if ('category' in workoutData && Array.isArray(workoutData.category) && workoutData.category.length > 0) {
+      categoryData = workoutData.category[0];
+    }
     
     // Return a properly formatted item
     return {
