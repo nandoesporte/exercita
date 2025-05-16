@@ -14,9 +14,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AdminExercise, WorkoutExercise } from '@/hooks/useAdminWorkouts';
+import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { ExerciseSelector } from './ExerciseSelector';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const formSchema = z.object({
   exercise_id: z.string().min(1, "Selecione um exercício"),
@@ -29,7 +31,7 @@ const formSchema = z.object({
 });
 
 interface AddExerciseFormProps {
-  exercises: AdminExercise[];
+  exercises: any[];
   onAddExercise: (data: WorkoutExercise) => void;
   currentExerciseCount: number;
   isLoading: boolean;
@@ -51,8 +53,9 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   currentExerciseCount,
   isLoading
 }) => {
-  const [isExerciseSelectorOpen, setIsExerciseSelectorOpen] = useState(false);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [selectedExerciseName, setSelectedExerciseName] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -82,11 +85,8 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   const handleSelectExercise = (exerciseId: string, exerciseName: string) => {
     form.setValue('exercise_id', exerciseId);
     setSelectedExerciseName(exerciseName);
-    setIsExerciseSelectorOpen(false);
+    setIsSelectorOpen(false);
   };
-
-  const exerciseType = form.watch('exercise_id') ? 
-    exercises.find(ex => ex.id === form.getValues().exercise_id)?.category?.name : '';
 
   return (
     <>
@@ -106,9 +106,9 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
                       readOnly
                       placeholder="Selecione um exercício"
                       className="flex-1"
-                      onClick={() => setIsExerciseSelectorOpen(true)}
+                      onClick={() => setIsSelectorOpen(true)}
                     />
-                    <Button type="button" variant="outline" onClick={() => setIsExerciseSelectorOpen(true)}>
+                    <Button type="button" variant="outline" onClick={() => setIsSelectorOpen(true)}>
                       Escolher
                     </Button>
                   </div>
@@ -147,6 +147,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
             )}
           />
 
+          {/* Rest of form fields */}
           <div className="grid grid-cols-2 gap-4">
             {/* Sets */}
             <FormField
@@ -234,15 +235,30 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
         </form>
       </Form>
 
-      {/* Exercise Selector Dialog */}
-      <Dialog open={isExerciseSelectorOpen} onOpenChange={setIsExerciseSelectorOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Selecionar Exercício</DialogTitle>
-          </DialogHeader>
-          <ExerciseSelector onSelectExercise={handleSelectExercise} />
-        </DialogContent>
-      </Dialog>
+      {/* Exercise selector - conditional rendering based on device type */}
+      {isMobile ? (
+        <Drawer open={isSelectorOpen} onOpenChange={setIsSelectorOpen}>
+          <DrawerContent className="px-4 pb-6 pt-2">
+            <DrawerHeader>
+              <DrawerTitle>Selecionar Exercício</DrawerTitle>
+            </DrawerHeader>
+            <ExerciseSelector 
+              onSelectExercise={handleSelectExercise} 
+              onClose={() => setIsSelectorOpen(false)}
+            />
+            <DrawerClose />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={isSelectorOpen} onOpenChange={setIsSelectorOpen}>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Selecionar Exercício</DialogTitle>
+            </DialogHeader>
+            <ExerciseSelector onSelectExercise={handleSelectExercise} />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

@@ -6,14 +6,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ExerciseSelectorProps {
   onSelectExercise: (exerciseId: string, exerciseName: string) => void;
+  onClose?: () => void;
 }
 
-export function ExerciseSelector({ onSelectExercise }: ExerciseSelectorProps) {
+export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const isMobile = useIsMobile();
   
   const { exercises, categories, isLoading } = useAdminExercises();
   
@@ -50,13 +53,13 @@ export function ExerciseSelector({ onSelectExercise }: ExerciseSelectorProps) {
       </Tabs>
       
       {/* Exercise List */}
-      <ScrollArea className="h-[400px] pr-4">
+      <ScrollArea className={isMobile ? "h-[300px]" : "h-[400px]"} thumbSize={4}>
         {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : filteredExercises.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
             {filteredExercises.map((exercise) => (
               <div key={exercise.id} className="border rounded-md overflow-hidden bg-card hover:border-primary transition-colors">
                 <div 
@@ -68,6 +71,7 @@ export function ExerciseSelector({ onSelectExercise }: ExerciseSelectorProps) {
                       <img 
                         src={exercise.image_url} 
                         alt={exercise.name}
+                        loading="lazy"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -90,6 +94,12 @@ export function ExerciseSelector({ onSelectExercise }: ExerciseSelectorProps) {
           </div>
         )}
       </ScrollArea>
+      
+      {isMobile && (
+        <Button variant="outline" className="w-full" onClick={onClose}>
+          Fechar
+        </Button>
+      )}
     </div>
   );
 }
