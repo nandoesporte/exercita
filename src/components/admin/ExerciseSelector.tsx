@@ -12,6 +12,13 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ExerciseSelectorProps {
   onSelectExercise: (exerciseId: string, exerciseName: string) => void;
@@ -32,6 +39,10 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
     return matchesSearch && matchesCategory;
   });
 
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value === 'all' ? null : value);
+  };
+
   // Render the exercise selector content
   const renderContent = () => (
     <div className="space-y-4">
@@ -46,17 +57,33 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
         />
       </div>
       
-      {/* Category Tabs */}
-      <Tabs defaultValue="all" onValueChange={(value) => setSelectedCategory(value === 'all' ? null : value)}>
-        <TabsList className="w-full flex overflow-x-auto">
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          {categories.map((category) => (
-            <TabsTrigger key={category.id} value={category.id}>
-              {category.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      {/* Category Selection - Tabs for desktop, Dropdown for mobile */}
+      {isMobile ? (
+        <Select defaultValue="all" onValueChange={handleCategoryChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Selecionar categoria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Tabs defaultValue="all" onValueChange={handleCategoryChange}>
+          <TabsList className="w-full flex overflow-x-auto">
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            {categories.map((category) => (
+              <TabsTrigger key={category.id} value={category.id}>
+                {category.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      )}
       
       {/* Exercise List */}
       <ScrollArea className={isMobile ? "h-[300px]" : "h-[400px]"}>
