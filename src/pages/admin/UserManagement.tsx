@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -101,8 +100,17 @@ const UserManagement = () => {
           console.log(`Loaded ${data.length} users successfully`);
         }
         
-        // Explicitly cast the data to UserData[] to match our interface
-        return data as UserData[];
+        // Transform the data to match our UserData type
+        const transformedData: UserData[] = data.map((user: any) => ({
+          id: user.id,
+          email: user.email,
+          raw_user_meta_data: user.raw_user_meta_data || {},
+          created_at: user.created_at,
+          last_sign_in_at: user.last_sign_in_at,
+          banned_until: user.banned_until
+        }));
+        
+        return transformedData;
       } catch (err) {
         console.error('Unexpected error fetching users:', err);
         throw err;
@@ -141,7 +149,7 @@ const UserManagement = () => {
       };
       
       // Use our custom RPC function to create the user
-      // Cast the response type to any to bypass the TypeScript error
+      // Cast the supabase.rpc to any to bypass the TypeScript error
       const { data, error: createError } = await (supabase.rpc as any)('admin_create_user', userData);
       
       if (createError) throw createError;
