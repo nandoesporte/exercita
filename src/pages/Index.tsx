@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronRight } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { 
@@ -14,7 +15,6 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel";
 import { WorkoutCard } from '@/components/ui/workout-card';
-import GymPhotos from '@/components/GymPhotos';
 
 const Index = () => {
   const { user } = useAuth();
@@ -207,27 +207,22 @@ const Index = () => {
         <Card className="bg-fitness-darkGray border-none text-white">
           <CardContent className="p-4">
             <Link 
-              to="/find-gym" 
+              to="/gym-photos" 
               className="flex items-center justify-between p-3 hover:bg-fitness-dark rounded-lg transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="bg-fitness-orange h-10 w-10 rounded-full flex items-center justify-center">
-                  <MapPin className="text-white" size={20} />
+                  <Camera className="text-white" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold">Encontrar Minha Academia</h3>
-                  <p className="text-sm text-gray-300">Obtenha treinos com base na sua academia</p>
+                  <h3 className="font-bold">Envie fotos da sua academia</h3>
+                  <p className="text-sm text-gray-300">Ajude o personal trainer a analisar seu ambiente</p>
                 </div>
               </div>
               <ChevronRight size={20} className="text-gray-300" />
             </Link>
           </CardContent>
         </Card>
-      </section>
-      
-      {/* GymPhotos section */}
-      <section className="mobile-section">
-        <GymPhotos />
       </section>
     </div>
   );

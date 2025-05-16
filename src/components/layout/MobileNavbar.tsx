@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Dumbbell, History, User, ShoppingBag, Calendar } from 'lucide-react';
+import { Home, Dumbbell, History, User, ShoppingBag, Calendar, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWorkouts } from '@/hooks/useWorkouts';
 
@@ -17,7 +17,7 @@ const MobileNavbar = () => {
   const navItems = [
     { icon: Home, path: '/', label: 'Início' },
     { icon: Dumbbell, path: `/workout/${firstWorkoutId}`, label: 'Treinos' },
-    { icon: Calendar, path: '/schedule', label: 'Agendar' },
+    { icon: Camera, path: '/gym-photos', label: 'Fotos' },
     { icon: ShoppingBag, path: '/store', label: 'Loja' },
     { icon: User, path: '/profile', label: 'Perfil' },
   ];
@@ -37,8 +37,8 @@ const MobileNavbar = () => {
             isActive = location.pathname.startsWith('/workout/');
           } else if (item.label === 'Loja') {
             isActive = location.pathname.startsWith('/store');
-          } else if (item.label === 'Agendar') {
-            isActive = location.pathname.startsWith('/schedule');
+          } else if (item.label === 'Fotos') {
+            isActive = location.pathname.startsWith('/gym-photos');
           } else {
             isActive = location.pathname === item.path;
           }
