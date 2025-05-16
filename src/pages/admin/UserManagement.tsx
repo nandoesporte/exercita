@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +48,8 @@ type UserData = {
   banned_until: string | null;
 };
 
+type AdminCreateUserResponse = string;
+
 // Schema for new user form
 const newUserSchema = z.object({
   email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
@@ -81,7 +82,7 @@ const UserManagement = () => {
 
   // Fetch all users with their profiles and active status
   const { data: users, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-users', errorRetries], // Add errorRetries to the query key to force refetch
+    queryKey: ['admin-users', errorRetries],
     queryFn: async () => {
       try {
         console.log('Fetching users data...');
@@ -91,7 +92,7 @@ const UserManagement = () => {
         if (error) {
           console.error('Error fetching users:', error);
           toast.error('Erro ao carregar usuários');
-          throw error; // This will make the query state indicate an error
+          throw error;
         }
         
         if (!data || data.length === 0) {
@@ -106,8 +107,8 @@ const UserManagement = () => {
         throw err;
       }
     },
-    retry: 1, // Only retry once
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
   });
   
   // Manual retry handler with loading state
@@ -122,37 +123,43 @@ const UserManagement = () => {
       toast.error('Falha ao tentar novamente. Por favor, aguarde um momento e tente novamente.');
     } finally {
       setIsRetrying(false);
-      setErrorRetries(prev => prev + 1); // Increment to force a new query
+      setErrorRetries(prev => prev + 1);
     }
   };
 
   // Create new user
   const createUser = useMutation({
     mutationFn: async (values: NewUserFormValues) => {
-      // First create the user using standard Supabase Auth API
-      const { data: userData, error: authError } = await supabase.auth.admin.createUser({
-        email: values.email,
-        password: values.password,
-        email_confirm: true,
+      const userData = {
+        user_email: values.email,
+        user_password: values.password,
         user_metadata: {
           first_name: values.firstName,
           last_name: values.lastName
         }
-      });
+      };
       
-      if (authError) throw authError;
+      // Use our custom RPC function to create the user
+      const { data, error: createError } = await supabase.rpc<AdminCreateUserResponse>(
+        'admin_create_user', 
+        userData
+      );
+      
+      if (createError) throw createError;
+      
+      const userId = data;
       
       // If admin flag is set, update the profile
-      if (values.isAdmin && userData.user) {
+      if (values.isAdmin && userId) {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ is_admin: true })
-          .eq('id', userData.user.id);
+          .eq('id', userId);
           
         if (profileError) throw profileError;
       }
       
-      return userData.user;
+      return userId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -191,10 +198,10 @@ const UserManagement = () => {
   // Delete user
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      // Use the Supabase Auth API instead of RPC
-      const { error } = await supabase.auth.admin.deleteUser(
-        userId
-      );
+      // Use our custom RPC function to delete the user
+      const { error } = await supabase.rpc('admin_delete_user', {
+        user_id: userId
+      });
       
       if (error) throw error;
       
