@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
@@ -29,12 +29,14 @@ type UserData = {
 const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const queryClient = useQueryClient();
+  const [errorRetries, setErrorRetries] = useState(0);
 
   // Fetch all users with their profiles and active status
   const { data: users, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: ['admin-users', errorRetries], // Add errorRetries to the query key to force refetch
     queryFn: async () => {
       try {
+        console.log('Fetching users data...');
         // Fetch users from auth.users through a custom function
         const { data, error } = await supabase.rpc('get_all_users') as { data: UserData[] | null, error: any };
         
@@ -42,6 +44,12 @@ const UserManagement = () => {
           console.error('Error fetching users:', error);
           toast.error('Erro ao carregar usuários');
           throw error; // This will make the query state indicate an error
+        }
+        
+        if (!data || data.length === 0) {
+          console.log('No users found or empty response');
+        } else {
+          console.log(`Loaded ${data.length} users successfully`);
         }
         
         return data || [];
@@ -53,6 +61,22 @@ const UserManagement = () => {
     retry: 1, // Only retry once
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+  
+  // Manual retry handler with loading state
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  const handleManualRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await refetch();
+      toast.success('Tentativa de recarregar os dados realizada');
+    } catch (err) {
+      toast.error('Falha ao tentar novamente. Por favor, aguarde um momento e tente novamente.');
+    } finally {
+      setIsRetrying(false);
+      setErrorRetries(prev => prev + 1); // Increment to force a new query
+    }
+  };
 
   // Toggle user active status
   const toggleUserStatus = useMutation({
@@ -187,10 +211,11 @@ const UserManagement = () => {
         {error && (
           <Button 
             variant="outline" 
-            onClick={() => refetch()} 
+            onClick={handleManualRetry}
+            disabled={isRetrying}
             className="flex items-center gap-2"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
             Tentar novamente
           </Button>
         )}
@@ -208,10 +233,11 @@ const UserManagement = () => {
           </p>
           <Button 
             variant="destructive" 
-            onClick={() => refetch()}
-            className="mx-auto"
+            onClick={handleManualRetry}
+            disabled={isRetrying}
+            className="mx-auto flex items-center gap-2"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
             Tentar novamente
           </Button>
         </div>
@@ -220,7 +246,7 @@ const UserManagement = () => {
           <DataTable
             columns={columns}
             data={filteredUsers}
-            isLoading={isLoading}
+            isLoading={isLoading || isRetrying}
           />
         </div>
       )}
