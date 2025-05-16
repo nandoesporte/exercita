@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -101,7 +102,7 @@ export function useAdminExercises() {
       try {
         console.log("Batch creating exercises with data:", exercises);
         
-        // Validate that all category_ids are valid UUIDs
+        // Validate that all category_ids are valid UUIDs and exist in the database
         for (const exercise of exercises) {
           if (!exercise.category_id) {
             throw new Error(`Categoria não especificada para exercício: ${exercise.name}`);
@@ -109,6 +110,17 @@ export function useAdminExercises() {
           
           if (!isValidUUID(exercise.category_id)) {
             throw new Error(`Formato de ID de categoria inválido: ${exercise.category_id}`);
+          }
+          
+          // Check if category exists in database
+          const { data, error } = await supabase
+            .from('workout_categories')
+            .select('id')
+            .eq('id', exercise.category_id)
+            .single();
+            
+          if (error || !data) {
+            throw new Error(`Categoria não encontrada no banco de dados para o ID: ${exercise.category_id}`);
           }
         }
         

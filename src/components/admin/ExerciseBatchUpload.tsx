@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast-wrapper';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Define a schema that ensures the category_id is a valid UUID
 const formSchema = z.object({
@@ -54,6 +54,7 @@ interface ExerciseBatchUploadProps {
 export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [fileList, setFileList] = useState<any[]>([]);
+  const [isCategoryValid, setIsCategoryValid] = useState(true);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -62,6 +63,13 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
       files: [],
     },
   });
+
+  // Effect to check if categories are available
+  useEffect(() => {
+    if (categories.length === 0) {
+      toast.error("Nenhuma categoria disponível. Por favor, crie categorias primeiro.");
+    }
+  }, [categories]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => {
@@ -120,6 +128,14 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
     // Ensure we have a valid category ID before proceeding
     if (!values.category_id) {
       toast.error("Selecione uma categoria válida");
+      return;
+    }
+    
+    // Validate if the category exists
+    const categoryExists = categories.some(cat => cat.id === values.category_id);
+    if (!categoryExists) {
+      setIsCategoryValid(false);
+      toast.error("A categoria selecionada não existe no banco de dados");
       return;
     }
 
@@ -192,6 +208,14 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
         Os nomes dos arquivos serão usados como nomes dos exercícios.
       </p>
 
+      {categories.length === 0 && (
+        <Alert variant="destructive" className="my-4">
+          <AlertDescription>
+            Nenhuma categoria disponível. Por favor, crie categorias primeiro antes de adicionar exercícios.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <FormField
@@ -200,9 +224,16 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    setIsCategoryValid(categories.some(cat => cat.id === value));
+                  }} 
+                  defaultValue={field.value}
+                  disabled={categories.length === 0}
+                >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className={!isCategoryValid ? "border-destructive" : ""}>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                   </FormControl>
@@ -217,6 +248,9 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
                 <FormDescription>
                   Todos os exercícios carregados serão atribuídos a esta categoria
                 </FormDescription>
+                {!isCategoryValid && (
+                  <p className="text-destructive text-sm">Categoria inválida ou não existe no banco de dados</p>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -344,7 +378,7 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
             </Button>
             <Button 
               type="submit" 
-              disabled={uploading || fileList.length === 0} 
+              disabled={uploading || fileList.length === 0 || categories.length === 0} 
               className="gap-2"
             >
               {uploading ? (
