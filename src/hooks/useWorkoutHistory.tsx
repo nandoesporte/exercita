@@ -68,7 +68,39 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
     throw new Error("Falha ao carregar histórico de treinos");
   }
   
-  return data || [];
+  // Transform the data to match the expected format
+  // Supabase returns workout and category as arrays due to the nested select
+  // We need to convert them to single objects to match our type definition
+  const formattedData = data?.map(item => {
+    // Extract the workout from the array
+    const workoutData = Array.isArray(item.workout) && item.workout.length > 0 
+      ? item.workout[0] 
+      : { 
+          id: item.workout_id, 
+          title: 'Unknown Workout', 
+          level: 'beginner', 
+          duration: 0, 
+          calories: 0, 
+          image_url: null, 
+          category_id: null 
+        };
+    
+    // Extract the category if it exists
+    const categoryData = Array.isArray(workoutData.category) && workoutData.category.length > 0 
+      ? workoutData.category[0] 
+      : undefined;
+    
+    // Return a properly formatted item
+    return {
+      ...item,
+      workout: {
+        ...workoutData,
+        category: categoryData
+      }
+    };
+  }) || [];
+  
+  return formattedData as WorkoutHistoryItem[];
 };
 
 export const useWorkoutHistory = () => {
