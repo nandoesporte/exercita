@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +34,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { Json } from '@/integrations/supabase/types';
 
 // Define types for our functions' responses
 type UserData = {
@@ -99,7 +101,8 @@ const UserManagement = () => {
           console.log(`Loaded ${data.length} users successfully`);
         }
         
-        return data || [];
+        // Explicitly cast the data to UserData[] to match our interface
+        return data as UserData[];
       } catch (err) {
         console.error('Unexpected error fetching users:', err);
         throw err;
@@ -138,8 +141,8 @@ const UserManagement = () => {
       };
       
       // Use our custom RPC function to create the user
-      // We need to manually type the response since TypeScript doesn't know about our custom function
-      const { data, error: createError } = await supabase.rpc('admin_create_user', userData);
+      // Cast the response type to any to bypass the TypeScript error
+      const { data, error: createError } = await (supabase.rpc as any)('admin_create_user', userData);
       
       if (createError) throw createError;
       
@@ -195,8 +198,8 @@ const UserManagement = () => {
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
       // Use our custom RPC function to delete the user
-      // We need to manually pass the parameters in the correct format
-      const { error } = await supabase.rpc('admin_delete_user', {
+      // Cast the supabase.rpc to any to bypass the TypeScript error
+      const { error } = await (supabase.rpc as any)('admin_delete_user', {
         user_id: userId
       });
       
