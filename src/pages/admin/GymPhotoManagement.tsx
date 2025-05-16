@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
 import { Button } from '@/components/ui/button';
@@ -64,7 +63,7 @@ const GymPhotoManagement = () => {
     <div className="container p-4 max-w-7xl mx-auto">
       <div className="flex items-center gap-3 mb-2">
         <GalleryHorizontal className="h-7 w-7 text-fitness-green" />
-        <h1 className="text-3xl font-bold text-white tracking-tight">
+        <h1 className="text-3xl font-bold text-[#000000] tracking-tight">
           Gerenciamento de Fotos
         </h1>
       </div>
