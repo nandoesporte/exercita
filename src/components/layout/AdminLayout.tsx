@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
-import { Menu, X, HeartPulse } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -47,13 +47,15 @@ const AdminLayout = () => {
               </Sheet>
             )}
             
-            {/* Logo in admin header */}
+            {/* Logo in admin header - Updated to match main app logo */}
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitness-orange to-fitness-orange/80 flex items-center justify-center shadow-lg shadow-fitness-orange/20">
-                <HeartPulse className="text-white h-6 w-6" />
-              </div>
+              <img 
+                src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+                alt="Mais Saúde Logo"
+                className="h-10 w-10"
+              />
               <div className="flex flex-col">
-                <span className="font-extrabold text-xl">Exercita</span>
+                <span className="font-extrabold text-xl">Mais Saúde</span>
                 <span className="text-xs text-muted-foreground">Painel Administrativo</span>
               </div>
             </div>
