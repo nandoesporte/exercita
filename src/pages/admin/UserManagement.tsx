@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { User, UserCheck, UserX, Search } from 'lucide-react';
+import { User, UserCheck, UserX, Search, RefreshCw } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -30,7 +30,7 @@ const UserManagement = () => {
   const queryClient = useQueryClient();
 
   // Fetch all users with their profiles and active status
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       // Fetch users from auth.users through a custom function
@@ -39,7 +39,7 @@ const UserManagement = () => {
       if (error) {
         console.error('Error fetching users:', error);
         toast.error('Erro ao carregar usuários');
-        return [];
+        throw error; // This will make the query state indicate an error
       }
       
       return data || [];
@@ -99,7 +99,7 @@ const UserManagement = () => {
           <div className="flex items-center gap-3">
             <Avatar>
               <AvatarFallback className="bg-fitness-green">
-                {firstName[0]}{lastName[0] || ''}
+                {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -164,8 +164,8 @@ const UserManagement = () => {
         Gerencie os usuários do aplicativo, ativando ou desativando o acesso deles ao sistema.
       </p>
       
-      {/* Search bar */}
-      <div className="mb-6">
+      {/* Search and Actions Row */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between gap-4">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
           <Input
@@ -175,15 +175,42 @@ const UserManagement = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        
+        {error && (
+          <Button 
+            variant="outline" 
+            onClick={() => refetch()} 
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Tentar novamente
+          </Button>
+        )}
       </div>
       
-      <div className="bg-white dark:bg-fitness-darkGray rounded-lg shadow">
-        <DataTable
-          columns={columns}
-          data={filteredUsers}
-          isLoading={isLoading}
-        />
-      </div>
+      {error ? (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+          <p className="text-red-800 dark:text-red-200 mb-4">
+            Ocorreu um erro ao carregar os usuários.
+          </p>
+          <Button 
+            variant="destructive" 
+            onClick={() => refetch()}
+            className="mx-auto"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Tentar novamente
+          </Button>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-fitness-darkGray rounded-lg shadow">
+          <DataTable
+            columns={columns}
+            data={filteredUsers}
+            isLoading={isLoading}
+          />
+        </div>
+      )}
     </div>
   );
 };
