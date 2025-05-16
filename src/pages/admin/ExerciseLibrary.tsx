@@ -10,18 +10,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Upload } from 'lucide-react';
 import { toast } from '@/lib/toast-wrapper';
+import { v4 as uuidv4 } from 'uuid';
 
-// Define the fixed exercise categories with all required properties
+// Define the exercise categories with all required properties and VALID UUIDs
 const EXERCISE_CATEGORIES = [
-  { id: "aerobico", name: "Aeróbico", color: "#00CB7E", icon: "activity", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "peito", name: "Peito", color: "#FF5A5F", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "costas", name: "Costas", color: "#3B82F6", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "membros-inferiores", name: "Membros Inferiores", color: "#8B5CF6", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "gluteos", name: "Glúteos", color: "#EC4899", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "biceps", name: "Bíceps", color: "#F59E0B", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "triceps", name: "Tríceps", color: "#10B981", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "abdominal", name: "Abdominal", color: "#6366F1", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: "ombros", name: "Ombros", color: "#EF4444", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+  { id: uuidv4(), name: "Aeróbico", color: "#00CB7E", icon: "activity", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Peito", color: "#FF5A5F", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Costas", color: "#3B82F6", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Membros Inferiores", color: "#8B5CF6", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Glúteos", color: "#EC4899", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Bíceps", color: "#F59E0B", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Tríceps", color: "#10B981", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Abdominal", color: "#6366F1", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: uuidv4(), name: "Ombros", color: "#EF4444", icon: "circle", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
 ];
 
 export default function ExerciseLibrary() {
@@ -86,24 +87,9 @@ export default function ExerciseLibrary() {
   
   const handleBatchSubmit = async (data: any) => {
     try {
-      // Generate proper UUIDs for the predefined categories if using string IDs
-      const validatedData = data.map((exercise: any) => {
-        // If the category_id matches one of our predefined categories by name, use its UUID
-        const foundCategory = EXERCISE_CATEGORIES.find(cat => cat.id === exercise.category_id);
-        
-        if (!foundCategory) {
-          throw new Error(`Categoria inválida: ${exercise.category_id}`);
-        }
-        
-        // Return the exercise with the valid category_id
-        return {
-          ...exercise,
-          // We're now ensuring category_id is a valid UUID from the form
-          category_id: exercise.category_id
-        };
-      });
-      
-      await batchCreateExercises(validatedData);
+      // We'll directly use the validated data without additional processing
+      // The form validation in ExerciseBatchUpload ensures category_id is a UUID
+      await batchCreateExercises(data);
       setIsBatchUploadOpen(false);
       toast.success("Exercícios importados com sucesso!");
     } catch (error: any) {
@@ -111,7 +97,7 @@ export default function ExerciseLibrary() {
     }
   };
 
-  // Use the predefined categories instead of those from the API
+  // Use the predefined categories with valid UUIDs
   const exerciseCategories = EXERCISE_CATEGORIES;
 
   if (error) {

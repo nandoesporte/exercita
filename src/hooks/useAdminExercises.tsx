@@ -27,6 +27,12 @@ export type BatchExerciseFormData = {
 export function useAdminExercises() {
   const queryClient = useQueryClient();
   
+  // Helper function to validate UUID format
+  const isValidUUID = (uuid: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  };
+  
   const exercisesQuery = useQuery({
     queryKey: ['admin-exercises'],
     queryFn: async () => {
@@ -97,8 +103,12 @@ export function useAdminExercises() {
         
         // Validate that all category_ids are valid UUIDs
         for (const exercise of exercises) {
+          if (!exercise.category_id) {
+            throw new Error(`Categoria não especificada para exercício: ${exercise.name}`);
+          }
+          
           if (!isValidUUID(exercise.category_id)) {
-            throw new Error(`Invalid category ID format: ${exercise.category_id}`);
+            throw new Error(`Formato de ID de categoria inválido: ${exercise.category_id}`);
           }
         }
         
@@ -232,12 +242,6 @@ export function useAdminExercises() {
     }
   };
 
-  // Helper function to validate UUID format
-  const isValidUUID = (uuid: string) => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-  };
-
   return {
     exercises: exercisesQuery.data || [],
     isLoading: exercisesQuery.isLoading,
@@ -252,6 +256,7 @@ export function useAdminExercises() {
     isDeleting: deleteExercise.isPending,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
-    checkStorageBucket
+    checkStorageBucket,
+    isValidUUID
   };
 }

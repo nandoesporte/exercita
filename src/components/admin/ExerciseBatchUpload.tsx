@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,8 +29,9 @@ import { toast } from '@/lib/toast-wrapper';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
+// Define a schema that ensures the category_id is a valid UUID
 const formSchema = z.object({
-  category_id: z.string().uuid({ message: "Precisa ser um ID válido" }),
+  category_id: z.string().uuid({ message: "Selecione uma categoria válida" }),
   files: z.array(
     z.object({
       file: z.any(),
@@ -115,6 +117,12 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
       return;
     }
 
+    // Ensure we have a valid category ID before proceeding
+    if (!values.category_id) {
+      toast.error("Selecione uma categoria válida");
+      return;
+    }
+
     setUploading(true);
     
     try {
@@ -154,11 +162,11 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
 
           updateFileStatus(i, { status: 'success', uploadedUrl: publicUrl, uploadProgress: 100 });
           
-          // Ensure we're using the UUID from the category_id field
+          // Make sure we're using a valid UUID for category_id
           results.push({
             name: fileData.name,
             description: null,
-            category_id: values.category_id, // This will now be a valid UUID from the form
+            category_id: values.category_id, // This is validated as a UUID by our form schema
             image_url: publicUrl,
             video_url: null,
           });
