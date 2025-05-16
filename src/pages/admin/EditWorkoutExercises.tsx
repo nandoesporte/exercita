@@ -102,7 +102,7 @@ const EditWorkoutExercises = () => {
   const isActionLoading = isAddingExercise || isRemovingExercise || isUpdatingExerciseOrder;
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-16">
       <div className="flex items-center gap-4">
         <button 
           onClick={handleBackClick}
@@ -156,7 +156,7 @@ const EditWorkoutExercises = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
             <div className="bg-card rounded-lg border border-border p-6">
               <h2 className="text-xl font-semibold mb-4">Lista de Exercícios</h2>
               <ExerciseList 
@@ -185,3 +185,4 @@ const EditWorkoutExercises = () => {
 };
 
 export default EditWorkoutExercises;
+
