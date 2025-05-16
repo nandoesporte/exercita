@@ -18,6 +18,7 @@ import NotFound from "@/pages/NotFound";
 import Store from "@/pages/Store";
 import ProductDetail from "@/pages/ProductDetail";
 import Schedule from "@/pages/Schedule";
+import GymPhotos from "@/components/GymPhotos"; // Import the new GymPhotos component
 
 // Profile related pages
 import AccountInfo from "@/pages/AccountInfo";
@@ -42,6 +43,7 @@ import EditProduct from "@/pages/admin/EditProduct";
 import ScheduleManagement from "@/pages/admin/ScheduleManagement";
 import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
+import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; // Import the new GymPhotoManagement component
 
 const App = () => {
   console.log("App component rendering");
@@ -67,6 +69,7 @@ const App = () => {
           <Route path="/store" element={<Store />} />
           <Route path="/store/:id" element={<ProductDetail />} />
           <Route path="/schedule" element={<Schedule />} />
+          <Route path="/gym-photos" element={<GymPhotos />} /> {/* Add new route for GymPhotos */}
           
           {/* Profile related pages */}
           <Route path="/account" element={<AccountInfo />} />
@@ -97,6 +100,7 @@ const App = () => {
           <Route path="products/:id/edit" element={<EditProduct />} />
           <Route path="schedule" element={<ScheduleManagement />} />
           <Route path="payments" element={<PaymentMethodManagement />} />
+          <Route path="gym-photos" element={<GymPhotoManagement />} /> {/* Add new route for GymPhotoManagement */}
         </Route>
         
         {/* 404 */}

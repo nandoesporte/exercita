@@ -14,6 +14,7 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel";
 import { WorkoutCard } from '@/components/ui/workout-card';
+import GymPhotos from '@/components/GymPhotos';
 
 const Index = () => {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ const Index = () => {
   const targetMuscles = recommendedWorkout?.category?.name || "Corpo completo";
   
   return (
-    <div className="space-y-6 pb-16">
+    <div className="home-page">
       {/* Seção de Boas-vindas */}
       <section className="text-center mb-8 pt-4">
         <h1 className="text-3xl md:text-4xl font-bold text-fitness-orange mb-2">
@@ -222,6 +223,11 @@ const Index = () => {
             </Link>
           </CardContent>
         </Card>
+      </section>
+      
+      {/* GymPhotos section */}
+      <section className="mobile-section">
+        <GymPhotos />
       </section>
     </div>
   );
