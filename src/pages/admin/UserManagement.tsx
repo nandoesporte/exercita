@@ -129,10 +129,11 @@ const UserManagement = () => {
   // Create new user
   const createUser = useMutation({
     mutationFn: async (values: NewUserFormValues) => {
-      // First create the user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.rpc('admin_create_user', {
-        user_email: values.email,
-        user_password: values.password,
+      // First create the user using standard Supabase Auth API
+      const { data: userData, error: authError } = await supabase.auth.admin.createUser({
+        email: values.email,
+        password: values.password,
+        email_confirm: true,
         user_metadata: {
           first_name: values.firstName,
           last_name: values.lastName
@@ -142,16 +143,16 @@ const UserManagement = () => {
       if (authError) throw authError;
       
       // If admin flag is set, update the profile
-      if (values.isAdmin) {
+      if (values.isAdmin && userData.user) {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ is_admin: true })
-          .eq('id', authData.id);
+          .eq('id', userData.user.id);
           
         if (profileError) throw profileError;
       }
       
-      return authData;
+      return userData.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -190,9 +191,10 @@ const UserManagement = () => {
   // Delete user
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.rpc('admin_delete_user', {
-        user_id: userId
-      });
+      // Use the Supabase Auth API instead of RPC
+      const { error } = await supabase.auth.admin.deleteUser(
+        userId
+      );
       
       if (error) throw error;
       
@@ -532,4 +534,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-
