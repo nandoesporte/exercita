@@ -137,7 +137,7 @@ const GymPhotoManagement = () => {
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">
             {showOnlyPending 
-              ? 'Não há fotos pendentes para aprovação.' 
+              ? 'Não há fotos pendentes para revisão.' 
               : 'Não há fotos disponíveis.'}
           </p>
         </Card>
@@ -168,7 +168,7 @@ const GymPhotoManagement = () => {
                       <div className="flex items-center text-sm">
                         {photo.approved === true && (
                           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                            Aprovado
+                            Revisado
                           </span>
                         )}
                         {photo.approved === false && (
@@ -198,7 +198,7 @@ const GymPhotoManagement = () => {
                           size="sm"
                         >
                           <Check className="mr-1 h-4 w-4" />
-                          Aprovar
+                          Revisar
                         </Button>
                         <Button 
                           onClick={() => rejectPhoto.mutate(photo.id)} 

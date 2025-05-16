@@ -90,7 +90,7 @@ const GymPhotos = () => {
         <div className="text-center py-10">
           <p className="text-muted-foreground">
             {isUser 
-              ? 'Você ainda não enviou nenhuma foto. Compartilhe fotos da sua academia!'
+              ? 'Você ainda não enviou nenhuma foto. Compartilhe fotos da sua academia para seu personal!'
               : 'Nenhuma foto aprovada disponível ainda.'}
           </p>
         </div>
@@ -140,13 +140,13 @@ const GymPhotos = () => {
     <div className="container max-w-7xl pb-16">
       <h1 className="text-2xl font-bold mb-2">Fotos da Academia</h1>
       <p className="text-muted-foreground mb-6">
-        Compartilhe fotos da sua academia e ajude outros usuários a conhecerem o ambiente.
+        Compartilhe fotos da sua academia com seu personal trainer para ajudar a montar seu treino.
       </p>
       
       <Alert className="mb-6 bg-fitness-darkGray border-amber-500">
         <Info className="h-4 w-4 text-amber-400" />
         <AlertDescription>
-          Suas fotos passarão por uma análise antes de serem exibidas para outros usuários.
+          Suas fotos serão revisadas pelo seu personal trainer para melhor entendimento do ambiente.
         </AlertDescription>
       </Alert>
       
@@ -185,7 +185,7 @@ const GymPhotos = () => {
       
       <Tabs defaultValue="gallery" className="w-full mb-8">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="gallery">Galeria de Fotos</TabsTrigger>
+          <TabsTrigger value="gallery">Fotos Aprovadas</TabsTrigger>
           <TabsTrigger value="my-photos">Minhas Fotos</TabsTrigger>
         </TabsList>
         
@@ -238,7 +238,7 @@ const GymPhotos = () => {
             )}
             
             <Textarea
-              placeholder="Adicione uma descrição (opcional)"
+              placeholder="Descreva o ambiente ou equipamentos disponíveis na foto"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
