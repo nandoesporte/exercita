@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
 import { Button } from '@/components/ui/button';
-import { Check, X, Eye } from 'lucide-react';
+import { Check, X, Eye, User, Gallery } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const GymPhotoManagement = () => {
   const { allPhotos, isLoadingAll, updateApprovalStatus } = useGymPhotos();
@@ -35,11 +36,16 @@ const GymPhotoManagement = () => {
 
   return (
     <div className="container p-4 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
-        Gerenciamento de Fotos
-      </h1>
-      <p className="text-lg text-gray-300 mb-8 max-w-2xl">
-        Aprovar ou rejeitar fotos enviadas pelos usuários para análise do ambiente da academia.
+      <div className="flex items-center gap-3 mb-2">
+        <Gallery className="h-7 w-7 text-fitness-green" />
+        <h1 className="text-3xl font-bold text-white tracking-tight">
+          Gerenciamento de Fotos
+        </h1>
+      </div>
+      
+      <p className="text-lg text-gray-300 mb-8 max-w-3xl leading-relaxed">
+        Aprove ou rejeite fotos enviadas pelos usuários para análise do ambiente da academia.
+        Todas as fotos são identificadas com o nome do usuário que as enviou.
       </p>
       
       <Tabs
@@ -114,26 +120,35 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {photos.map((photo: any) => (
-        <div key={photo.id} className="bg-fitness-darkGray rounded-lg overflow-hidden shadow-lg">
+        <div key={photo.id} className="bg-fitness-darkGray rounded-lg overflow-hidden shadow-lg border border-gray-700/50">
           <Dialog>
             <DialogTrigger asChild>
               <div 
-                className="relative h-56 w-full cursor-pointer"
+                className="relative h-60 w-full cursor-pointer"
                 onClick={() => setSelectedPhoto(photo.photo_url)}
               >
                 <img
                   src={photo.photo_url}
-                  alt="Gym Photo"
+                  alt="Foto da Academia"
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                  <span className="text-white text-base font-medium">
-                    {photo.profiles?.first_name} {photo.profiles?.last_name}
-                  </span>
+                
+                {/* User badge overlay */}
+                <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-3">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6 ring-2 ring-white/20">
+                      <AvatarFallback className="bg-fitness-green text-[10px]">
+                        {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-white text-sm font-medium">
+                      {photo.profiles?.first_name} {photo.profiles?.last_name}
+                    </span>
+                  </div>
                 </div>
                 
                 {photo.approved && (
-                  <div className="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 text-xs font-semibold rounded-full">
+                  <div className="absolute bottom-3 right-3 bg-green-600 text-white px-3 py-1 text-xs font-semibold rounded-full">
                     Aprovada
                   </div>
                 )}
@@ -141,30 +156,43 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
             </DialogTrigger>
             <DialogContent className="max-w-4xl bg-fitness-darkGray border-gray-700">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-white">Foto da academia</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Gallery className="h-5 w-5" /> Foto da Academia
+                </DialogTitle>
               </DialogHeader>
               <div className="mt-4">
                 <img
                   src={selectedPhoto || ''}
-                  alt="Gym photo in full size"
-                  className="w-full object-contain max-h-[70vh] rounded-md"
+                  alt="Foto da academia em tamanho completo"
+                  className="w-full object-contain max-h-[70vh] rounded-md border border-gray-700/50"
                 />
-                <div className="mt-6 space-y-3">
-                  <p className="text-white text-lg">
-                    <span className="font-semibold">Usuário:</span>{' '}
-                    {photo.profiles?.first_name} {photo.profiles?.last_name}
-                  </p>
+                <div className="mt-6 p-4 bg-fitness-dark/50 rounded-lg border border-gray-700/30">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-fitness-green">
+                        {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-white text-lg font-semibold">
+                        {photo.profiles?.first_name} {photo.profiles?.last_name}
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        Enviado em {format(new Date(photo.created_at), 'dd/MM/yyyy HH:mm')}
+                      </p>
+                    </div>
+                  </div>
+                  
                   {photo.description && (
-                    <p className="text-white text-lg">
-                      <span className="font-semibold">Descrição:</span> {photo.description}
-                    </p>
+                    <div className="mt-3 border-t border-gray-700/30 pt-3">
+                      <p className="text-white text-base leading-relaxed">
+                        <span className="font-medium text-gray-300">Descrição:</span> {photo.description}
+                      </p>
+                    </div>
                   )}
-                  <p className="text-gray-300 text-base">
-                    Enviado em {format(new Date(photo.created_at), 'dd/MM/yyyy HH:mm')}
-                  </p>
                 </div>
                 
-                <div className="flex justify-end gap-3 mt-8">
+                <div className="flex justify-end gap-3 mt-6">
                   <Button
                     variant="destructive"
                     onClick={() => handleReject(photo.id)}
@@ -185,49 +213,56 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
           </Dialog>
           
           <div className="p-4">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-gray-300 text-sm font-medium">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="bg-fitness-green text-xs">
+                    {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-white text-base font-medium line-clamp-1">
+                  {photo.profiles?.first_name} {photo.profiles?.last_name}
+                </span>
+              </div>
+              <span className="text-gray-400 text-xs">
                 {format(new Date(photo.created_at), 'dd/MM/yyyy')}
               </span>
-              <div className="flex gap-1">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-9 w-9"
-                      onClick={() => setSelectedPhoto(photo.photo_url)}
-                    >
-                      <Eye size={18} className="text-gray-300" />
-                    </Button>
-                  </DialogTrigger>
-                </Dialog>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-9 w-9 text-red-500 hover:text-red-400 hover:bg-transparent"
-                  onClick={() => handleReject(photo.id)}
-                >
-                  <X size={18} />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-9 w-9 text-green-500 hover:text-green-400 hover:bg-transparent"
-                  onClick={() => handleApprove(photo.id)}
-                >
-                  <Check size={18} />
-                </Button>
-              </div>
             </div>
             
-            <p className="text-white text-base font-medium">
-              {photo.profiles?.first_name} {photo.profiles?.last_name}
-            </p>
-            
             {photo.description && (
-              <p className="text-gray-300 text-sm mt-2 line-clamp-2">{photo.description}</p>
+              <p className="text-gray-300 text-sm mt-2 mb-3 line-clamp-2">{photo.description}</p>
             )}
+            
+            <div className="flex justify-end gap-1 mt-2 border-t border-gray-700/30 pt-3">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8"
+                    onClick={() => setSelectedPhoto(photo.photo_url)}
+                  >
+                    <Eye size={16} className="mr-1" /> Ver
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-8 text-red-500 hover:text-red-400 hover:bg-red-950/30"
+                onClick={() => handleReject(photo.id)}
+              >
+                <X size={16} className="mr-1" /> Rejeitar
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm" 
+                className="h-8 text-green-500 hover:text-green-400 hover:bg-green-950/30"
+                onClick={() => handleApprove(photo.id)}
+              >
+                <Check size={16} className="mr-1" /> Aprovar
+              </Button>
+            </div>
           </div>
         </div>
       ))}
