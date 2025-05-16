@@ -7,6 +7,11 @@ import { useAdminExercises } from '@/hooks/useAdminExercises';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 interface ExerciseSelectorProps {
   onSelectExercise: (exerciseId: string, exerciseName: string) => void;
@@ -27,7 +32,8 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
     return matchesSearch && matchesCategory;
   });
 
-  return (
+  // Render the exercise selector content
+  const renderContent = () => (
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
@@ -64,7 +70,12 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
               <div key={exercise.id} className="border rounded-md overflow-hidden bg-card hover:border-primary transition-colors">
                 <div 
                   className="cursor-pointer"
-                  onClick={() => onSelectExercise(exercise.id, exercise.name)}
+                  onClick={() => {
+                    onSelectExercise(exercise.id, exercise.name);
+                    if (isMobile && onClose) {
+                      onClose();
+                    }
+                  }}
                 >
                   <div className="aspect-square relative bg-muted">
                     {exercise.image_url ? (
@@ -102,4 +113,6 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
       )}
     </div>
   );
+
+  return renderContent();
 }
