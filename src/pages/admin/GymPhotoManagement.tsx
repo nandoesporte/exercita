@@ -117,7 +117,7 @@ const GymPhotoManagement = () => {
   return (
     <div className="space-y-6 pb-16">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gerenciar Fotos de Academias</h1>
+        <h1 className="text-2xl font-bold text-white">Gerenciar Fotos de Academias</h1>
         
         <div className="flex items-center space-x-2">
           <Switch
@@ -125,7 +125,7 @@ const GymPhotoManagement = () => {
             checked={showOnlyPending}
             onCheckedChange={setShowOnlyPending}
           />
-          <Label htmlFor="pending-only">Mostrar apenas pendentes</Label>
+          <Label htmlFor="pending-only" className="text-white text-base">Mostrar apenas pendentes</Label>
         </div>
       </div>
       
@@ -134,8 +134,8 @@ const GymPhotoManagement = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       ) : !photos || photos.length === 0 ? (
-        <Card className="p-6 text-center">
-          <p className="text-muted-foreground">
+        <Card className="p-6 text-center bg-fitness-darkGray">
+          <p className="text-white text-lg">
             {showOnlyPending 
               ? 'Não há fotos pendentes para revisão.' 
               : 'Não há fotos disponíveis.'}
@@ -144,7 +144,7 @@ const GymPhotoManagement = () => {
       ) : (
         <div className="grid gap-6">
           {photos.map((photo) => (
-            <Card key={photo.id} className="overflow-hidden">
+            <Card key={photo.id} className="overflow-hidden bg-fitness-darkGray border-gray-600">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="aspect-video md:aspect-square max-h-64 md:max-h-none overflow-hidden">
                   <img
@@ -157,27 +157,27 @@ const GymPhotoManagement = () => {
                 <div className="p-4 col-span-2 flex flex-col justify-between">
                   <div>
                     <div className="flex flex-wrap gap-3 mb-4">
-                      <div className="flex items-center text-sm text-muted-foreground">
+                      <div className="flex items-center text-sm text-white">
                         <Calendar className="mr-1 h-4 w-4" />
                         {formatDate(photo.created_at)}
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
+                      <div className="flex items-center text-sm text-white">
                         <User className="mr-1 h-4 w-4" />
                         {photo.user_id.substring(0, 8)}...
                       </div>
                       <div className="flex items-center text-sm">
                         {photo.approved === true && (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
                             Revisado
                           </span>
                         )}
                         {photo.approved === false && (
-                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
                             Rejeitado
                           </span>
                         )}
                         {photo.approved === null && (
-                          <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
                             Pendente
                           </span>
                         )}
@@ -185,7 +185,7 @@ const GymPhotoManagement = () => {
                     </div>
                     
                     {photo.description && (
-                      <p className="text-sm mb-4">{photo.description}</p>
+                      <p className="text-base text-white mb-4">{photo.description}</p>
                     )}
                   </div>
                   
@@ -194,7 +194,7 @@ const GymPhotoManagement = () => {
                       <>
                         <Button 
                           onClick={() => approvePhoto.mutate(photo.id)} 
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-green-600 hover:bg-green-700 text-base"
                           size="sm"
                         >
                           <Check className="mr-1 h-4 w-4" />
@@ -203,6 +203,7 @@ const GymPhotoManagement = () => {
                         <Button 
                           onClick={() => rejectPhoto.mutate(photo.id)} 
                           variant="outline"
+                          className="text-white border-white hover:bg-white/10 text-base"
                           size="sm"
                         >
                           <X className="mr-1 h-4 w-4" />
@@ -217,6 +218,7 @@ const GymPhotoManagement = () => {
                         }
                       }} 
                       variant="destructive"
+                      className="text-base"
                       size="sm"
                     >
                       Excluir

@@ -88,7 +88,7 @@ const GymPhotos = () => {
     if (photos.length === 0) {
       return (
         <div className="text-center py-10">
-          <p className="text-muted-foreground">
+          <p className="text-white text-lg">
             {isUser 
               ? 'Você ainda não enviou nenhuma foto. Compartilhe fotos da sua academia para seu personal!'
               : 'Nenhuma foto aprovada disponível ainda.'}
@@ -118,7 +118,7 @@ const GymPhotos = () => {
               )}
               
               {isUser && !photo.approved && (
-                <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-amber-500 text-white text-xs rounded-full">
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded-full">
                   <AlertCircle size={12} />
                   <span>Aguardando aprovação</span>
                 </div>
@@ -126,8 +126,8 @@ const GymPhotos = () => {
             </div>
             
             {photo.description && (
-              <div className="p-3">
-                <p className="text-sm">{photo.description}</p>
+              <div className="p-3 bg-fitness-darkGray">
+                <p className="text-sm text-white">{photo.description}</p>
               </div>
             )}
           </Card>
@@ -138,14 +138,14 @@ const GymPhotos = () => {
   
   return (
     <div className="container max-w-7xl pb-16">
-      <h1 className="text-2xl font-bold mb-2">Fotos da Academia</h1>
-      <p className="text-muted-foreground mb-6">
+      <h1 className="text-3xl font-bold mb-2 text-white">Fotos da Academia</h1>
+      <p className="text-white text-lg mb-6">
         Compartilhe fotos da sua academia com seu personal trainer para ajudar a montar seu treino.
       </p>
       
       <Alert className="mb-6 bg-fitness-darkGray border-amber-500">
         <Info className="h-4 w-4 text-amber-400" />
-        <AlertDescription>
+        <AlertDescription className="text-white text-base">
           Suas fotos serão revisadas pelo seu personal trainer para melhor entendimento do ambiente.
         </AlertDescription>
       </Alert>
@@ -153,7 +153,7 @@ const GymPhotos = () => {
       <div className="mb-8">
         <Button 
           onClick={triggerFileInput} 
-          className="w-full sm:w-auto bg-fitness-orange hover:bg-fitness-orange/90"
+          className="w-full sm:w-auto bg-fitness-orange hover:bg-fitness-orange/90 text-base font-medium"
           disabled={isUploading || !user}
         >
           {isUploading ? (
@@ -177,7 +177,7 @@ const GymPhotos = () => {
         />
         
         {!user && (
-          <p className="mt-2 text-sm text-amber-500">
+          <p className="mt-2 text-amber-400 font-medium">
             Você precisa estar logado para enviar fotos.
           </p>
         )}
@@ -185,8 +185,8 @@ const GymPhotos = () => {
       
       <Tabs defaultValue="gallery" className="w-full mb-8">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="gallery">Fotos Aprovadas</TabsTrigger>
-          <TabsTrigger value="my-photos">Minhas Fotos</TabsTrigger>
+          <TabsTrigger value="gallery" className="text-base">Fotos Aprovadas</TabsTrigger>
+          <TabsTrigger value="my-photos" className="text-base">Minhas Fotos</TabsTrigger>
         </TabsList>
         
         <TabsContent value="gallery" className="p-1">
@@ -202,10 +202,10 @@ const GymPhotos = () => {
         <TabsContent value="my-photos" className="p-1">
           {!user ? (
             <div className="text-center py-10">
-              <p className="text-muted-foreground mb-4">
+              <p className="text-white text-lg mb-4">
                 Você precisa estar logado para ver suas fotos.
               </p>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="text-white border-white hover:bg-white/10 text-base">
                 <a href="/login">Fazer Login</a>
               </Button>
             </div>
@@ -221,9 +221,9 @@ const GymPhotos = () => {
       
       {/* Upload Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-fitness-darkGray">
           <DialogHeader>
-            <DialogTitle>Enviar Foto da Academia</DialogTitle>
+            <DialogTitle className="text-white text-xl">Enviar Foto da Academia</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
@@ -242,23 +242,27 @@ const GymPhotos = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="resize-none"
+              className="resize-none bg-fitness-dark text-white border-gray-600"
             />
           </div>
           
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => {
-              setDialogOpen(false);
-              setSelectedImage(null);
-              setPreviewUrl(null);
-              setDescription('');
-            }}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setDialogOpen(false);
+                setSelectedImage(null);
+                setPreviewUrl(null);
+                setDescription('');
+              }}
+              className="text-white border-white hover:bg-white/10 text-base"
+            >
               Cancelar
             </Button>
             <Button 
               onClick={handleUpload} 
               disabled={isUploading}
-              className="bg-fitness-orange hover:bg-fitness-orange/90"
+              className="bg-fitness-orange hover:bg-fitness-orange/90 text-base"
             >
               {isUploading ? (
                 <>
