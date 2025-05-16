@@ -1,117 +1,151 @@
+
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
-  Dumbbell,
-  Users,
-  Settings,
-  Camera
+  LayoutDashboard, Users, Dumbbell, CalendarDays, FileText, Settings,
+  BarChart, LogOut, ShoppingBag, Calendar, CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
-const AdminSidebar = ({ onNavItemClick }: { onNavItemClick?: () => void }) => {
+interface AdminSidebarProps {
+  onNavItemClick?: () => void;
+}
+
+const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps) => {
+  const location = useLocation();
   const { signOut } = useAuth();
-  const navigate = useNavigate();
-  
-  const getNavItemClass = (isActive: boolean) => {
-    return `flex items-center px-4 py-2 rounded-md hover:bg-secondary ${
-      isActive ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground'
-    }`;
+
+  const navItems = [
+    { icon: LayoutDashboard, path: '/admin', label: 'Dashboard' },
+    { icon: Users, path: '/admin/users', label: 'Usuários' },
+    { 
+      icon: Dumbbell, 
+      path: '/admin/exercises', 
+      label: 'Exercícios',
+      children: [
+        { path: '/admin/exercises', label: 'Gerenciar Exercícios' },
+        { path: '/admin/exercises/library', label: 'Biblioteca de Exercícios' },
+      ]
+    },
+    { icon: Dumbbell, path: '/admin/workouts', label: 'Treinos' },
+    { icon: ShoppingBag, path: '/admin/products', label: 'Loja' },
+    { icon: Calendar, path: '/admin/schedule', label: 'Agendamento' },
+    { icon: CalendarDays, path: '/admin/appointments', label: 'Agendamentos' },
+    { icon: CreditCard, path: '/admin/payments', label: 'Pagamentos' },
+    { icon: FileText, path: '/admin/blog', label: 'Blog' },
+    { icon: BarChart, path: '/admin/analytics', label: 'Estatísticas' },
+    { icon: Settings, path: '/admin/settings', label: 'Configurações' },
+  ];
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("Logout button clicked in AdminSidebar");
+    await signOut();
   };
-  
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/login');
-    } catch (error) {
-      console.error("Logout failed:", error);
+
+  const handleNavClick = () => {
+    if (onNavItemClick) {
+      onNavItemClick();
     }
   };
-  
+
+  // Function to determine if a path is active or one of its children is active
+  const isPathActive = (path: string, childPaths?: string[]) => {
+    if (location.pathname === path) return true;
+    if (childPaths) {
+      return childPaths.some(childPath => location.pathname === childPath);
+    }
+    return false;
+  };
+
+  // Function to determine if a submenu should be expanded
+  const shouldExpand = (item: any) => {
+    if (!item.children) return false;
+    return item.children.some((child: any) => location.pathname === child.path);
+  };
+
   return (
-    <div className="h-full w-64 bg-card border-r border-border flex flex-col">
-      <div className="p-4 border-b border-border mb-4 flex items-center gap-2">
-        <img 
-          src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-          alt="Mais Saúde Logo"
-          className="h-10 w-10"
-        />
-        <div className="flex flex-col">
-          <span className="font-extrabold text-xl">Mais Saúde</span>
-          <span className="text-xs text-muted-foreground">Painel Administrativo</span>
-        </div>
+    <aside className="flex flex-col bg-card border-r border-border h-full w-full md:w-64 p-4">
+      <div className="flex items-center mb-8 px-2">
+        <span className="text-2xl font-bold text-fitness-green">FitFlow</span>
       </div>
-      
-      <nav className="flex-1 px-2">
-        <ul className="space-y-1">
-          <li>
-            <NavLink 
-              to="/admin" 
-              onClick={onNavItemClick}
-              className={({ isActive }) => getNavItemClass(isActive)}
-            >
-              <LayoutDashboard size={20} className="mr-3" />
-              Dashboard
-            </NavLink>
-          </li>
+
+      <nav className="flex-1 space-y-1">
+        {navItems.map((item) => {
+          const isActive = isPathActive(item.path, item.children?.map(c => c.path));
+          const isExpanded = shouldExpand(item);
           
-          <li>
-            <NavLink 
-              to="/admin/users" 
-              onClick={onNavItemClick}
-              className={({ isActive }) => getNavItemClass(isActive)}
-            >
-              <Users size={20} className="mr-3" />
-              Usuários
-            </NavLink>
-          </li>
-          
-          <li>
-            <NavLink 
-              to="/admin/workouts" 
-              onClick={onNavItemClick}
-              className={({ isActive }) => getNavItemClass(isActive)}
-            >
-              <Dumbbell size={20} className="mr-3" />
-              Treinos
-            </NavLink>
-          </li>
-          
-          {/* Add new nav item for Gym Photos */}
-          <li>
-            <NavLink 
-              to="/admin/gym-photos" 
-              onClick={onNavItemClick}
-              className={({ isActive }) => getNavItemClass(isActive)}
-            >
-              <Camera size={20} className="mr-3" />
-              Fotos de Academia
-            </NavLink>
-          </li>
-          
-          <li>
-            <NavLink 
-              to="/admin/settings" 
-              onClick={onNavItemClick}
-              className={({ isActive }) => getNavItemClass(isActive)}
-            >
-              <Settings size={20} className="mr-3" />
-              Configurações
-            </NavLink>
-          </li>
-        </ul>
+          return (
+            <div key={item.path} className="space-y-1">
+              {/* Main Menu Item */}
+              {item.children ? (
+                // If the item has children, render a dropdown menu
+                <>
+                  <div
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2 rounded-lg transition-colors cursor-pointer",
+                      isActive 
+                        ? 'bg-fitness-green text-white' 
+                        : 'text-foreground hover:bg-muted'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon size={20} />
+                      <span>{item.label}</span>
+                    </div>
+                  </div>
+
+                  {/* Submenu Items */}
+                  <div className="pl-10 space-y-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.path}
+                        to={child.path}
+                        onClick={handleNavClick}
+                        className={cn(
+                          "flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors",
+                          location.pathname === child.path
+                            ? 'bg-fitness-green/20 text-fitness-green font-medium' 
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <span>{child.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                // Regular menu item without children
+                <Link
+                  to={item.path}
+                  onClick={handleNavClick}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                    isActive 
+                      ? 'bg-fitness-green text-white' 
+                      : 'text-foreground hover:bg-muted'
+                  )}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
+              )}
+            </div>
+          );
+        })}
       </nav>
-      
-      <div className="p-4">
-        <button 
+
+      <div className="border-t border-border pt-4 mt-4">
+        <button
           onClick={handleLogout}
-          className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors"
+          className="flex items-center gap-3 px-3 py-2 w-full text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
         >
-          Sair
+          <LogOut size={20} />
+          <span>Sair</span>
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

@@ -354,36 +354,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_gym_photos: {
-        Row: {
-          approved: boolean | null
-          created_at: string | null
-          description: string | null
-          id: string
-          photo_url: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          approved?: boolean | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          photo_url: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          approved?: boolean | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          photo_url?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_workout_history: {
         Row: {
           calories_burned: number | null
