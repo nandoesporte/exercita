@@ -99,23 +99,32 @@ const UserManagement = () => {
         last_name: userData.lastName,
       });
       
-      // Using the admin_create_user RPC function which runs with elevated privileges
-      const { data, error } = await supabase.rpc('admin_create_user', {
-        user_email: userData.email,
-        user_password: userData.password,
-        user_metadata: {
-          first_name: userData.firstName,
-          last_name: userData.lastName,
+      try {
+        // Usando a função admin_create_user RPC atualizada
+        const { data, error } = await supabase.rpc('admin_create_user', {
+          user_email: userData.email,
+          user_password: userData.password,
+          user_metadata: {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+          }
+        });
+        
+        if (error) {
+          console.error("Erro detalhado ao criar usuário:", error);
+          throw new Error(error.message);
         }
-      });
-      
-      if (error) {
-        console.error("Error creating user:", error);
-        throw new Error(error.message);
+        
+        if (!data) {
+          throw new Error("Não foi possível criar o usuário. Nenhum dado retornado.");
+        }
+        
+        console.log("Usuário criado com sucesso:", data);
+        return data;
+      } catch (err: any) {
+        console.error("Exceção ao criar usuário:", err);
+        throw new Error(err.message || "Erro desconhecido ao criar usuário");
       }
-      
-      console.log("User created successfully:", data);
-      return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
