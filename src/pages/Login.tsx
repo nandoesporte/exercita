@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +11,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 const loginSchema = z.object({
   email: z.string().email("Digite um email válido"),
@@ -82,7 +82,30 @@ const Login = () => {
     
     try {
       console.log("Attempting login with:", values.email);
-      await signIn(values.email, values.password);
+      const result = await signIn(values.email, values.password);
+      
+      // Check if user has instance_id
+      const currentUser = result?.user;
+      if (currentUser && !currentUser.user_metadata?.instance_id) {
+        console.log("User missing instance_id, updating profile...");
+        
+        // Update user metadata with instance_id if missing
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { 
+            instance_id: crypto.randomUUID(),
+            // Preserve existing metadata
+            first_name: currentUser.user_metadata?.first_name,
+            last_name: currentUser.user_metadata?.last_name
+          }
+        });
+        
+        if (updateError) {
+          console.error("Error updating user instance_id:", updateError);
+        } else {
+          console.log("User instance_id updated successfully");
+        }
+      }
+      
       // The redirect will be handled by the useEffect above
     } catch (error: any) {
       console.error("Login error details:", error);

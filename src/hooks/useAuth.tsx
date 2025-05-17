@@ -141,7 +141,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: metadata,
+          data: {
+            ...metadata,
+            instance_id: crypto.randomUUID(), // Generate a UUID for instance_id
+          },
           emailRedirectTo: window.location.origin,
         },
       });

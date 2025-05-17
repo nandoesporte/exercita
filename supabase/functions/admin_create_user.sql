@@ -12,6 +12,7 @@ as $$
 declare
   new_user json;
   new_user_id uuid;
+  instance_id uuid;
 begin
   -- Check if user is admin
   if not (select is_admin from public.profiles where id = auth.uid()) then
@@ -21,11 +22,14 @@ begin
   -- Generate UUID for the user before insertion
   new_user_id := gen_random_uuid();
   
-  -- Insert the user with the generated ID
+  -- Generate an instance_id (or use a consistent value for your system)
+  instance_id := gen_random_uuid();
+  
+  -- Insert the user with the generated ID and instance_id
   insert into auth.users 
-    (id, email, raw_user_meta_data, email_confirmed_at)
+    (id, email, raw_user_meta_data, email_confirmed_at, instance_id)
   values 
-    (new_user_id, user_email, user_metadata, now());
+    (new_user_id, user_email, user_metadata, now(), instance_id);
   
   -- Set the user's password explicitly with proper encryption
   update auth.users 
@@ -36,7 +40,8 @@ begin
   select json_build_object(
     'id', new_user_id,
     'email', user_email,
-    'user_metadata', user_metadata
+    'user_metadata', user_metadata,
+    'instance_id', instance_id
   ) into new_user;
   
   return new_user;
