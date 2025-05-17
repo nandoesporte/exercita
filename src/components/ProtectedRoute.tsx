@@ -35,6 +35,8 @@ const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps)
           console.log("Session found in direct check but not in context", session);
           // Force page reload to re-initialize auth context if there's a mismatch
           window.location.reload();
+        } else {
+          console.log("No active session found in direct check");
         }
         setIsCheckingSession(false);
       });

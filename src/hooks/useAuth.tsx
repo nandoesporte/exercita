@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log("AuthProvider useEffect running");
     let mounted = true;
-    
+
     // First set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
@@ -205,9 +206,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userData: data.user?.user_metadata
       });
       
-      // Navigate to the home page after successful login
-      navigate('/');
       toast.success('Login realizado com sucesso!');
+      return data;
     } catch (error: any) {
       console.error("Erro no processo de login:", error);
       toast.error(error.message || 'Erro ao fazer login. Tente novamente.');

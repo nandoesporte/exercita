@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,10 +33,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Login = () => {
-  const { user, signIn, signUp, loading: authLoading } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Define the login form
@@ -60,24 +61,21 @@ const Login = () => {
     },
   });
 
-  // Fix for login loop - Use a local indicator rather than relying only on auth context
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-  
-  // Check if user is logged in to prevent loop
+  // Check if user is already logged in
   useEffect(() => {
-    if (user && !shouldRedirect) {
-      console.log("User authenticated in Login page, preparing redirect");
-      setTimeout(() => {
-        setShouldRedirect(true);
+    // Get the intended destination from location state or default to home
+    const from = location.state?.from?.pathname || "/";
+    
+    if (user) {
+      console.log("User authenticated, navigating to:", from);
+      // Use a timeout to avoid redirect loops
+      const redirectTimeout = setTimeout(() => {
+        navigate(from, { replace: true });
       }, 100);
+      
+      return () => clearTimeout(redirectTimeout);
     }
-  }, [user, shouldRedirect]);
-  
-  // If user is already logged in and we've confirmed we should redirect, do so
-  if (shouldRedirect) {
-    console.log("Redirecting to home page");
-    return <Navigate to="/" replace />;
-  }
+  }, [user, navigate, location.state]);
 
   const onLoginSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
@@ -85,6 +83,7 @@ const Login = () => {
     try {
       console.log("Attempting login with:", values.email);
       await signIn(values.email, values.password);
+      // The redirect will be handled by the useEffect above
     } catch (error: any) {
       console.error("Login error details:", error);
       toast.error(error.message || "Erro ao fazer login");
