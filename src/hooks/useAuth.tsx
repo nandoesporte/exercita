@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to sign in:", email);
       
-      // Adicione logging detalhado sobre a tentativa de login
+      // Log detalhado sobre a tentativa de login
       console.log("Login attempt details:", { 
         email, 
         passwordLength: password.length,
@@ -188,7 +188,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Sign in successful:", { 
         user: data.user?.email,
         hasSession: !!data.session,
-        sessionExpires: data.session?.expires_at
+        sessionExpires: data.session?.expires_at,
+        userData: data.user?.user_metadata
       });
       
       // Navegar para a página inicial após sucesso no login

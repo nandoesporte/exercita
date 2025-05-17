@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { toast } from "sonner";
@@ -75,6 +75,14 @@ const Login = () => {
   // Check if user is logged in to prevent loop
   useEffect(() => {
     if (user && !shouldRedirect) {
+      // Log detailed user information for debugging
+      console.log("User authenticated in Login page:", { 
+        id: user.id,
+        email: user.email,
+        metadata: user.user_metadata,
+        createdAt: user.created_at
+      });
+      
       // Set a small timeout to avoid immediate redirects that might cause loops
       setTimeout(() => {
         setShouldRedirect(true);
@@ -120,13 +128,13 @@ const Login = () => {
       // Mark login as successful to trigger PWA prompt
       setLoginSuccess(true);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login error details:", error);
       
       // Show more specific error message
-      if ((error as Error).message.includes('Invalid login credentials')) {
+      if ((error as Error).message?.includes('Invalid login credentials')) {
         toast.error("Credenciais inválidas. Por favor, verifique seu email e senha.");
       } else {
-        toast.error(`Erro ao fazer login: ${(error as Error).message}`);
+        toast.error(`Erro ao fazer login: ${(error as Error).message || "Erro desconhecido"}`);
       }
     } finally {
       setIsLoading(false);
@@ -143,8 +151,8 @@ const Login = () => {
       // Show PWA install prompt after successful login
       setLoginSuccess(true);
     } catch (error) {
-      console.error("Admin login error:", error);
-      toast.error(`Erro de login admin: ${(error as Error).message}`);
+      console.error("Admin login error details:", error);
+      toast.error(`Erro de login admin: ${(error as Error).message || "Erro desconhecido"}`);
     } finally {
       setIsLoading(false);
     }
@@ -210,7 +218,12 @@ const Login = () => {
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Entrando..." : "Entrar"}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Entrando...
+                    </>
+                  ) : "Entrar"}
                 </Button>
 
                 <div className="text-center">
@@ -245,7 +258,12 @@ const Login = () => {
                           />
                         </div>
                         <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
-                          {isLoading ? "Verificando..." : "Acessar Admin"}
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Verificando...
+                            </>
+                          ) : "Acessar Admin"}
                         </Button>
                       </div>
                     </form>

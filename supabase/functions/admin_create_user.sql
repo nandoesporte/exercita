@@ -18,18 +18,28 @@ begin
     raise exception 'Only administrators can create users';
   end if;
 
-  -- Create the user in auth.users
-  new_user := supabase_auth.admin_create_user(
-    user_email := user_email,
-    password := user_password,
-    email_confirm := true, -- Auto confirm email
-    user_metadata := user_metadata
-  );
+  -- Gerar um UUID para o usuário antes da inserção
+  new_user_id := gen_random_uuid();
   
-  -- Extract the new user's ID
-  new_user_id := (new_user->>'id')::uuid;
+  -- Inserir o usuário com o ID gerado
+  insert into auth.users 
+    (id, email, raw_user_meta_data, email_confirmed_at)
+  values 
+    (new_user_id, user_email, user_metadata, now())
+  returning id into new_user_id;
   
-  -- Return the created user data
+  -- Define a senha do usuário
+  update auth.users 
+  set encrypted_password = crypt(user_password, gen_salt('bf'))
+  where id = new_user_id;
+  
+  -- Retorna os dados do usuário criado
+  select json_build_object(
+    'id', new_user_id,
+    'email', user_email,
+    'user_metadata', user_metadata
+  ) into new_user;
+  
   return new_user;
 end;
 $$;
