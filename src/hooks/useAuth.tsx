@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -11,7 +10,7 @@ type AuthContextType = {
   loading: boolean;
   isAdmin: boolean;
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<any>; // Updated return type
   adminLogin: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
