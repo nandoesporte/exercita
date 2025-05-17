@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Trash2, UserPlus, Lock, Unlock } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, UserPlus, Lock, Unlock, RefreshCw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 type UserData = {
@@ -47,12 +48,16 @@ const UserManagement = () => {
       setIsLoading(true);
       const { data, error } = await supabase.rpc('get_all_users');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao carregar usuários:', error);
+        throw error;
+      }
       
+      console.log('Usuários carregados:', data?.length || 0);
       setUsers(data || []);
     } catch (error: any) {
       console.error('Erro ao carregar usuários:', error.message);
-      toast.error('Erro ao carregar usuários');
+      toast.error(`Erro ao carregar usuários: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +81,7 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error: any) {
       console.error('Erro ao alterar status do usuário:', error.message);
-      toast.error('Erro ao alterar status do usuário');
+      toast.error(`Erro ao alterar status do usuário: ${error.message}`);
     }
   };
 
@@ -95,11 +100,11 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error: any) {
       console.error('Erro ao excluir usuário:', error.message);
-      toast.error('Erro ao excluir usuário');
+      toast.error(`Erro ao excluir usuário: ${error.message}`);
     }
   };
 
-  // Create new user - updated to work with the fixed backend function
+  // Create new user with metadata
   const createUser = async () => {
     if (!newUser.email || !newUser.password) {
       toast.error('Email e senha são obrigatórios');
@@ -192,7 +197,7 @@ const UserManagement = () => {
         const banned = !!row.original.banned_until;
         return (
           <Badge 
-            variant={banned ? "destructive" : "default"}
+            variant={banned ? "destructive" : "success"}
             className={banned ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}
           >
             {banned ? 'Desativado' : 'Ativo'}
@@ -238,10 +243,15 @@ const UserManagement = () => {
             Gerencie os usuários da plataforma, ative, desative ou exclua contas.
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Criar Usuário
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={fetchUsers} disabled={isLoading} title="Atualizar lista">
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Criar Usuário
+          </Button>
+        </div>
       </div>
 
       <Separator />
