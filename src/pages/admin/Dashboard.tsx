@@ -67,7 +67,9 @@ const Dashboard = () => {
       }
       
       console.log("User data returned:", data);
-      console.log("First user structure:", data?.[0]);
+      if (data && data.length > 0) {
+        console.log("First user structure:", data[0]);
+      }
       
       return data || [];
     },

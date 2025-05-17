@@ -48,7 +48,7 @@ const UserManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Fetch all users
-  const { data: users, isLoading, error } = useQuery({
+  const { data: usersData, isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       console.log("Fetching users for user management page...");
@@ -60,7 +60,10 @@ const UserManagement = () => {
       }
       
       console.log("User data received:", data?.length || 0, "users");
-      console.log("First user data structure:", data?.[0]);
+      if (data && data.length > 0) {
+        console.log("First user data structure:", data[0]);
+      }
+      
       return data || [];
     },
   });
@@ -164,7 +167,7 @@ const UserManagement = () => {
       header: 'Email',
     },
     {
-      accessorKey: 'raw_user_meta_data',
+      accessorKey: 'name',
       header: 'Nome',
       cell: ({ row }: { row: { original: any } }) => {
         const userData = row.original.raw_user_meta_data || {};
@@ -186,7 +189,7 @@ const UserManagement = () => {
       },
     },
     {
-      accessorKey: 'banned_until',
+      accessorKey: 'status',
       header: 'Status',
       cell: ({ row }: { row: { original: any } }) => {
         const isActive = !row.original.banned_until;
@@ -341,7 +344,7 @@ const UserManagement = () => {
         <CardContent>
           <DataTable
             columns={columns}
-            data={users || []}
+            data={usersData || []}
             isLoading={isLoading}
           />
         </CardContent>
