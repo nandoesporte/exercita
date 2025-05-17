@@ -128,7 +128,7 @@ const RLSChecker = () => {
                   tables.map((table) => (
                     <tr key={table.table_name} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                       <td className="px-6 py-4 font-medium">{table.table_name}</td>
-                      <td className="px-6 py-4">{table.row_count}</td>
+                      <td className="px-6 py-4">{String(table.row_count)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           {table.has_rls ? (
