@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
@@ -157,7 +158,7 @@ const ProductDetail = () => {
                   onClick={handleBuyClick}
                   className="flex items-center justify-center gap-2 h-10"
                 >
-                  Comprar Agora
+                  Ver Agora
                   <ExternalLink size={20} />
                 </a>
               </Button>
