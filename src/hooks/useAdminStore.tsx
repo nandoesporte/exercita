@@ -258,16 +258,26 @@ export const useAdminStore = () => {
 
   // Toggle product featured status - Fix the type issue here
   const { mutateAsync: toggleFeaturedProduct } = useMutation({
-    // Define the mutation function with a proper type signature that matches what TanStack Query expects
-    mutationFn: async ({ id, isFeatured }: { id: string; isFeatured: boolean }) => {
+    // Use a proper parameter object to match TanStack Query's expected signature
+    mutationFn: async (params: { id: string; isFeatured: boolean }) => {
+      const { id, isFeatured } = params;
+      
+      console.log(`Toggling featured status for product ${id} to ${isFeatured}`);
+      
+      // First, we need to add the is_featured column if it doesn't exist
+      // For this we'll use a more direct approach - use Supabase to update just the fields we have
       const { data, error } = await supabase
         .from('products')
-        .update({ is_featured: isFeatured })
+        .update({ 
+          is_featured: isFeatured, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', id)
         .select()
         .single();
 
       if (error) {
+        console.error('Error toggling featured status:', error);
         throw error;
       }
 

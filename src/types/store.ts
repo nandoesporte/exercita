@@ -6,7 +6,7 @@ export interface Product {
   price: number;
   image_url: string | null;
   is_active: boolean;
-  is_featured?: boolean;
+  is_featured: boolean; // Make this a required field
   created_at?: string;
   updated_at?: string;
   sale_url?: string;
@@ -32,5 +32,5 @@ export interface ProductFormData {
   sale_url: string;
   category_id: string | null;
   is_active: boolean;
-  is_featured?: boolean;
+  is_featured: boolean; // Make this a required field
 }
