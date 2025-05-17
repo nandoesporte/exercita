@@ -10,17 +10,26 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const AdminLayout = () => {
   const [open, setOpen] = useState(false);
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
   // Add extra protection to make sure only admins can access this layout
   useEffect(() => {
-    if (!isAdmin) {
+    if (!loading && !isAdmin) {
       console.log('Non-admin trying to access admin layout, redirecting to home');
       navigate('/', { replace: true });
     }
-  }, [isAdmin, navigate]);
+  }, [isAdmin, navigate, loading]);
+
+  // Show loading state while auth is being checked
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background m-0 p-0 overflow-hidden">
