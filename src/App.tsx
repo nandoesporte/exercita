@@ -1,7 +1,8 @@
 
 import { Toaster } from "sonner";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/hooks/useAuth";
 
 // Import layouts
 import UserLayout from "@/components/layout/UserLayout";
@@ -18,7 +19,7 @@ import NotFound from "@/pages/NotFound";
 import Store from "@/pages/Store";
 import ProductDetail from "@/pages/ProductDetail";
 import Schedule from "@/pages/Schedule";
-import GymPhotos from "@/components/GymPhotos"; // Import the new GymPhotos component
+import GymPhotos from "@/components/GymPhotos";
 import Appointments from "@/pages/Appointments";
 
 // Profile related pages
@@ -45,18 +46,28 @@ import ScheduleManagement from "@/pages/admin/ScheduleManagement";
 import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
-import UserManagement from "@/pages/admin/UserManagement"; // Re-import the UserManagement component
+import UserManagement from "@/pages/admin/UserManagement";
 import AppointmentManagement from "@/pages/admin/AppointmentManagement";
 import RLSChecker from './pages/admin/RLSChecker';
 
 const App = () => {
   console.log("App component rendering");
+  const { user, loading } = useAuth();
+  
+  // Show loading state if auth context is loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
+      </div>
+    );
+  }
   
   return (
     <>
       <Toaster />
       <Routes>
-        {/* Auth Routes */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         
         {/* User Routes */}
