@@ -215,44 +215,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to sign out user");
       
-      // Clear local auth state first to prevent UI flashes
-      setIsAdmin(false);
-      
-      // Check if we have a session before signing out
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      if (sessionData?.session) {
-        const { error } = await supabase.auth.signOut({ scope: 'global' });
-        
-        if (error) {
-          console.error("Error during sign out:", error);
-          throw error;
-        }
-      } else {
-        // No active session, just clear the local state
-        console.log("No active session found, clearing local state only");
-      }
-      
-      // After successful signout, clear local state
+      // Clear local auth state first for immediate UI feedback
       setUser(null);
       setSession(null);
+      setIsAdmin(false);
       
-      console.log("Sign out successful, redirecting to login page");
+      // Try to sign out from Supabase, but don't block the UI flow if it fails
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (sessionData?.session) {
+          console.log("Active session found, signing out from Supabase");
+          await supabase.auth.signOut({ scope: 'global' });
+        } else {
+          console.log("No active session found in Supabase");
+        }
+      } catch (error: any) {
+        // Log the error but don't block user experience
+        console.error("Error during Supabase sign out:", error);
+      }
+      
+      // Always navigate to login regardless of Supabase outcome
+      console.log("Redirecting to login page");
       navigate('/login');
       toast.success('Logout realizado com sucesso');
     } catch (error: any) {
-      console.error("Sign out error:", error);
-      
-      // If error is AuthSessionMissingError, still clear local state and redirect
-      if (error.name === "AuthSessionMissingError") {
-        console.log("Session already missing, clearing state and redirecting");
-        setUser(null);
-        setSession(null);
-        navigate('/login');
-        toast.success('Logout realizado com sucesso');
-      } else {
-        toast.error(error.message || 'Erro ao fazer logout');
-      }
+      // This catch is mainly for navigation errors
+      console.error("Final signOut error:", error);
+      // Still try to navigate to login as a fallback
+      navigate('/login');
     }
   };
 
