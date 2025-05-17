@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -57,12 +58,15 @@ const Dashboard = () => {
   const { data: recentUsers, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['admin-dashboard-users'],
     queryFn: async () => {
+      console.log("Fetching users with debug_get_all_users function");
       const { data, error } = await supabase.rpc('debug_get_all_users');
       
       if (error) {
         console.error("Error fetching users:", error);
         throw new Error(error.message);
       }
+      
+      console.log("User data returned:", data);
       
       return (data || []).slice(0, 5).map(user => ({
         id: user.user_id,

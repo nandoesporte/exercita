@@ -51,6 +51,7 @@ const UserManagement = () => {
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
+      console.log("Fetching users for user management page...");
       const { data, error } = await supabase.rpc('debug_get_all_users');
       
       if (error) {
@@ -58,6 +59,7 @@ const UserManagement = () => {
         throw new Error(`Erro ao carregar usuários: ${error.message}`);
       }
       
+      console.log("User data received:", data?.length || 0, "users");
       return data || [];
     },
   });
