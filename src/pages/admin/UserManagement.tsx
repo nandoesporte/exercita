@@ -20,14 +20,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
+import { DataTable } from '@/components/ui/data-table';
 import { 
   Dialog, 
   DialogContent, 
@@ -47,7 +40,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -124,17 +116,8 @@ const UserManagement = () => {
         
         console.log(`Loaded ${data.length} users successfully`);
         
-        // Transform the data to match our UserData type
-        const transformedData: UserData[] = data.map((user: any) => ({
-          id: user.id,
-          email: user.email,
-          raw_user_meta_data: user.raw_user_meta_data || {},
-          created_at: user.created_at,
-          last_sign_in_at: user.last_sign_in_at,
-          banned_until: user.banned_until
-        }));
-        
-        return transformedData;
+        // Return the data directly as it already matches our UserData type
+        return data as UserData[];
       } catch (err: any) {
         console.error('Error fetching users:', err);
         toast.error(err.message || 'Erro ao carregar usuários');
@@ -307,6 +290,92 @@ const UserManagement = () => {
     });
   }, [users, searchQuery]);
 
+  // Define columns for DataTable
+  const columns = [
+    {
+      accessorKey: 'user',
+      header: 'Usuário',
+      cell: ({ row }: { row: { original: UserData } }) => {
+        const user = row.original;
+        const firstName = user.raw_user_meta_data?.first_name || '';
+        const lastName = user.raw_user_meta_data?.last_name || '';
+        const email = user.email || '';
+        
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarFallback className="bg-fitness-green text-white">
+                {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{firstName} {lastName}</p>
+              <p className="text-xs text-muted-foreground">{email}</p>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: 'created_at',
+      header: 'Data de Registro',
+      cell: ({ row }: { row: { original: UserData } }) => {
+        return format(new Date(row.original.created_at), 'dd/MM/yyyy');
+      }
+    },
+    {
+      accessorKey: 'last_sign_in_at',
+      header: 'Último Login',
+      cell: ({ row }: { row: { original: UserData } }) => {
+        return row.original.last_sign_in_at 
+          ? format(new Date(row.original.last_sign_in_at), 'dd/MM/yyyy HH:mm') 
+          : 'Nunca';
+      }
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }: { row: { original: UserData } }) => {
+        const user = row.original;
+        const isActive = !user.banned_until;
+        
+        return (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={isActive}
+              onCheckedChange={(checked) => {
+                toggleUserStatus.mutate({
+                  userId: user.id,
+                  isActive: checked
+                });
+              }}
+            />
+            <span className={isActive ? 'text-green-600' : 'text-red-600'}>
+              {isActive ? 'Ativo' : 'Desativado'}
+            </span>
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: 'actions',
+      header: 'Ações',
+      cell: ({ row }: { row: { original: UserData } }) => {
+        return (
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setUserToDelete(row.original)}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+            <span className="sr-only">Excluir Usuário</span>
+          </Button>
+        );
+      }
+    }
+  ];
+
   // If not an admin, show unauthorized message
   if (!isAdmin) {
     return (
@@ -404,90 +473,11 @@ const UserManagement = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="w-full h-64 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fitness-green"></div>
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="w-full py-16 text-center">
-                <p className="text-muted-foreground">Nenhum usuário encontrado.</p>
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Usuário</TableHead>
-                      <TableHead>Data de Registro</TableHead>
-                      <TableHead>Último Login</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => {
-                      const firstName = user.raw_user_meta_data?.first_name || '';
-                      const lastName = user.raw_user_meta_data?.last_name || '';
-                      const email = user.email || '';
-                      const isActive = !user.banned_until;
-                      
-                      return (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarFallback className="bg-fitness-green text-white">
-                                  {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium">{firstName} {lastName}</p>
-                                <p className="text-xs text-muted-foreground">{email}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(user.created_at), 'dd/MM/yyyy')}
-                          </TableCell>
-                          <TableCell>
-                            {user.last_sign_in_at 
-                              ? format(new Date(user.last_sign_in_at), 'dd/MM/yyyy HH:mm') 
-                              : 'Nunca'}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={isActive}
-                                onCheckedChange={(checked) => {
-                                  toggleUserStatus.mutate({
-                                    userId: user.id,
-                                    isActive: checked
-                                  });
-                                }}
-                              />
-                              <span className={isActive ? 'text-green-600' : 'text-red-600'}>
-                                {isActive ? 'Ativo' : 'Desativado'}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => setUserToDelete(user)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                              <span className="sr-only">Excluir Usuário</span>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+            <DataTable 
+              columns={columns}
+              data={filteredUsers}
+              isLoading={isLoading}
+            />
           </CardContent>
         </Card>
       )}
