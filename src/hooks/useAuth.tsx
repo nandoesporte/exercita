@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -170,14 +169,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Tentando fazer login com:", email);
       
-      // Log mais detalhado sobre a tentativa de login
+      // Log more detailed information about the login attempt
       console.log("Detalhes da tentativa de login:", { 
         email, 
         passwordLength: password.length,
         timestamp: new Date().toISOString()
       });
       
-      // Usar uma única tentativa de login com melhor tratamento de erros
+      // Use a single login attempt with better error handling
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -191,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           code: error.code
         });
         
-        // Verificar se o erro é devido a credenciais inválidas
+        // Check if the error is due to invalid credentials
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Credenciais inválidas. Por favor, verifique seu email e senha.');
         }
@@ -206,7 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userData: data.user?.user_metadata
       });
       
-      // Navegar para a página inicial após sucesso no login
+      // Navigate to the home page after successful login
       navigate('/');
       toast.success('Login realizado com sucesso!');
     } catch (error: any) {
