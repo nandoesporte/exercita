@@ -91,7 +91,7 @@ const UserManagement = () => {
     },
   });
 
-  // Create user mutation - Updated with improved error handling
+  // Create user mutation - With improved success messaging
   const createUserMutation = useMutation({
     mutationFn: async (userData: FormValues) => {
       console.log("Creating user with:", userData.email, "and metadata:", {
@@ -117,10 +117,16 @@ const UserManagement = () => {
       console.log("User created successfully:", data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setIsCreateUserOpen(false);
-      toast.success('Usuário criado com sucesso! O usuário agora pode fazer login com as credenciais fornecidas.');
+      
+      // Extract the user's email from the returned data for a more personalized success message
+      const email = data?.email || '';
+      const fullName = `${data?.user_metadata?.first_name || ''} ${data?.user_metadata?.last_name || ''}`.trim();
+      const userInfo = fullName ? `${fullName} (${email})` : email;
+      
+      toast.success(`Usuário ${userInfo} criado com sucesso! O usuário agora pode fazer login com as credenciais fornecidas.`);
       form.reset();
     },
     onError: (error: Error) => {
