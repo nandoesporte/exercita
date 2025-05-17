@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
@@ -429,7 +429,90 @@ const UserManagement = () => {
       ) : (
         <div className="bg-white dark:bg-fitness-darkGray rounded-lg shadow">
           <DataTable
-            columns={columns}
+            columns={[
+              {
+                accessorKey: 'user',
+                header: 'Usuário',
+                cell: ({ row }: { row: { original: UserData } }) => {
+                  const user = row.original;
+                  const firstName = user.raw_user_meta_data?.first_name || '';
+                  const lastName = user.raw_user_meta_data?.last_name || '';
+                  const email = user.email || '';
+                  
+                  return (
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback className="bg-fitness-green">
+                          {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{firstName} {lastName}</p>
+                        <p className="text-xs text-muted-foreground">{email}</p>
+                      </div>
+                    </div>
+                  );
+                }
+              },
+              {
+                accessorKey: 'created_at',
+                header: 'Data de Registro',
+                cell: ({ row }: { row: { original: UserData } }) => {
+                  return format(new Date(row.original.created_at), 'dd/MM/yyyy');
+                }
+              },
+              {
+                accessorKey: 'last_sign_in_at',
+                header: 'Último Login',
+                cell: ({ row }: { row: { original: UserData } }) => {
+                  const lastSignIn = row.original.last_sign_in_at;
+                  return lastSignIn ? format(new Date(lastSignIn), 'dd/MM/yyyy HH:mm') : 'Nunca';
+                }
+              },
+              {
+                accessorKey: 'is_active',
+                header: 'Status',
+                cell: ({ row }: { row: { original: UserData } }) => {
+                  const isActive = !row.original.banned_until;
+                  
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={isActive}
+                        onCheckedChange={(checked) => {
+                          toggleUserStatus.mutate({
+                            userId: row.original.id,
+                            isActive: checked
+                          });
+                        }}
+                      />
+                      <span className={isActive ? 'text-green-600' : 'text-red-600'}>
+                        {isActive ? 'Ativo' : 'Desativado'}
+                      </span>
+                    </div>
+                  );
+                }
+              },
+              {
+                accessorKey: 'actions',
+                header: 'Ações',
+                cell: ({ row }: { row: { original: UserData } }) => {        
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setUserToDelete(row.original)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <span className="sr-only">Excluir Usuário</span>
+                      </Button>
+                    </div>
+                  );
+                }
+              }
+            ]}
             data={filteredUsers}
             isLoading={isLoading || isRetrying}
           />
