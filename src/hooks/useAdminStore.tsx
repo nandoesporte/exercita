@@ -264,24 +264,34 @@ export const useAdminStore = () => {
       
       console.log(`Toggling featured status for product ${id} to ${isFeatured}`);
       
-      // First, we need to add the is_featured column if it doesn't exist
-      // For this we'll use a more direct approach - use Supabase to update just the fields we have
-      const { data, error } = await supabase
-        .from('products')
-        .update({ 
-          is_featured: isFeatured, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      try {
+        // Try to update the product's is_featured status
+        const { data, error } = await supabase
+          .from('products')
+          .update({ 
+            is_featured: isFeatured, 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', id)
+          .select()
+          .single();
 
-      if (error) {
-        console.error('Error toggling featured status:', error);
+        if (error) {
+          // Check if error is because column doesn't exist
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            console.error('The is_featured column does not exist:', error);
+            throw new Error('The featured product functionality requires a database update. Please contact the administrator.');
+          } else {
+            console.error('Error toggling featured status:', error);
+            throw error;
+          }
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Error in toggleFeaturedProduct:', error);
         throw error;
       }
-
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });

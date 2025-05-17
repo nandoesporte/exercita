@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -53,6 +54,7 @@ const EditProduct = () => {
           sale_url: data.sale_url || '',
           category_id: data.category_id || null,
           is_active: data.is_active,
+          is_featured: data.is_featured // Make sure this is included
         };
         
         setFormData(preparedFormData);

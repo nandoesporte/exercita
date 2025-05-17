@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -59,9 +58,15 @@ const ProductManagement = () => {
         isFeatured: !currentStatus 
       });
       toast.success(currentStatus ? 'Produto removido dos destaques' : 'Produto adicionado aos destaques');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar status de destaque:', error);
-      toast.error('Erro ao atualizar status de destaque do produto');
+      
+      // Check if it's the specific column error
+      if (error.message?.includes('database update')) {
+        toast.error('Esta funcionalidade requer uma atualização no banco de dados. Por favor, contate o administrador.');
+      } else {
+        toast.error('Erro ao atualizar status de destaque do produto');
+      }
     }
   };
 

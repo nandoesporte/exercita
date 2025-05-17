@@ -1,8 +1,7 @@
-// Add this to the useStore.tsx file to handle the case when is_featured might not exist
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/types/store';
+import { Product, ProductCategory } from '@/types/store';
 
 export const useStore = () => {
   // Fetch featured products with error handling for missing column
@@ -55,8 +54,74 @@ export const useStore = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch all products
+  const { 
+    data: products = [], 
+    isLoading: isLoadingProducts 
+  } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, categories:workout_categories(name)')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+
+      return data as Product[];
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Fetch product categories
+  const { 
+    data: categories = [], 
+    isLoading: isLoadingCategories 
+  } = useQuery({
+    queryKey: ['product-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('workout_categories')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+      }
+
+      return data as ProductCategory[];
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+
+  // Fetch a single product
+  const fetchProduct = async (id: string): Promise<Product> => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories:workout_categories(name)')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching product:', error);
+      throw error;
+    }
+
+    return data as Product;
+  };
+
   return {
     featuredProducts,
     isLoadingFeaturedProducts,
+    products,
+    isLoadingProducts,
+    categories,
+    isLoadingCategories,
+    fetchProduct,
   };
 };
