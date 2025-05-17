@@ -256,9 +256,10 @@ export const useAdminStore = () => {
     },
   });
 
-  // Toggle product featured status
+  // Toggle product featured status - Fix the type issue here
   const { mutateAsync: toggleFeaturedProduct } = useMutation({
-    mutationFn: async (id: string, isFeatured: boolean) => {
+    // Define the mutation function with a proper type signature that matches what TanStack Query expects
+    mutationFn: async ({ id, isFeatured }: { id: string; isFeatured: boolean }) => {
       const { data, error } = await supabase
         .from('products')
         .update({ is_featured: isFeatured })
