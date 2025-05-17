@@ -107,7 +107,17 @@ const UserManagement = () => {
     }
 
     try {
-      const { error } = await supabase.rpc(
+      // Console log to debug
+      console.log('Creating user with:', {
+        user_email: newUser.email,
+        user_password: newUser.password,
+        user_metadata: {
+          first_name: newUser.firstName,
+          last_name: newUser.lastName
+        }
+      });
+      
+      const { data, error } = await supabase.rpc(
         'admin_create_user',
         {
           user_email: newUser.email,
@@ -121,12 +131,14 @@ const UserManagement = () => {
       
       if (error) throw error;
       
+      console.log('User creation response:', data);
+      
       toast.success('Usuário criado com sucesso');
       setShowCreateDialog(false);
       setNewUser({ email: '', password: '', firstName: '', lastName: '' });
       fetchUsers();
     } catch (error: any) {
-      console.error('Erro ao criar usuário:', error.message);
+      console.error('Erro ao criar usuário:', error);
       toast.error(`Erro ao criar usuário: ${error.message}`);
     }
   };

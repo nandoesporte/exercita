@@ -653,7 +653,7 @@ export type Database = {
           user_password: string
           user_metadata?: Json
         }
-        Returns: string
+        Returns: Json
       }
       admin_delete_user: {
         Args: { user_id: string }
