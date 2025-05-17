@@ -10,40 +10,39 @@ language plpgsql
 security definer
 as $$
 declare
-  new_user json;
-  new_user_id uuid;
+  created_user json;
   instance_id uuid;
 begin
   -- Check if user is admin
   if not (select is_admin from public.profiles where id = auth.uid()) then
     raise exception 'Only administrators can create users';
   end if;
-
-  -- Generate UUID for the user before insertion
-  new_user_id := gen_random_uuid();
   
-  -- Generate an instance_id (or use a consistent value for your system)
+  -- Generate an instance_id for the user
   instance_id := gen_random_uuid();
   
-  -- Insert the user with the generated ID and instance_id
-  insert into auth.users 
-    (id, email, raw_user_meta_data, email_confirmed_at, instance_id)
-  values 
-    (new_user_id, user_email, user_metadata, now(), instance_id);
+  -- Add instance_id to user metadata
+  user_metadata := jsonb_set(
+    coalesce(user_metadata, '{}'::jsonb),
+    '{instance_id}',
+    to_jsonb(instance_id::text)
+  );
   
-  -- Set the user's password explicitly with proper encryption
-  update auth.users 
-  set encrypted_password = crypt(user_password, gen_salt('bf'))
-  where id = new_user_id;
+  -- Use the admin API to create the user
+  created_user := (
+    select json_build_object(
+      'id', id,
+      'email', email,
+      'user_metadata', raw_user_meta_data,
+      'instance_id', instance_id
+    )
+    from auth.create_user(
+      user_email,
+      user_password,
+      user_metadata
+    )
+  );
   
-  -- Return the created user data
-  select json_build_object(
-    'id', new_user_id,
-    'email', user_email,
-    'user_metadata', user_metadata,
-    'instance_id', instance_id
-  ) into new_user;
-  
-  return new_user;
+  return created_user;
 end;
 $$;
