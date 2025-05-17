@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus, Gift, ImageIcon, CalendarIcon } from 'lucide-react';
+import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus, Gift, ImageIcon, CalendarIcon, Home } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow, parseISO } from 'date-fns';
@@ -236,92 +235,22 @@ const Dashboard = () => {
     <div className="space-y-4 pb-16 md:pb-0">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-xl font-bold">Dashboard</h1>
-        <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size={isMobile ? "sm" : "default"} 
+            asChild
+          >
+            <Link to="/">
+              <Home className="h-4 w-4 mr-2" />
+              {!isMobile && "Início"}
+            </Link>
+          </Button>
           <Button onClick={() => setIsCreateUserOpen(true)} size={isMobile ? "sm" : "default"}>
             <UserPlus className="h-4 w-4 mr-2" />
             {!isMobile && "Novo Usuário"}
           </Button>
-          
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Adicionar novo usuário</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="email@exemplo.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senha</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sobrenome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Sobrenome" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsCreateUserOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={createUserMutation.isPending}
-                  >
-                    {createUserMutation.isPending && (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    )}
-                    Salvar
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        </div>
       </div>
       
       {/* Stats Cards - Responsive Grid (without revenue) */}
