@@ -94,6 +94,7 @@ const UserManagement = () => {
   // Create user mutation - Using admin_create_user RPC function instead of auth.admin API
   const createUserMutation = useMutation({
     mutationFn: async (userData: FormValues) => {
+      console.log("Creating user with:", userData.email);
       // Using the admin_create_user RPC function which runs with elevated privileges
       const { data, error } = await supabase.rpc('admin_create_user', {
         user_email: userData.email,
@@ -104,7 +105,12 @@ const UserManagement = () => {
         }
       });
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("Error creating user:", error);
+        throw new Error(error.message);
+      }
+      
+      console.log("User created successfully:", data);
       return data;
     },
     onSuccess: () => {
