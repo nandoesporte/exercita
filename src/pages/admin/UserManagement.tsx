@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +29,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Define o schema para validação do formulário
 const formSchema = z.object({
@@ -46,6 +46,7 @@ const UserManagement = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Fetch all users
   const { data: usersData, isLoading, error } = useQuery({
@@ -160,11 +161,19 @@ const UserManagement = () => {
     createUserMutation.mutate(values);
   };
 
-  // Define columns for the user table
+  // Define columns for the user table with responsive considerations
   const columns = [
     {
       accessorKey: 'email',
       header: 'Email',
+      cell: ({ row }: { row: { original: any } }) => {
+        // For mobile, we'll show a shorter version
+        if (isMobile) {
+          const email = row.original.email || '';
+          return email.length > 20 ? email.substring(0, 17) + '...' : email;
+        }
+        return row.original.email;
+      }
     },
     {
       accessorKey: 'name',
@@ -173,7 +182,14 @@ const UserManagement = () => {
         const userData = row.original.raw_user_meta_data || {};
         const firstName = userData.first_name || '';
         const lastName = userData.last_name || '';
-        return `${firstName} ${lastName}`.trim() || 'N/A';
+        const fullName = `${firstName} ${lastName}`.trim();
+        
+        // For mobile, we'll only show the first name if it's too long
+        if (isMobile && fullName.length > 12 && firstName) {
+          return firstName;
+        }
+        
+        return fullName || 'N/A';
       },
     },
     {
@@ -198,8 +214,9 @@ const UserManagement = () => {
             <Switch
               checked={isActive}
               onCheckedChange={() => handleToggleUserActive(row.original.user_id, isActive)}
+              className={isMobile ? "scale-75" : ""}
             />
-            <span className={isActive ? 'text-green-600' : 'text-red-600'}>
+            <span className={`${isActive ? 'text-green-600' : 'text-red-600'} ${isMobile ? "text-xs" : ""}`}>
               {isActive ? 'Ativo' : 'Inativo'}
             </span>
           </div>
@@ -213,7 +230,8 @@ const UserManagement = () => {
         return (
           <Button
             variant="destructive"
-            size="sm"
+            size={isMobile ? "sm" : "default"}
+            className={isMobile ? "px-2 h-7 text-xs" : ""}
             onClick={() => {
               setSelectedUser(row.original);
               setIsDeleteDialogOpen(true);
@@ -226,13 +244,22 @@ const UserManagement = () => {
     },
   ];
 
+  // Define which columns to show on mobile
+  const mobileColumns = isMobile ? [
+    columns[0], // Email
+    columns[1], // Nome
+    columns[3], // Status
+    columns[4], // Ações
+  ] : columns;
+
   if (error) {
     return (
-      <div className="p-8 bg-red-50 border border-red-200 rounded-lg text-center">
-        <p className="text-red-600 mb-4">Erro ao carregar usuários: {(error as Error).message}</p>
+      <div className="p-4 md:p-8 bg-red-50 border border-red-200 rounded-lg text-center">
+        <p className="text-red-600 mb-4 text-sm md:text-base">Erro ao carregar usuários: {(error as Error).message}</p>
         <Button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-users'] })}
           variant="outline"
+          size={isMobile ? "sm" : "default"}
         >
           Tentar novamente
         </Button>
@@ -241,14 +268,14 @@ const UserManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 pb-16 md:pb-0">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gerenciamento de Usuários</h1>
+        <h1 className="text-xl font-bold">Gerenciamento de Usuários</h1>
         <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button size={isMobile ? "sm" : "default"}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Novo Usuário
+              {!isMobile && "Novo Usuário"}
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -335,15 +362,15 @@ const UserManagement = () => {
 
       {/* User Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Usuários</CardTitle>
-          <CardDescription>
+        <CardHeader className={isMobile ? "px-3 py-2" : ""}>
+          <CardTitle className={isMobile ? "text-base" : ""}>Usuários</CardTitle>
+          <CardDescription className={isMobile ? "text-xs" : ""}>
             Gerencie os usuários do sistema, ative, desative ou exclua conforme necessário.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? "px-2 py-1" : ""}>
           <DataTable
-            columns={columns}
+            columns={mobileColumns}
             data={usersData || []}
             isLoading={isLoading}
           />

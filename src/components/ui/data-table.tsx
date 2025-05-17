@@ -8,6 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Loader2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DataTableProps<TData> {
   columns: {
@@ -24,29 +26,33 @@ export function DataTable<TData>({
   data,
   isLoading = false,
 }: DataTableProps<TData>) {
+  const isMobile = useIsMobile();
+  
   if (isLoading) {
     return (
-      <div className="w-full h-64 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="w-full h-48 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (data.length === 0) {
     return (
-      <div className="w-full py-16 text-center border rounded-md">
-        <p className="text-muted-foreground">No data available</p>
+      <div className="w-full py-12 text-center border rounded-md">
+        <p className="text-muted-foreground">Nenhum dado disponível</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <div className={`rounded-md border overflow-x-auto ${isMobile ? "max-w-[100%]" : ""}`}>
+      <Table className={isMobile ? "w-full table-auto" : ""}>
         <TableHeader>
           <TableRow>
             {columns.map((column, i) => (
-              <TableHead key={i}>{column.header}</TableHead>
+              <TableHead key={i} className={isMobile ? "px-2 py-2 text-xs whitespace-nowrap" : ""}>
+                {column.header}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -54,7 +60,10 @@ export function DataTable<TData>({
           {data.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {columns.map((column, colIndex) => (
-                <TableCell key={`${rowIndex}-${colIndex}`}>
+                <TableCell 
+                  key={`${rowIndex}-${colIndex}`}
+                  className={isMobile ? "px-2 py-2 text-xs" : ""}
+                >
                   {column.cell
                     ? column.cell({ row: { original: row } })
                     : (row as any)[column.accessorKey]}

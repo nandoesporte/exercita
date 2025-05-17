@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Define form schema for user creation
 const formSchema = z.object({
@@ -31,29 +31,8 @@ const Dashboard = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const isMobile = useIsMobile();
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['admin-dashboard-stats'],
-    queryFn: async () => {
-      // Get counts from different tables
-      const [usersResult, workoutsResult, appointmentsResult] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('workouts').select('id', { count: 'exact', head: true }),
-        supabase.from('appointments').select('id', { count: 'exact', head: true }),
-      ]);
-      
-      if (usersResult.error) throw new Error(usersResult.error.message);
-      if (workoutsResult.error) throw new Error(workoutsResult.error.message);
-      if (appointmentsResult.error) throw new Error(appointmentsResult.error.message);
-      
-      return {
-        users: usersResult.count || 0,
-        workouts: workoutsResult.count || 0,
-        appointments: appointmentsResult.count || 0,
-      };
-    },
-  });
-  
   // Fetch users for the recent activity section
   const { data: recentUsersData, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['admin-dashboard-users'],
@@ -184,15 +163,15 @@ const Dashboard = () => {
   // Create stats array based on real data
   const stats = [
     { 
-      title: 'Total Users', 
+      title: 'Usuários', 
       value: statsLoading ? '...' : statsData?.users.toString(), 
-      change: '+12%', // These would ideally come from comparing current vs previous time period
+      change: '+12%',  
       trend: 'up', 
       icon: Users,
       isLoading: statsLoading
     },
     { 
-      title: 'Active Workouts', 
+      title: 'Treinos', 
       value: statsLoading ? '...' : statsData?.workouts.toString(), 
       change: '+5%', 
       trend: 'up', 
@@ -200,7 +179,7 @@ const Dashboard = () => {
       isLoading: statsLoading
     },
     { 
-      title: 'Appointments', 
+      title: 'Consultas', 
       value: statsLoading ? '...' : statsData?.appointments.toString(), 
       change: '+18%', 
       trend: 'up', 
@@ -208,8 +187,8 @@ const Dashboard = () => {
       isLoading: statsLoading
     },
     { 
-      title: 'Revenue', 
-      value: '$12,540', // Mock data for now - would need a payments table
+      title: 'Faturamento', 
+      value: 'R$ 12.540', 
       change: '-2%', 
       trend: 'down', 
       icon: BarChart3,
@@ -218,138 +197,140 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6 pb-0">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.title} className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{stat.title}</p>
-                <h3 className="text-2xl font-bold mt-1">
-                  {stat.isLoading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    stat.value
+    <div className="space-y-4 pb-16 md:pb-0">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-xl font-bold">Dashboard</h1>
+        <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+          <Button onClick={() => setIsCreateUserOpen(true)} size={isMobile ? "sm" : "default"}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {!isMobile && "Novo Usuário"}
+          </Button>
+          
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar novo usuário</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="email@exemplo.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </h3>
-              </div>
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="******" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sobrenome</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Sobrenome" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateUserOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createUserMutation.isPending}
+                  >
+                    {createUserMutation.isPending && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
+                    Salvar
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      {/* Stats Cards - Responsive Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {stats.map((stat) => (
+          <div key={stat.title} className="bg-card rounded-lg border border-border p-3">
+            <div className="flex items-center justify-between">
               <div className="p-2 rounded-md bg-secondary">
-                <stat.icon className="h-5 w-5" />
+                <stat.icon className="h-4 w-4" />
               </div>
             </div>
-            <div className="flex items-center mt-2">
+            <div className="mt-2">
+              <p className="text-xs text-muted-foreground">{stat.title}</p>
+              <h3 className="text-lg font-bold mt-0.5">
+                {stat.isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : (
+                  stat.value
+                )}
+              </h3>
+            </div>
+            <div className="flex items-center mt-1">
               {stat.trend === 'up' ? (
-                <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
+                <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
               ) : (
-                <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
+                <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
               )}
-              <span className={stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}>
+              <span className={`text-xs ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
                 {stat.change}
               </span>
-              <span className="text-xs text-muted-foreground ml-2">vs last month</span>
             </div>
           </div>
         ))}
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent User Activity with User Management */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Recent User Activity with User Management - Improved Mobile Layout */}
         <div className="lg:col-span-2 bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Usuários Recentes</h2>
-            <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
-              <Button onClick={() => setIsCreateUserOpen(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Novo Usuário
-              </Button>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Adicionar novo usuário</DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="email@exemplo.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Senha</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="******" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nome" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sobrenome</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Sobrenome" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <DialogFooter>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsCreateUserOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={createUserMutation.isPending}
-                      >
-                        {createUserMutation.isPending && (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        )}
-                        Salvar
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+            <h2 className="text-base font-semibold">Usuários Recentes</h2>
           </div>
           
           {usersError ? (
             <div className="p-4 rounded-md bg-red-50 border border-red-200">
-              <p className="text-red-600">{(usersError as Error).message}</p>
+              <p className="text-red-600 text-sm">{(usersError as Error).message}</p>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -360,16 +341,16 @@ const Dashboard = () => {
               </Button>
             </div>
           ) : usersLoading ? (
-            <div className="flex items-center justify-center py-10">
-              <Loader2 className="h-8 w-8 animate-spin text-fitness-green mr-2" />
-              <span>Carregando usuários...</span>
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-fitness-green mr-2" />
+              <span className="text-sm">Carregando usuários...</span>
             </div>
           ) : recentUsers && recentUsers.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {recentUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 hover:bg-muted rounded-lg transition-colors">
+                <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-muted rounded-lg transition-colors space-y-2 sm:space-y-0">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full overflow-hidden mr-3">
+                    <div className="h-8 w-8 rounded-full overflow-hidden mr-3">
                       <img
                         src={user.avatar}
                         alt={user.user || user.email}
@@ -380,29 +361,25 @@ const Dashboard = () => {
                       />
                     </div>
                     <div>
-                      <h3 className="font-medium">{user.user || 'Novo Usuário'}</h3>
-                      <div className="text-sm text-muted-foreground flex flex-col sm:flex-row sm:items-center gap-1">
-                        <span>{user.email}</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span>
-                          {user.time ? formatDistanceToNow(new Date(user.time), { addSuffix: true, locale: ptBR }) : 'Recentemente'}
-                        </span>
-                      </div>
+                      <h3 className="font-medium text-sm">{user.user || 'Novo Usuário'}</h3>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 ml-11 sm:ml-0">
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={user.isActive}
                         onCheckedChange={() => handleToggleUserActive(user.id, user.isActive)}
+                        className="h-5 w-9"
                       />
-                      <span className={user.isActive ? 'text-green-600' : 'text-red-600'}>
+                      <span className={`text-xs ${user.isActive ? 'text-green-600' : 'text-red-600'}`}>
                         {user.isActive ? 'Ativo' : 'Inativo'}
                       </span>
                     </div>
                     <Button
                       variant="destructive"
                       size="sm"
+                      className="h-7 text-xs px-2"
                       onClick={() => {
                         setSelectedUser(user);
                         setIsDeleteDialogOpen(true);
@@ -415,53 +392,58 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            <div className="py-10 text-center text-muted-foreground">
+            <div className="py-6 text-center text-muted-foreground">
               Nenhum usuário encontrado.
             </div>
           )}
+          
           <Link to="/admin/users" className="block w-full text-center text-fitness-green hover:underline py-2 mt-2 text-sm">
             Ver Todos os Usuários
           </Link>
         </div>
         
-        {/* Quick Actions */}
+        {/* Quick Actions - Mobile Optimized */}
         <div className="bg-card rounded-lg border border-border p-4">
-          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-          <div className="space-y-2">
+          <h2 className="text-base font-semibold mb-3">Ações Rápidas</h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-2">
             <Link 
               to="/admin/workouts/create" 
-              className="block w-full bg-fitness-green text-white py-2 rounded-lg hover:bg-fitness-darkGreen transition-colors text-center"
+              className="flex items-center justify-center gap-2 bg-fitness-green text-white p-2 rounded-lg hover:bg-fitness-darkGreen transition-colors text-center text-sm"
             >
-              Adicionar Novo Treino
+              <DumbbellIcon className="h-4 w-4" />
+              <span>Novo Treino</span>
             </Link>
             <Link to="/admin/appointments"
-              className="block w-full bg-secondary text-foreground py-2 rounded-lg hover:bg-muted transition-colors text-center"
+              className="flex items-center justify-center gap-2 bg-secondary text-foreground p-2 rounded-lg hover:bg-muted transition-colors text-center text-sm"
             >
-              Gerenciar Agendamentos
+              <CalendarIcon className="h-4 w-4" />
+              <span>Agendamentos</span>
             </Link>
             <Link to="/admin/products/create"
-              className="block w-full bg-secondary text-foreground py-2 rounded-lg hover:bg-muted transition-colors text-center"
+              className="flex items-center justify-center gap-2 bg-secondary text-foreground p-2 rounded-lg hover:bg-muted transition-colors text-center text-sm"
             >
-              Adicionar Novo Produto
+              <Gift className="h-4 w-4" />
+              <span>Novo Produto</span>
             </Link>
             <Link to="/admin/photos"
-              className="block w-full bg-secondary text-foreground py-2 rounded-lg hover:bg-muted transition-colors text-center"
+              className="flex items-center justify-center gap-2 bg-secondary text-foreground p-2 rounded-lg hover:bg-muted transition-colors text-center text-sm"
             >
-              Gerenciar Fotos
+              <ImageIcon className="h-4 w-4" />
+              <span>Fotos</span>
             </Link>
           </div>
           
-          {/* Recent Notifications */}
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-3">Notificações Recentes</h2>
-            <div className="space-y-3">
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium">Manutenção do Sistema</h4>
-                <p className="text-sm text-muted-foreground">Programada para 15 de Maio, 2025 às 2:00 AM</p>
+          {/* Recent Notifications - Mobile Friendly */}
+          <div className="mt-4">
+            <h2 className="text-base font-semibold mb-2">Notificações</h2>
+            <div className="space-y-2">
+              <div className="p-2 bg-muted rounded-lg">
+                <h4 className="font-medium text-sm">Manutenção do Sistema</h4>
+                <p className="text-xs text-muted-foreground">15/05/2025 às 2:00</p>
               </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium">Nova Funcionalidade Disponível</h4>
-                <p className="text-sm text-muted-foreground">Treinos de vídeo agora disponíveis</p>
+              <div className="p-2 bg-muted rounded-lg">
+                <h4 className="font-medium text-sm">Nova Funcionalidade</h4>
+                <p className="text-xs text-muted-foreground">Treinos em vídeo disponíveis</p>
               </div>
             </div>
           </div>

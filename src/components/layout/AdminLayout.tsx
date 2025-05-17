@@ -1,18 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
-import { Menu } from 'lucide-react';
+import { Menu, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from '@/hooks/use-mobile';
 
+const SIDEBAR_WIDTH_MOBILE = "85vw";
+
 const AdminLayout = () => {
   const [open, setOpen] = useState(false);
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
+  
+  // Close sidebar when route changes on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [location.pathname, isMobile]);
   
   // Add extra protection to make sure only admins can access this layout
   useEffect(() => {
@@ -21,6 +31,28 @@ const AdminLayout = () => {
       navigate('/', { replace: true });
     }
   }, [isAdmin, navigate, loading]);
+
+  // Get current page title from path
+  const getCurrentPageTitle = () => {
+    const path = location.pathname;
+    
+    if (path === '/admin') return 'Dashboard';
+    
+    // Extract the last part of the path
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length > 1) {
+      // Capitalize first letter and replace hyphens with spaces
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment.charAt(0).toUpperCase() + 
+             lastSegment.slice(1).replace(/-/g, ' ');
+    }
+    
+    return 'Admin';
+  };
+
+  const handleBackClick = () => {
+    navigate(-1);
+  };
 
   // Show loading state while auth is being checked
   if (loading) {
@@ -34,44 +66,59 @@ const AdminLayout = () => {
   return (
     <div className="flex h-screen bg-background m-0 p-0 overflow-hidden">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:block w-64">
         <AdminSidebar />
       </div>
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-card border-b border-border h-16 flex items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-4">
-            {/* Mobile sidebar trigger */}
-            {isMobile && (
+          <div className="flex items-center gap-4 w-full">
+            {/* Mobile navigation */}
+            <div className="flex items-center gap-2 md:hidden">
+              {location.pathname !== '/admin' && (
+                <Button variant="ghost" size="icon" onClick={handleBackClick} className="mr-1">
+                  <ArrowLeft size={20} />
+                </Button>
+              )}
+              
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="md:hidden">
                     <Menu size={24} />
-                    <span className="sr-only">Alternar menu</span>
+                    <span className="sr-only">Menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-[80%] max-w-xs">
+                <SheetContent side="left" className="p-0 w-[85vw]" style={{ maxWidth: SIDEBAR_WIDTH_MOBILE }}>
                   <AdminSidebar onNavItemClick={() => setOpen(false)} />
                 </SheetContent>
               </Sheet>
-            )}
+            </div>
             
-            {/* Logo in admin header - Updated to match main app logo */}
-            <div className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-                alt="Mais Saúde Logo"
-                className="h-10 w-10"
-              />
-              <div className="flex flex-col">
-                <span className="font-extrabold text-xl">Mais Saúde</span>
-                <span className="text-xs text-muted-foreground">Painel Administrativo</span>
+            {/* App logo and title */}
+            <div className="flex items-center gap-3 w-full justify-between">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+                  alt="Mais Saúde Logo"
+                  className="h-8 w-8"
+                />
+                <div className="flex flex-col">
+                  <span className="font-bold text-base">Mais Saúde</span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline-block">
+                    {getCurrentPageTitle()}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Current page title (mobile only) */}
+              <div className="md:hidden text-sm font-medium">
+                {getCurrentPageTitle()}
               </div>
             </div>
           </div>
         </header>
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-3 md:p-6">
           <Outlet />
         </main>
       </div>
