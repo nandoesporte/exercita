@@ -54,8 +54,8 @@ const MobileNavbar = () => {
                   : "text-muted-foreground hover:text-white"
               )}
             >
-              <item.icon size={20} className={cn(isActive ? "text-fitness-green" : "text-muted-foreground")} />
-              <span className="text-xs mt-1">{item.label}</span>
+              <item.icon size={22} className={cn("mb-1", isActive ? "text-fitness-green" : "text-muted-foreground")} />
+              <span className="text-sm font-medium mt-0.5">{item.label}</span>
             </Link>
           );
         })}
