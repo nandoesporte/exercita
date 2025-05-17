@@ -1,89 +1,73 @@
+
 import React, { useState, useEffect } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Loader2, Info } from "lucide-react";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
+const loginSchema = z.object({
+  email: z.string().email("Digite um email válido"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+});
+
+const registerSchema = z.object({
+  email: z.string().email("Digite um email válido"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  firstName: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
+  lastName: z.string().min(2, "Sobrenome deve ter no mínimo 2 caracteres"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Login = () => {
-  const { user, signIn, adminLogin } = useAuth();
+  const { user, signIn, signUp, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  
   const searchParams = new URLSearchParams(location.search);
-  const needsAdminAccess = searchParams.get('adminAccess') === 'required';
   
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  
-  // Admin login state
-  const [adminPassword, setAdminPassword] = useState("");
-  
-  // PWA installation prompt
-  const { canInstall, showPrompt, closePrompt, showInstallPrompt } = usePWAInstall();
-  const [showPWAPrompt, setShowPWAPrompt] = useState(false);
-  
-  // Track successful login to show PWA prompt
-  const [loginSuccess, setLoginSuccess] = useState(false);
-  
-  // Define handleClosePWAPrompt before it's used
-  const handleClosePWAPrompt = () => {
-    console.log('Closing PWA prompt');
-    setShowPWAPrompt(false);
-    closePrompt();
-  };
-  
-  // Track if user is being verified
-  const [verifyingUser, setVerifyingUser] = useState(false);
-  
-  useEffect(() => {
-    // If redirected from admin page with adminAccess=required, show a message
-    if (needsAdminAccess) {
-      toast.info("Acesso administrativo necessário. Por favor, faça login.");
-    }
-  }, [needsAdminAccess]);
-  
-  // Show PWA install prompt after successful login if available
-  useEffect(() => {
-    if (loginSuccess && canInstall) {
-      console.log('Login successful and PWA can be installed, showing prompt');
-      // Small delay to ensure the navigation completes first
-      const timer = setTimeout(() => {
-        console.log('Attempting to show PWA prompt after successful login');
-        if (showPrompt()) {
-          setShowPWAPrompt(true);
-        } else {
-          console.log('showPrompt() returned false, not showing PWA prompt');
-        }
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [loginSuccess, canInstall, showPrompt]);
-  
+  // Define the login form
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  // Define the register form
+  const registerForm = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      firstName: "",
+      lastName: "",
+    },
+  });
+
   // Fix for login loop - Use a local indicator rather than relying only on auth context
-  // which might cause render loops
   const [shouldRedirect, setShouldRedirect] = useState(false);
   
   // Check if user is logged in to prevent loop
   useEffect(() => {
     if (user && !shouldRedirect) {
-      // Log detailed user information for debugging
-      console.log("User authenticated in Login page:", { 
-        id: user.id,
-        email: user.email,
-        metadata: user.user_metadata,
-        createdAt: user.created_at
-      });
-      
-      // Set a small timeout to avoid immediate redirects that might cause loops
+      console.log("User authenticated in Login page, preparing redirect");
       setTimeout(() => {
         setShouldRedirect(true);
       }, 100);
@@ -92,228 +76,267 @@ const Login = () => {
   
   // If user is already logged in and we've confirmed we should redirect, do so
   if (shouldRedirect) {
-    // If login was just successful, delay redirect slightly to show PWA prompt
-    if (loginSuccess && canInstall && showPWAPrompt) {
-      return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-          <div className="w-full max-w-md text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fitness-orange mx-auto"></div>
-            <p className="mt-4">Redirecionando...</p>
-            <PWAInstallPrompt onClose={handleClosePWAPrompt} />
-          </div>
-        </div>
-      );
-    }
-    
-    // Normal redirect
     console.log("Redirecting to home page");
     return <Navigate to="/" replace />;
   }
-  
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+
+  const onLoginSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     
     try {
-      console.log('Attempting login with:', loginEmail);
-      
-      // Add extra debugging to check credentials
-      console.log('Login credentials:', { 
-        email: loginEmail, 
-        passwordLength: loginPassword.length 
-      });
-      
-      await signIn(loginEmail, loginPassword);
-      console.log('Login successful, setting loginSuccess state');
-      // Mark login as successful to trigger PWA prompt
-      setLoginSuccess(true);
+      await signIn(values.email, values.password);
     } catch (error) {
       console.error("Login error details:", error);
-      
-      // Show more specific error message
-      if ((error as Error).message?.includes('Invalid login credentials')) {
-        toast.error("Credenciais inválidas. Por favor, verifique seu email e senha.");
-      } else {
-        toast.error(`Erro ao fazer login: ${(error as Error).message || "Erro desconhecido"}`);
-      }
+      // Form is already handling validation errors
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onRegisterSubmit = async (values: RegisterFormValues) => {
     setIsLoading(true);
     
     try {
-      await adminLogin(adminPassword);
-      console.log('Admin login successful, setting loginSuccess state');
-      // Show PWA install prompt after successful login
-      setLoginSuccess(true);
+      // Create metadata with first and last name
+      const metadata = {
+        first_name: values.firstName,
+        last_name: values.lastName
+      };
+      
+      await signUp(values.email, values.password, metadata);
+      toast.success("Conta criada com sucesso! Você já pode entrar.");
+      loginForm.setValue("email", values.email);
     } catch (error) {
-      console.error("Admin login error details:", error);
-      toast.error(`Erro de login admin: ${(error as Error).message || "Erro desconhecido"}`);
+      console.error("Registration error:", error);
+      // Form is already handling validation errors
     } finally {
       setIsLoading(false);
     }
   };
-  
-  // Adicionar função para verificar se o usuário existe
-  const checkUserExists = async () => {
-    if (!loginEmail) {
-      toast.error("Digite um email para verificar");
-      return;
-    }
-    
-    setVerifyingUser(true);
-    
-    try {
-      // Verificar se o usuário existe - observe que isso só retorna usuários se você for admin
-      const { data, error } = await supabase.rpc('debug_get_all_users');
-      
-      if (error) {
-        console.error("Erro ao verificar usuário:", error);
-        toast.error(`Erro ao verificar usuário: ${error.message}`);
-        return;
-      }
-      
-      const foundUser = data?.find((user: any) => user.email === loginEmail);
-      
-      if (foundUser) {
-        toast.success(`Usuário encontrado no banco de dados!`);
-        console.log("Dados do usuário encontrado:", foundUser);
-      } else {
-        toast.error(`Usuário não encontrado no banco de dados. Talvez não exista ou você não tem permissão para visualizá-lo.`);
-      }
-    } catch (error) {
-      console.error("Erro ao verificar usuário:", error);
-      toast.error(`Erro na verificação: ${(error as Error).message}`);
-    } finally {
-      setVerifyingUser(false);
-    }
-  };
-  
+
+  // Helper to toggle password visibility
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background bg-gradient-to-b from-background to-muted/30">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-2">
-            {/* Logo updated to match the logo used in other pages */}
+          <div className="flex items-center justify-center mb-4">
             <img 
               src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
               alt="Mais Saúde Logo"
-              className="h-10 w-10"
+              className="h-16 w-16"
             />
-            <span className="font-extrabold text-xl text-fitness-orange">Mais Saúde</span>
           </div>
-          <p className="text-muted-foreground">Seu companheiro de fitness pessoal</p>
+          <h1 className="font-extrabold text-3xl text-fitness-green">Mais Saúde</h1>
+          <p className="text-muted-foreground mt-2">Seu companheiro de fitness pessoal</p>
         </div>
-      
-        <Card>
+
+        <Card className="border-muted/30 shadow-lg">
           <CardHeader>
-            <CardTitle>Bem-vindo</CardTitle>
-            <CardDescription>
-              {needsAdminAccess 
-                ? "Acesso administrativo necessário. Por favor, faça login e digite a senha de administrador."
-                : "Entre na sua conta para começar"}
-            </CardDescription>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Entrar</TabsTrigger>
+                <TabsTrigger value="register">Cadastrar</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login" className="mt-4">
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="nome@exemplo.com" 
+                              type="email" 
+                              autoComplete="email"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input 
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••" 
+                                autoComplete="current-password"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              onClick={togglePasswordVisibility}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full bg-fitness-green hover:bg-fitness-darkGreen" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Entrando...
+                        </>
+                      ) : "Entrar"}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+
+              <TabsContent value="register" className="mt-4">
+                <Form {...registerForm}>
+                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={registerForm.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={registerForm.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sobrenome</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Sobrenome" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="nome@exemplo.com" 
+                              type="email"
+                              autoComplete="email"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={registerForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input 
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••" 
+                                autoComplete="new-password"
+                                {...field}
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              onClick={togglePasswordVisibility}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={registerForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirmar Senha</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input 
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="••••••••" 
+                                autoComplete="new-password"
+                                {...field}
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              onClick={toggleConfirmPasswordVisibility}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full bg-fitness-green hover:bg-fitness-darkGreen" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Cadastrando...
+                        </>
+                      ) : "Cadastrar"}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+            </Tabs>
           </CardHeader>
           
-          <CardContent>
-            <form onSubmit={handleLogin}>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="login-email" className="block text-sm font-medium mb-1">
-                    Email
-                  </label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="nome@exemplo.com"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="login-password" className="block text-sm font-medium mb-1">
-                    Senha
-                  </label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    autoComplete="current-password"
-                  />
-                </div>
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Entrando...
-                    </>
-                  ) : "Entrar"}
-                </Button>
-
-                {/* Botão de verificação de usuário para ajudar na depuração */}
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full flex items-center justify-center" 
-                  onClick={checkUserExists}
-                  disabled={verifyingUser || !loginEmail}
-                >
-                  {verifyingUser ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Info className="h-4 w-4 mr-2" />
-                  )}
-                  {verifyingUser ? "Verificando..." : "Verificar usuário"}
-                </Button>
-
-                {/* O formulário de login admin está sempre visível */}
-                <div className="mt-4 border border-gray-200 rounded-md p-4">
-                  <form onSubmit={handleAdminLogin}>
-                    <div className="space-y-4">
-                      <div className="flex items-center text-amber-600 mb-2">
-                        <AlertTriangle size={16} className="mr-2" />
-                        <span className="text-sm">Acesso administrativo apenas</span>
-                      </div>
-                      <div>
-                        <label htmlFor="admin-password" className="block text-sm font-medium mb-1">
-                          Senha de Administrador
-                        </label>
-                        <Input
-                          id="admin-password"
-                          type="password"
-                          value={adminPassword}
-                          onChange={(e) => setAdminPassword(e.target.value)}
-                          placeholder="Senha de administrador"
-                          required
-                        />
-                      </div>
-                      <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Verificando...
-                          </>
-                        ) : "Acessar Admin"}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </form>
-          </CardContent>
-          
-          <CardFooter className="flex justify-center">
+          <CardFooter className="flex flex-col gap-4 border-t pt-4">
             <p className="text-center text-sm text-muted-foreground">
               <Link to="/" className="text-fitness-green hover:underline">
                 Voltar à página inicial
@@ -321,9 +344,6 @@ const Login = () => {
             </p>
           </CardFooter>
         </Card>
-        
-        {/* PWA Installation Prompt */}
-        {showPWAPrompt && <PWAInstallPrompt onClose={handleClosePWAPrompt} />}
       </div>
     </div>
   );

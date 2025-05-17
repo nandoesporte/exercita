@@ -145,9 +145,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) throw error;
       
-      toast.success('Account created! Please check your email to verify your account.');
+      toast.success('Conta criada! Por favor, verifique seu email para confirmar sua conta.');
     } catch (error: any) {
-      toast.error(error.message || 'An error occurred during sign up');
+      toast.error(error.message || 'Ocorreu um erro durante o cadastro');
       throw error;
     }
   };
