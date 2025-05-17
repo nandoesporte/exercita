@@ -163,18 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         passwordLength: password.length 
       });
       
-      // Attempt to sign in with credential validation first
-      const { error: validationError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (validationError) {
-        console.error("Sign in validation error:", validationError);
-        throw validationError;
-      }
-      
-      // If validation passes, perform the actual sign in
+      // Better error handling with a single sign-in attempt
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,

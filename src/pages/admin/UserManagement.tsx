@@ -91,7 +91,7 @@ const UserManagement = () => {
     },
   });
 
-  // Create user mutation - With improved success messaging
+  // Create user mutation - With improved success messaging and detailed logging
   const createUserMutation = useMutation({
     mutationFn: async (userData: FormValues) => {
       console.log("Creating user with:", userData.email, "and metadata:", {
@@ -388,7 +388,12 @@ const UserManagement = () => {
         </CardHeader>
         <CardContent className={isMobile ? "px-2 py-1" : ""}>
           <DataTable
-            columns={mobileColumns}
+            columns={isMobile ? [
+              columns[0], // Email
+              columns[1], // Nome
+              columns[3], // Status
+              columns[4], // Ações
+            ] : columns}
             data={usersData || []}
             isLoading={isLoading}
           />
