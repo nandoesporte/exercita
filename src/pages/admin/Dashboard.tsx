@@ -55,7 +55,7 @@ const Dashboard = () => {
   });
   
   // Fetch users for the recent activity section
-  const { data: recentUsers, isLoading: usersLoading, error: usersError } = useQuery({
+  const { data: recentUsersData, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['admin-dashboard-users'],
     queryFn: async () => {
       console.log("Fetching users with debug_get_all_users function");
@@ -69,16 +69,23 @@ const Dashboard = () => {
       console.log("User data returned:", data);
       console.log("First user structure:", data?.[0]);
       
-      return (data || []).slice(0, 5).map(user => ({
-        id: user.user_id,
-        email: user.email,
-        user: (user.raw_user_meta_data?.first_name || '') + ' ' + (user.raw_user_meta_data?.last_name || ''),
-        time: user.created_at,
-        isActive: !user.banned_until,
-        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${user.raw_user_meta_data?.first_name || user.email}`,
-      }));
+      return data || [];
     },
   });
+
+  // Process user data for display
+  const recentUsers = React.useMemo(() => {
+    if (!recentUsersData) return [];
+    
+    return recentUsersData.slice(0, 5).map(user => ({
+      id: user.user_id,
+      email: user.email,
+      user: (user.raw_user_meta_data?.first_name || '') + ' ' + (user.raw_user_meta_data?.last_name || ''),
+      time: user.created_at,
+      isActive: !user.banned_until,
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${user.raw_user_meta_data?.first_name || user.email}`,
+    }));
+  }, [recentUsersData]);
 
   // Toggle user active status
   const toggleUserActiveMutation = useMutation({
