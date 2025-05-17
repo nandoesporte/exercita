@@ -126,7 +126,7 @@ const UserManagement = () => {
       const fullName = `${data?.user_metadata?.first_name || ''} ${data?.user_metadata?.last_name || ''}`.trim();
       const userInfo = fullName ? `${fullName} (${email})` : email;
       
-      toast.success(`Usuário ${userInfo} criado com sucesso! O usuário agora pode fazer login com as credenciais fornecidas.`);
+      toast.success(`Usuário ${userInfo} criado com sucesso! Este usuário já está com email confirmado e pode fazer login imediatamente.`);
       form.reset();
     },
     onError: (error: Error) => {

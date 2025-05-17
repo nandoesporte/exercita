@@ -157,33 +157,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to sign in:", email);
       
-      // Add extra debugging logging to check the login attempt
-      console.log("Login credentials:", { 
+      // Adicione logging detalhado sobre a tentativa de login
+      console.log("Login attempt details:", { 
         email, 
-        passwordLength: password.length 
+        passwordLength: password.length,
+        timestamp: new Date().toISOString()
       });
       
-      // Better error handling with a single sign-in attempt
+      // Usar uma única tentativa de login com melhor tratamento de erros
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
-        console.error("Sign in error:", error);
+        console.error("Sign in error details:", {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
+        
+        // Verificar se o erro é devido a credenciais inválidas
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Credenciais inválidas. Por favor, verifique seu email e senha.');
+        }
+        
         throw error;
       }
       
       console.log("Sign in successful:", { 
         user: data.user?.email,
-        hasSession: !!data.session
+        hasSession: !!data.session,
+        sessionExpires: data.session?.expires_at
       });
       
+      // Navegar para a página inicial após sucesso no login
       navigate('/');
-      toast.success('Logged in successfully!');
+      toast.success('Login realizado com sucesso!');
     } catch (error: any) {
       console.error("Sign in error:", error);
-      toast.error(error.message || 'Invalid login credentials');
+      toast.error(error.message || 'Erro ao fazer login. Tente novamente.');
       throw error;
     }
   };
