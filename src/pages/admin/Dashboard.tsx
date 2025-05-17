@@ -67,6 +67,7 @@ const Dashboard = () => {
       }
       
       console.log("User data returned:", data);
+      console.log("First user structure:", data?.[0]);
       
       return (data || []).slice(0, 5).map(user => ({
         id: user.user_id,

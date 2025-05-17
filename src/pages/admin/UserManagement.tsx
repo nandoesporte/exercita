@@ -60,6 +60,7 @@ const UserManagement = () => {
       }
       
       console.log("User data received:", data?.length || 0, "users");
+      console.log("First user data structure:", data?.[0]);
       return data || [];
     },
   });
