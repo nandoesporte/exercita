@@ -218,8 +218,33 @@ const Index = () => {
         </Carousel>
       </section>
       
-      {/* Produtos em Destaque */}
+      {/* Minha Academia Seção */}
       <section className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Minha Academia</h2>
+        
+        <Card className="bg-fitness-darkGray border-none text-white">
+          <CardContent className="p-4">
+            <Link 
+              to="/gym-photos" 
+              className="flex items-center justify-between p-3 hover:bg-fitness-dark rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="bg-fitness-orange h-10 w-10 rounded-full flex items-center justify-center">
+                  <Camera className="text-white" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold">Envie fotos da sua academia</h3>
+                  <p className="text-sm text-gray-300">Ajude o personal trainer a analisar seu ambiente</p>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-gray-300" />
+            </Link>
+          </CardContent>
+        </Card>
+      </section>
+      
+      {/* Produtos em Destaque - Movido para baixo do display "Minha Academia" */}
+      <section>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Produtos em Destaque</h2>
           <Link to="/store" className="text-fitness-orange text-sm flex items-center gap-1">
@@ -287,31 +312,6 @@ const Index = () => {
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
         </Carousel>
-      </section>
-      
-      {/* Minha Academia Seção */}
-      <section>
-        <h2 className="text-xl font-bold mb-4">Minha Academia</h2>
-        
-        <Card className="bg-fitness-darkGray border-none text-white">
-          <CardContent className="p-4">
-            <Link 
-              to="/gym-photos" 
-              className="flex items-center justify-between p-3 hover:bg-fitness-dark rounded-lg transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-fitness-orange h-10 w-10 rounded-full flex items-center justify-center">
-                  <Camera className="text-white" size={20} />
-                </div>
-                <div>
-                  <h3 className="font-bold">Envie fotos da sua academia</h3>
-                  <p className="text-sm text-gray-300">Ajude o personal trainer a analisar seu ambiente</p>
-                </div>
-              </div>
-              <ChevronRight size={20} className="text-gray-300" />
-            </Link>
-          </CardContent>
-        </Card>
       </section>
     </div>
   );
