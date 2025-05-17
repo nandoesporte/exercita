@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -219,11 +218,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear local auth state first to prevent UI flashes
       setIsAdmin(false);
       
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      // Check if we have a session before signing out
+      const { data: sessionData } = await supabase.auth.getSession();
       
-      if (error) {
-        console.error("Error during sign out:", error);
-        throw error;
+      if (sessionData?.session) {
+        const { error } = await supabase.auth.signOut({ scope: 'global' });
+        
+        if (error) {
+          console.error("Error during sign out:", error);
+          throw error;
+        }
+      } else {
+        // No active session, just clear the local state
+        console.log("No active session found, clearing local state only");
       }
       
       // After successful signout, clear local state
@@ -235,7 +242,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success('Logout realizado com sucesso');
     } catch (error: any) {
       console.error("Sign out error:", error);
-      toast.error(error.message || 'Erro ao fazer logout');
+      
+      // If error is AuthSessionMissingError, still clear local state and redirect
+      if (error.name === "AuthSessionMissingError") {
+        console.log("Session already missing, clearing state and redirecting");
+        setUser(null);
+        setSession(null);
+        navigate('/login');
+        toast.success('Logout realizado com sucesso');
+      } else {
+        toast.error(error.message || 'Erro ao fazer logout');
+      }
     }
   };
 
