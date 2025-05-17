@@ -1,7 +1,7 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { checkAuthSession } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
+  const [isCheckingSession, setIsCheckingSession] = useState(false);
   
   // Debug auth state on protected routes
   useEffect(() => {
@@ -25,19 +26,23 @@ const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps)
       loading
     });
     
-    // Verify session with Supabase directly as a safety check
-    if (!loading && !user) {
+    // Only verify session if no user is found and we're not already checking
+    if (!loading && !user && !isCheckingSession) {
+      setIsCheckingSession(true);
+      
       checkAuthSession().then(session => {
         if (session) {
           console.log("Session found in direct check but not in context", session);
           // Force page reload to re-initialize auth context if there's a mismatch
           window.location.reload();
         }
+        setIsCheckingSession(false);
       });
     }
-  }, [user, loading, isAdmin, isAdminRoute, location.pathname]);
+  }, [user, loading, isAdmin, isAdminRoute, location.pathname, isCheckingSession]);
 
-  if (loading) {
+  // Show loading state if either the auth context is loading or we're checking the session
+  if (loading || isCheckingSession) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>

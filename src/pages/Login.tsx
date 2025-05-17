@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ const Login = () => {
   const { user, signIn, adminLogin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  
   const searchParams = new URLSearchParams(location.search);
   const needsAdminAccess = searchParams.get('adminAccess') === 'required';
   
@@ -66,27 +68,37 @@ const Login = () => {
     }
   }, [loginSuccess, canInstall, showPrompt]);
   
-  // If user is already logged in, redirect to home page
-  if (user) {
-    // If login was just successful, delay redirect slightly to show PWA prompt
-    if (loginSuccess && canInstall && !showPWAPrompt) {
-      // Give time for the PWA prompt to appear
+  // Fix for login loop - Use a local indicator rather than relying only on auth context
+  // which might cause render loops
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  
+  // Check if user is logged in to prevent loop
+  useEffect(() => {
+    if (user && !shouldRedirect) {
+      // Set a small timeout to avoid immediate redirects that might cause loops
       setTimeout(() => {
-        console.log('Redirecting after login');
-      }, 1500);
-      
-      // Return null to delay redirect while showing the PWA prompt
+        setShouldRedirect(true);
+      }, 100);
+    }
+  }, [user, shouldRedirect]);
+  
+  // If user is already logged in and we've confirmed we should redirect, do so
+  if (shouldRedirect) {
+    // If login was just successful, delay redirect slightly to show PWA prompt
+    if (loginSuccess && canInstall && showPWAPrompt) {
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <div className="w-full max-w-md text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fitness-orange mx-auto"></div>
             <p className="mt-4">Redirecionando...</p>
-            {showPWAPrompt && <PWAInstallPrompt onClose={handleClosePWAPrompt} />}
+            <PWAInstallPrompt onClose={handleClosePWAPrompt} />
           </div>
         </div>
       );
     }
     
+    // Normal redirect
+    console.log("Redirecting to home page");
     return <Navigate to="/" replace />;
   }
   
@@ -95,6 +107,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      console.log('Attempting login with:', loginEmail);
       await signIn(loginEmail, loginPassword);
       console.log('Login successful, setting loginSuccess state');
       // Mark login as successful to trigger PWA prompt
