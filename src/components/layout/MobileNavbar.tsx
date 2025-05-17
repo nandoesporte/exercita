@@ -51,10 +51,10 @@ const MobileNavbar = () => {
                 "flex flex-col items-center justify-center py-2 px-4 rounded-2xl transition-all duration-200",
                 isActive 
                   ? "text-fitness-green bg-fitness-darkGray/50" 
-                  : "text-muted-foreground hover:text-white"
+                  : "text-gray-200 hover:text-white"
               )}
             >
-              <item.icon size={22} className={cn("mb-1", isActive ? "text-fitness-green" : "text-muted-foreground")} />
+              <item.icon size={22} className={cn("mb-1", isActive ? "text-fitness-green" : "text-gray-300")} />
               <span className="text-sm font-medium mt-0.5">{item.label}</span>
             </Link>
           );
