@@ -29,7 +29,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Define o schema para validação do formulário
 const formSchema = z.object({
@@ -46,9 +46,7 @@ const UserManagement = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const isMobile = useIsMobile();
-
-  // Fetch all users
+  
   const { data: usersData, isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
@@ -160,6 +158,8 @@ const UserManagement = () => {
   const onSubmit = (values: FormValues) => {
     createUserMutation.mutate(values);
   };
+  
+  const isMobile = useIsMobile();
 
   // Define columns for the user table with responsive considerations
   const columns = [

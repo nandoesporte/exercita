@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus } from 'lucide-react';
+import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus, Gift, ImageIcon, CalendarIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Define form schema for user creation
 const formSchema = z.object({
@@ -32,6 +32,20 @@ const Dashboard = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const isMobile = useIsMobile();
+
+  // Fetch statistics
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: async () => {
+      // Mock stats data for now - would be replaced with an actual API call
+      return {
+        users: 42,
+        workouts: 15,
+        appointments: 8,
+        revenue: 12540
+      };
+    },
+  });
 
   // Fetch users for the recent activity section
   const { data: recentUsersData, isLoading: usersLoading, error: usersError } = useQuery({
@@ -410,7 +424,7 @@ const Dashboard = () => {
               to="/admin/workouts/create" 
               className="flex items-center justify-center gap-2 bg-fitness-green text-white p-2 rounded-lg hover:bg-fitness-darkGreen transition-colors text-center text-sm"
             >
-              <DumbbellIcon className="h-4 w-4" />
+              <Dumbbell className="h-4 w-4" />
               <span>Novo Treino</span>
             </Link>
             <Link to="/admin/appointments"
