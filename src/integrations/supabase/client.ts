@@ -134,7 +134,7 @@ type CustomDatabase = {
           user_password: string; 
           user_metadata?: Json;
         };
-        Returns: Json;  // Updated return type to Json
+        Returns: Json;
       };
       admin_delete_user: {
         Args: { user_id: string };
