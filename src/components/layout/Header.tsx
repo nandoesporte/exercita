@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,8 +24,9 @@ const Header: React.FC<HeaderProps> = ({
   onBackClick
 }) => {
   const isMobile = useIsMobile();
-  const { profile } = useProfile();
-  const { user, isAdmin } = useAuth(); // Using isAdmin from useAuth instead of user.is_admin
+  // Use safe fallbacks in case auth is still initializing
+  const { profile, isLoading: profileLoading } = useProfile();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const location = useLocation();
   const { data: workouts } = useWorkouts();
   
@@ -50,6 +51,25 @@ const Header: React.FC<HeaderProps> = ({
     
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
+
+  // If auth is loading, show a simplified header to prevent errors
+  if (authLoading) {
+    return (
+      <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
+              alt="Mais Saúde Logo"
+              className="h-10 w-10"
+            />
+            <span className="font-extrabold text-xl text-white">Mais Saúde</span>
+          </div>
+          <div className="animate-pulse w-8 h-8 bg-fitness-darkGray rounded-full"></div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">

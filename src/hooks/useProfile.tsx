@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -23,21 +24,29 @@ export function useProfile() {
   const profileQuery = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      if (!user) throw new Error('Usuário precisa estar logado');
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) {
-        console.error('Erro ao buscar perfil:', error);
-        throw new Error(`Erro ao buscar perfil: ${error.message}`);
+      if (!user) {
+        console.log('Profile fetch skipped: No authenticated user');
+        return null;
       }
       
-      console.log('Perfil carregado:', data);
-      return data as Profile;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Erro ao buscar perfil:', error);
+          throw new Error(`Erro ao buscar perfil: ${error.message}`);
+        }
+        
+        console.log('Perfil carregado:', data);
+        return data as Profile;
+      } catch (error) {
+        console.error('Exception in profile fetch:', error);
+        return null;
+      }
     },
     enabled: !!user,
     staleTime: 1000 * 60, // Consider data stale after 1 minute
@@ -46,35 +55,49 @@ export function useProfile() {
 
   // Add function to fetch primary PIX key
   const pixKeyQuery = useQuery({
-    queryKey: ['pixKey', 'primary'],
+    queryKey: ['pixKey', 'primary', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('pix_keys')
-        .select('*')
-        .eq('is_primary', true)
-        .single();
-      
-      if (error) {
-        if (error.code !== 'PGRST116') { // no rows returned
-          console.error('Erro ao buscar chave PIX:', error);
-        }
+      if (!user) {
+        console.log('PIX key fetch skipped: No authenticated user');
         return null;
       }
       
-      return {
-        id: data.id,
-        key_type: data.key_type as 'cpf' | 'email' | 'phone' | 'random',
-        key_value: data.key_value,
-        recipient_name: data.recipient_name,
-        is_primary: data.is_primary || false,
-      } as PixKey;
+      try {
+        const { data, error } = await supabase
+          .from('pix_keys')
+          .select('*')
+          .eq('is_primary', true)
+          .single();
+        
+        if (error) {
+          if (error.code !== 'PGRST116') { // no rows returned
+            console.error('Erro ao buscar chave PIX:', error);
+          }
+          return null;
+        }
+        
+        return {
+          id: data.id,
+          key_type: data.key_type as 'cpf' | 'email' | 'phone' | 'random',
+          key_value: data.key_value,
+          recipient_name: data.recipient_name,
+          is_primary: data.is_primary || false,
+        } as PixKey;
+      } catch (error) {
+        console.error('Exception in PIX key fetch:', error);
+        return null;
+      }
     },
+    enabled: !!user,
     staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes
   });
   
   const updateProfile = useMutation({
     mutationFn: async (profileData: ProfileUpdate): Promise<Profile | null> => {
-      if (!user) throw new Error('Usuário precisa estar logado');
+      if (!user) {
+        console.error('Profile update aborted: No authenticated user');
+        throw new Error('Usuário precisa estar logado');
+      }
       
       console.log('Atualizando perfil com dados:', profileData);
       
@@ -117,7 +140,10 @@ export function useProfile() {
   // Function for profile image upload
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!user) throw new Error('Usuário precisa estar logado');
+      if (!user) {
+        console.error('Image upload aborted: No authenticated user');
+        throw new Error('Usuário precisa estar logado');
+      }
       
       // Generate unique file path with user ID as prefix
       const fileExt = file.name.split('.').pop();
@@ -191,13 +217,13 @@ export function useProfile() {
   
   return {
     profile: profileQuery.data,
-    isLoading: profileQuery.isLoading,
+    isLoading: profileQuery.isLoading || !user, // Consider loading if no user yet
     error: profileQuery.error,
     updateProfile: updateProfile.mutate,
     isUpdating: updateProfile.isPending,
     uploadProfileImage: uploadProfileImage.mutate,
     isUploadingImage: uploadProfileImage.isPending,
     pixKey: pixKeyQuery.data,
-    isLoadingPixKey: pixKeyQuery.isLoading,
+    isLoadingPixKey: pixKeyQuery.isLoading || !user,
   };
 }
