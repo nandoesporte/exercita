@@ -7,6 +7,8 @@ import {
 import { useAdminStore } from '@/hooks/useAdminStore';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +24,7 @@ import { formatCurrency } from '@/lib/utils';
 
 const ProductManagement = () => {
   const navigate = useNavigate();
-  const { products, isLoadingProducts, deleteProduct } = useAdminStore();
+  const { products, isLoadingProducts, deleteProduct, toggleFeaturedProduct } = useAdminStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
@@ -31,7 +33,7 @@ const ProductManagement = () => {
   );
 
   const handleCreateNew = () => {
-    navigate('/admin/products/new');
+    navigate('/admin/products/create');
   };
 
   const handleEdit = (id: string) => {
@@ -46,6 +48,15 @@ const ProductManagement = () => {
     if (deleteId) {
       await deleteProduct(deleteId);
       setDeleteId(null);
+    }
+  };
+
+  const handleToggleFeatured = async (id: string, currentStatus: boolean) => {
+    try {
+      await toggleFeaturedProduct(id, !currentStatus);
+      toast.success(currentStatus ? 'Produto removido dos destaques' : 'Produto adicionado aos destaques');
+    } catch (error) {
+      toast.error('Erro ao atualizar status de destaque do produto');
     }
   };
 
@@ -87,6 +98,21 @@ const ProductManagement = () => {
       )
     },
     {
+      accessorKey: 'is_featured',
+      header: 'Destaque',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex items-center gap-2">
+          <Switch 
+            checked={row.original.is_featured} 
+            onCheckedChange={() => handleToggleFeatured(row.original.id, row.original.is_featured)}
+          />
+          <span className="text-xs text-muted-foreground">
+            {row.original.is_featured ? 'Destaque' : 'Normal'}
+          </span>
+        </div>
+      )
+    },
+    {
       accessorKey: 'actions',
       header: 'Ações',
       cell: ({ row }: { row: { original: any } }) => (
@@ -125,7 +151,12 @@ const ProductManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Gerenciamento de Produtos</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Gerenciamento de Produtos</h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie os produtos da loja e defina quais aparecem na página inicial
+          </p>
+        </div>
         <Button onClick={handleCreateNew}>
           <Plus className="mr-2 h-4 w-4" />
           Criar Novo

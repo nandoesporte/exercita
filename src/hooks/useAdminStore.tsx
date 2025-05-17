@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory, ProductFormData } from '@/types/store';
@@ -35,6 +36,7 @@ export const useAdminStore = () => {
           price: item.price,
           image_url: item.image_url || null,
           is_active: item.is_active === undefined ? true : item.is_active,
+          is_featured: item.is_featured === undefined ? false : item.is_featured,
           created_at: item.created_at,
           updated_at: item.updated_at,
           sale_url: item.sale_url || '',
@@ -72,6 +74,7 @@ export const useAdminStore = () => {
       price: data.price,
       image_url: data.image_url || null,
       is_active: data.is_active === undefined ? true : data.is_active,
+      is_featured: data.is_featured === undefined ? false : data.is_featured,
       created_at: data.created_at,
       updated_at: data.updated_at,
       sale_url: data.sale_url || '',
@@ -118,6 +121,7 @@ export const useAdminStore = () => {
         image_url: product.image_url,
         sale_url: product.sale_url,
         is_active: product.is_active,
+        is_featured: product.is_featured,
         category_id: product.category_id === '' ? null : product.category_id
       };
 
@@ -147,6 +151,7 @@ export const useAdminStore = () => {
         price: data.price,
         image_url: data.image_url || null,
         is_active: data.is_active === undefined ? true : data.is_active,
+        is_featured: data.is_featured === undefined ? false : data.is_featured,
         created_at: data.created_at,
         updated_at: data.updated_at,
         sale_url: data.sale_url || '',
@@ -178,6 +183,7 @@ export const useAdminStore = () => {
         image_url: product.image_url,
         sale_url: product.sale_url,
         is_active: product.is_active,
+        is_featured: product.is_featured,
         category_id: product.category_id === '' ? null : product.category_id
       };
 
@@ -208,6 +214,7 @@ export const useAdminStore = () => {
         price: data.price,
         image_url: data.image_url || null,
         is_active: data.is_active === undefined ? true : data.is_active,
+        is_featured: data.is_featured === undefined ? false : data.is_featured,
         created_at: data.created_at,
         updated_at: data.updated_at,
         sale_url: data.sale_url || '',
@@ -249,6 +256,29 @@ export const useAdminStore = () => {
     },
   });
 
+  // Toggle product featured status
+  const { mutateAsync: toggleFeaturedProduct } = useMutation({
+    mutationFn: async (id: string, isFeatured: boolean) => {
+      const { data, error } = await supabase
+        .from('products')
+        .update({ is_featured: isFeatured })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['featured-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+
   return {
     products,
     isLoadingProducts,
@@ -261,5 +291,6 @@ export const useAdminStore = () => {
     isUpdating,
     deleteProduct,
     isDeleting,
+    toggleFeaturedProduct,
   };
 };

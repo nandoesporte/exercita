@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { 
@@ -15,11 +15,13 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel";
 import { WorkoutCard } from '@/components/ui/workout-card';
+import { useStore } from '@/hooks/useStore';
 
 const Index = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { data: workouts, isLoading } = useWorkouts();
+  const { featuredProducts, isLoadingFeaturedProducts } = useStore();
   
   // Obter o treino recomendado com base no nível de condicionamento físico do usuário ou no primeiro treino em destaque
   const recommendedWorkout = workouts?.find(workout => 
@@ -193,6 +195,77 @@ const Index = () => {
                   />
                 </CarouselItem>
               </>
+            )}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex" />
+          <CarouselNext className="hidden md:flex" />
+        </Carousel>
+      </section>
+      
+      {/* Produtos em Destaque */}
+      <section className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Produtos em Destaque</h2>
+          <Link to="/store" className="text-fitness-orange text-sm flex items-center gap-1">
+            <span>Visitar loja</span>
+            <ChevronRight size={16} />
+          </Link>
+        </div>
+        
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="py-2">
+            {isLoadingFeaturedProducts ? (
+              // Placeholders de carregamento
+              [...Array(3)].map((_, index) => (
+                <CarouselItem key={`loading-${index}`} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="h-[280px] rounded-xl bg-fitness-darkGray/40 animate-pulse"></div>
+                </CarouselItem>
+              ))
+            ) : featuredProducts && featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3">
+                  <Link to={`/store/${product.id}`} className="block">
+                    <div className="bg-white bg-opacity-5 rounded-xl overflow-hidden h-[280px] relative group hover:shadow-lg transition-all duration-300">
+                      {/* Imagem do produto */}
+                      <div className="h-[180px] overflow-hidden">
+                        <img 
+                          src={product.image_url || "https://via.placeholder.com/300x180?text=Produto"} 
+                          alt={product.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      
+                      {/* Informações do produto */}
+                      <div className="p-4 relative">
+                        <h3 className="font-bold text-lg text-white truncate">{product.name}</h3>
+                        <p className="text-gray-300 text-sm line-clamp-2 h-[40px]">{product.description}</p>
+                        
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-fitness-green font-bold">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+                          </span>
+                          <span className="bg-fitness-darkGray/30 p-1.5 rounded-full">
+                            <ShoppingBag size={18} className="text-fitness-orange" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </CarouselItem>
+              ))
+            ) : (
+              // Sem produtos
+              <CarouselItem className="basis-full">
+                <div className="bg-fitness-darkGray/30 rounded-xl p-8 text-center">
+                  <p className="text-gray-300">Nenhum produto disponível no momento</p>
+                </div>
+              </CarouselItem>
             )}
           </CarouselContent>
           <CarouselPrevious className="hidden md:flex" />

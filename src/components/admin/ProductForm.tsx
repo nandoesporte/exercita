@@ -33,6 +33,7 @@ const formSchema = z.object({
   sale_url: z.string().url("Deve ser uma URL válida para direcionamento do cliente").or(z.literal("")),
   category_id: z.string().nullable(),
   is_active: z.boolean().default(false),
+  is_featured: z.boolean().default(false)
 });
 
 interface ProductFormProps {
@@ -63,6 +64,7 @@ const ProductForm = ({
       sale_url: "",
       category_id: null,
       is_active: false,
+      is_featured: false
     },
   });
 
@@ -187,6 +189,28 @@ const ProductForm = ({
                   <FormLabel className="text-base">Produto Ativo</FormLabel>
                   <p className="text-sm text-muted-foreground">
                     Marque esta opção para tornar este produto visível na loja.
+                  </p>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          {/* É Destaque */}
+          <FormField
+            control={form.control}
+            name="is_featured"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Produto em Destaque</FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    Marque para exibir este produto no carrossel da página inicial.
                   </p>
                 </div>
                 <FormControl>

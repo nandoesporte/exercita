@@ -5,23 +5,26 @@ export interface Product {
   description: string | null;
   price: number;
   image_url: string | null;
-  sale_url?: string;        // Optional field
   is_active: boolean;
-  created_at: string | null;
-  updated_at: string | null;
-  category_id?: string | null;     // Optional field
-  categories?: {            // Optional field
+  is_featured?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  sale_url?: string;
+  category_id?: string | null;
+  categories?: {
     name: string;
-  } | null;                 // Allow null for when relation fails
+  } | null;
 }
 
 export interface ProductCategory {
   id: string;
   name: string;
-  created_at: string | null;
+  icon?: string;
+  color?: string;
 }
 
 export interface ProductFormData {
+  id?: string;
   name: string;
   description: string;
   price: number;
@@ -29,4 +32,5 @@ export interface ProductFormData {
   sale_url: string;
   category_id: string | null;
   is_active: boolean;
+  is_featured?: boolean;
 }

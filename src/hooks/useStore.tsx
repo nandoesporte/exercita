@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
@@ -36,6 +37,7 @@ export const useStore = () => {
           price: item.price,
           image_url: item.image_url || null,
           is_active: item.is_active === undefined ? true : item.is_active,
+          is_featured: item.is_featured === undefined ? false : item.is_featured,
           created_at: item.created_at,
           updated_at: item.updated_at,
           sale_url: item.sale_url || '',
@@ -75,6 +77,7 @@ export const useStore = () => {
       price: data.price,
       image_url: data.image_url || null,
       is_active: data.is_active === undefined ? true : data.is_active,
+      is_featured: data.is_featured === undefined ? false : data.is_featured,
       created_at: data.created_at,
       updated_at: data.updated_at,
       sale_url: data.sale_url || '',
@@ -121,6 +124,8 @@ export const useStore = () => {
         .from('products')
         .select('*, categories:workout_categories(name)')
         .eq('is_active', true)
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
         .limit(6);
 
       if (error) {
@@ -141,6 +146,7 @@ export const useStore = () => {
           price: item.price,
           image_url: item.image_url || null,
           is_active: item.is_active === undefined ? true : item.is_active,
+          is_featured: item.is_featured === undefined ? false : item.is_featured,
           created_at: item.created_at,
           updated_at: item.updated_at,
           sale_url: item.sale_url || '',
