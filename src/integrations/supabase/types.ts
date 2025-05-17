@@ -647,6 +647,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_user: {
+        Args: {
+          user_email: string
+          user_password: string
+          user_metadata?: Json
+        }
+        Returns: string
+      }
+      admin_delete_user: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
       get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {

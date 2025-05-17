@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -148,25 +149,39 @@ const UserManagement = () => {
         }
       };
       
-      // Use our custom RPC function to create the user
-      // Cast the supabase.rpc to any to bypass the TypeScript error
-      const { data, error: createError } = await (supabase.rpc as any)('admin_create_user', userData);
-      
-      if (createError) throw createError;
-      
-      const userId = data as string;
-      
-      // If admin flag is set, update the profile
-      if (values.isAdmin && userId) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ is_admin: true })
-          .eq('id', userId);
-          
-        if (profileError) throw profileError;
+      try {
+        console.log('Creating user with data:', { ...userData, user_password: '********' });
+        
+        // Use our custom RPC function to create the user
+        const { data, error } = await supabase.rpc('admin_create_user', userData);
+        
+        if (error) {
+          console.error('Error in admin_create_user RPC:', error);
+          throw error;
+        }
+        
+        console.log('User created successfully, ID:', data);
+        const userId = data;
+        
+        // If admin flag is set, update the profile
+        if (values.isAdmin && userId) {
+          console.log('Setting admin flag for user:', userId);
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ is_admin: true })
+            .eq('id', userId);
+            
+          if (profileError) {
+            console.error('Error setting admin status:', profileError);
+            throw profileError;
+          }
+        }
+        
+        return userId;
+      } catch (error: any) {
+        console.error('Error in createUser mutation:', error);
+        throw error;
       }
-      
-      return userId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -205,15 +220,25 @@ const UserManagement = () => {
   // Delete user
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      // Use our custom RPC function to delete the user
-      // Cast the supabase.rpc to any to bypass the TypeScript error
-      const { error } = await (supabase.rpc as any)('admin_delete_user', {
-        user_id: userId
-      });
-      
-      if (error) throw error;
-      
-      return userId;
+      try {
+        console.log('Deleting user:', userId);
+        
+        // Use our custom RPC function to delete the user
+        const { error } = await supabase.rpc('admin_delete_user', {
+          user_id: userId
+        });
+        
+        if (error) {
+          console.error('Error in admin_delete_user RPC:', error);
+          throw error;
+        }
+        
+        console.log('User deleted successfully');
+        return userId;
+      } catch (error: any) {
+        console.error('Error in deleteUser mutation:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });

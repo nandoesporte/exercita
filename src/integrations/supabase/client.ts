@@ -117,6 +117,18 @@ type CustomDatabase = {
         Args: { table_name: string };
         Returns: undefined;
       };
+      admin_create_user: {
+        Args: { 
+          user_email: string; 
+          user_password: string; 
+          user_metadata?: Json;
+        };
+        Returns: string;
+      };
+      admin_delete_user: {
+        Args: { user_id: string };
+        Returns: undefined;
+      };
     } & Database['public']['Functions'];
   };
 };
