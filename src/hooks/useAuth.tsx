@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -155,10 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("Attempting to sign in:", email);
+      console.log("Tentando fazer login com:", email);
       
-      // Log detalhado sobre a tentativa de login
-      console.log("Login attempt details:", { 
+      // Log mais detalhado sobre a tentativa de login
+      console.log("Detalhes da tentativa de login:", { 
         email, 
         passwordLength: password.length,
         timestamp: new Date().toISOString()
@@ -171,10 +170,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
-        console.error("Sign in error details:", {
+        console.error("Detalhes do erro de login:", {
           message: error.message,
           status: error.status,
-          name: error.name
+          name: error.name,
+          code: error.code
         });
         
         // Verificar se o erro é devido a credenciais inválidas
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
       
-      console.log("Sign in successful:", { 
+      console.log("Login bem-sucedido:", { 
         user: data.user?.email,
         hasSession: !!data.session,
         sessionExpires: data.session?.expires_at,
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       navigate('/');
       toast.success('Login realizado com sucesso!');
     } catch (error: any) {
-      console.error("Sign in error:", error);
+      console.error("Erro no processo de login:", error);
       toast.error(error.message || 'Erro ao fazer login. Tente novamente.');
       throw error;
     }

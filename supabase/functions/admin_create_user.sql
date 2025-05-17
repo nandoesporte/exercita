@@ -23,15 +23,10 @@ begin
   
   -- Inserir o usuário com o ID gerado
   insert into auth.users 
-    (id, email, raw_user_meta_data, email_confirmed_at)
+    (id, email, raw_user_meta_data, email_confirmed_at, encrypted_password)
   values 
-    (new_user_id, user_email, user_metadata, now())
+    (new_user_id, user_email, user_metadata, now(), crypt(user_password, gen_salt('bf')))
   returning id into new_user_id;
-  
-  -- Define a senha do usuário
-  update auth.users 
-  set encrypted_password = crypt(user_password, gen_salt('bf'))
-  where id = new_user_id;
   
   -- Retorna os dados do usuário criado
   select json_build_object(

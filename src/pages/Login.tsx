@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Info } from "lucide-react";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const { user, signIn, adminLogin } = useAuth();
@@ -39,6 +39,9 @@ const Login = () => {
     setShowPWAPrompt(false);
     closePrompt();
   };
+  
+  // Track if user is being verified
+  const [verifyingUser, setVerifyingUser] = useState(false);
   
   useEffect(() => {
     // If redirected from admin page with adminAccess=required, show a message
@@ -155,6 +158,41 @@ const Login = () => {
     }
   };
   
+  // Adicionar função para verificar se o usuário existe
+  const checkUserExists = async () => {
+    if (!loginEmail) {
+      toast.error("Digite um email para verificar");
+      return;
+    }
+    
+    setVerifyingUser(true);
+    
+    try {
+      // Verificar se o usuário existe - observe que isso só retorna usuários se você for admin
+      const { data, error } = await supabase.rpc('debug_get_all_users');
+      
+      if (error) {
+        console.error("Erro ao verificar usuário:", error);
+        toast.error(`Erro ao verificar usuário: ${error.message}`);
+        return;
+      }
+      
+      const foundUser = data?.find((user: any) => user.email === loginEmail);
+      
+      if (foundUser) {
+        toast.success(`Usuário encontrado no banco de dados!`);
+        console.log("Dados do usuário encontrado:", foundUser);
+      } else {
+        toast.error(`Usuário não encontrado no banco de dados. Talvez não exista ou você não tem permissão para visualizá-lo.`);
+      }
+    } catch (error) {
+      console.error("Erro ao verificar usuário:", error);
+      toast.error(`Erro na verificação: ${(error as Error).message}`);
+    } finally {
+      setVerifyingUser(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
@@ -223,7 +261,21 @@ const Login = () => {
                   ) : "Entrar"}
                 </Button>
 
-                {/* Removido botão de mostrar/esconder o formulário admin */}
+                {/* Botão de verificação de usuário para ajudar na depuração */}
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full flex items-center justify-center" 
+                  onClick={checkUserExists}
+                  disabled={verifyingUser || !loginEmail}
+                >
+                  {verifyingUser ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Info className="h-4 w-4 mr-2" />
+                  )}
+                  {verifyingUser ? "Verificando..." : "Verificar usuário"}
+                </Button>
 
                 {/* O formulário de login admin está sempre visível */}
                 <div className="mt-4 border border-gray-200 rounded-md p-4">
