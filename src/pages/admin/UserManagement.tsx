@@ -2,14 +2,32 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DataTable } from '@/components/ui/data-table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, UserCheck, UserX, Search, RefreshCw, AlertTriangle, Trash2, UserPlus } from 'lucide-react';
+import {
+  User,
+  UserCheck,
+  UserX,
+  Search,
+  RefreshCw,
+  AlertTriangle,
+  Trash2,
+  UserPlus,
+  Shield
+} from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 import { 
   Dialog, 
   DialogContent, 
@@ -34,10 +52,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Json } from '@/integrations/supabase/types';
+import { useAuth } from '@/hooks/useAuth';
 
 // Define types for our functions' responses
-type UserData = {
+interface UserData {
   id: string;
   email: string;
   raw_user_meta_data: {
@@ -48,7 +66,7 @@ type UserData = {
   created_at: string;
   last_sign_in_at: string | null;
   banned_until: string | null;
-};
+}
 
 // Schema for new user form
 const newUserSchema = z.object({
@@ -64,9 +82,9 @@ type NewUserFormValues = z.infer<typeof newUserSchema>;
 const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const queryClient = useQueryClient();
-  const [errorRetries, setErrorRetries] = useState(0);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
+  const { isAdmin } = useAuth();
 
   // Form for new user
   const form = useForm<NewUserFormValues>({
@@ -81,25 +99,30 @@ const UserManagement = () => {
   });
 
   // Fetch all users with their profiles and active status
-  const { data: users, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-users', errorRetries],
+  const { data: users = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['admin-users'],
     queryFn: async () => {
       try {
         console.log('Fetching users data...');
-        // Fetch users from auth.users through a custom function
+        
+        // Check admin status before proceeding
+        if (!isAdmin) {
+          throw new Error('Acesso não autorizado. Apenas administradores podem acessar esta página.');
+        }
+        
         const { data, error } = await supabase.rpc('get_all_users');
         
         if (error) {
           console.error('Error fetching users:', error);
-          toast.error('Erro ao carregar usuários');
           throw error;
         }
         
         if (!data || data.length === 0) {
           console.log('No users found or empty response');
-        } else {
-          console.log(`Loaded ${data.length} users successfully`);
+          return [];
         }
+        
+        console.log(`Loaded ${data.length} users successfully`);
         
         // Transform the data to match our UserData type
         const transformedData: UserData[] = data.map((user: any) => ({
@@ -112,28 +135,29 @@ const UserManagement = () => {
         }));
         
         return transformedData;
-      } catch (err) {
-        console.error('Unexpected error fetching users:', err);
+      } catch (err: any) {
+        console.error('Error fetching users:', err);
+        toast.error(err.message || 'Erro ao carregar usuários');
         throw err;
       }
     },
-    retry: 1,
+    enabled: isAdmin,
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
   
-  // Manual retry handler with loading state
+  // Manual retry handler
   const [isRetrying, setIsRetrying] = useState(false);
   
   const handleManualRetry = async () => {
     setIsRetrying(true);
     try {
       await refetch();
-      toast.success('Tentativa de recarregar os dados realizada');
+      toast.success('Dados recarregados com sucesso');
     } catch (err) {
-      toast.error('Falha ao tentar novamente. Por favor, aguarde um momento e tente novamente.');
+      toast.error('Falha ao recarregar os dados');
     } finally {
       setIsRetrying(false);
-      setErrorRetries(prev => prev + 1);
     }
   };
 
@@ -150,7 +174,12 @@ const UserManagement = () => {
       };
       
       try {
-        console.log('Creating user with data:', { ...userData, user_password: '********' });
+        console.log('Creating user with data:', { 
+          email: values.email,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          isAdmin: values.isAdmin
+        });
         
         // Use our custom RPC function to create the user
         const { data, error } = await supabase.rpc('admin_create_user', userData);
@@ -161,15 +190,14 @@ const UserManagement = () => {
         }
         
         console.log('User created successfully, ID:', data);
-        const userId = data;
         
         // If admin flag is set, update the profile
-        if (values.isAdmin && userId) {
-          console.log('Setting admin flag for user:', userId);
+        if (values.isAdmin && data) {
+          console.log('Setting admin flag for user:', data);
           const { error: profileError } = await supabase
             .from('profiles')
             .update({ is_admin: true })
-            .eq('id', userId);
+            .eq('id', data);
             
           if (profileError) {
             console.error('Error setting admin status:', profileError);
@@ -177,9 +205,9 @@ const UserManagement = () => {
           }
         }
         
-        return userId;
+        return data;
       } catch (error: any) {
-        console.error('Error in createUser mutation:', error);
+        console.error('Error creating user:', error);
         throw error;
       }
     },
@@ -190,7 +218,6 @@ const UserManagement = () => {
       form.reset();
     },
     onError: (error: any) => {
-      console.error('Error creating user:', error);
       toast.error(error.message || 'Erro ao criar usuário');
     }
   });
@@ -198,22 +225,29 @@ const UserManagement = () => {
   // Toggle user active status
   const toggleUserStatus = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string, isActive: boolean }) => {
-      const { error } = await supabase.rpc('toggle_user_active_status', {
-        user_id: userId,
-        is_active: isActive
-      });
-      
-      if (error) throw error;
-      
-      return { userId, isActive };
+      try {
+        const { error } = await supabase.rpc('toggle_user_active_status', {
+          user_id: userId,
+          is_active: isActive
+        });
+        
+        if (error) {
+          console.error('Error toggling user status:', error);
+          throw error;
+        }
+        
+        return { userId, isActive };
+      } catch (error: any) {
+        console.error('Error toggling user status:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success(`Usuário ${data.isActive ? 'ativado' : 'desativado'} com sucesso`);
     },
-    onError: (error) => {
-      console.error('Error toggling user status:', error);
-      toast.error('Erro ao atualizar status do usuário');
+    onError: (error: any) => {
+      toast.error(error.message || 'Erro ao atualizar status do usuário');
     }
   });
 
@@ -236,7 +270,7 @@ const UserManagement = () => {
         console.log('User deleted successfully');
         return userId;
       } catch (error: any) {
-        console.error('Error in deleteUser mutation:', error);
+        console.error('Error deleting user:', error);
         throw error;
       }
     },
@@ -246,7 +280,6 @@ const UserManagement = () => {
       setUserToDelete(null);
     },
     onError: (error: any) => {
-      console.error('Error deleting user:', error);
       toast.error(error.message || 'Erro ao excluir usuário');
     }
   });
@@ -263,6 +296,7 @@ const UserManagement = () => {
     if (!searchQuery.trim()) return users;
     
     const query = searchQuery.toLowerCase().trim();
+    
     return users.filter((user: UserData) => {
       const email = user.email?.toLowerCase() || '';
       const firstName = user.raw_user_meta_data?.first_name?.toLowerCase() || '';
@@ -273,90 +307,24 @@ const UserManagement = () => {
     });
   }, [users, searchQuery]);
 
-  const columns = [
-    {
-      accessorKey: 'user',
-      header: 'Usuário',
-      cell: ({ row }: { row: { original: UserData } }) => {
-        const user = row.original;
-        const firstName = user.raw_user_meta_data?.first_name || '';
-        const lastName = user.raw_user_meta_data?.last_name || '';
-        const email = user.email || '';
-        
-        return (
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback className="bg-fitness-green">
-                {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{firstName} {lastName}</p>
-              <p className="text-xs text-muted-foreground">{email}</p>
+  // If not an admin, show unauthorized message
+  if (!isAdmin) {
+    return (
+      <div className="p-6">
+        <Card className="bg-amber-50 border-amber-200">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center p-4">
+              <Shield className="h-12 w-12 text-amber-500 mb-2" />
+              <h2 className="text-xl font-bold text-amber-700">Acesso Restrito</h2>
+              <p className="text-sm text-amber-600">
+                Você não tem permissão para acessar esta página. Apenas administradores podem gerenciar usuários.
+              </p>
             </div>
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: 'created_at',
-      header: 'Data de Registro',
-      cell: ({ row }: { row: { original: UserData } }) => {
-        return format(new Date(row.original.created_at), 'dd/MM/yyyy');
-      }
-    },
-    {
-      accessorKey: 'last_sign_in_at',
-      header: 'Último Login',
-      cell: ({ row }: { row: { original: UserData } }) => {
-        const lastSignIn = row.original.last_sign_in_at;
-        return lastSignIn ? format(new Date(lastSignIn), 'dd/MM/yyyy HH:mm') : 'Nunca';
-      }
-    },
-    {
-      accessorKey: 'is_active',
-      header: 'Status',
-      cell: ({ row }: { row: { original: UserData } }) => {
-        const isActive = !row.original.banned_until;
-        
-        return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={isActive}
-              onCheckedChange={(checked) => {
-                toggleUserStatus.mutate({
-                  userId: row.original.id,
-                  isActive: checked
-                });
-              }}
-            />
-            <span className={isActive ? 'text-green-600' : 'text-red-600'}>
-              {isActive ? 'Ativo' : 'Desativado'}
-            </span>
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: 'actions',
-      header: 'Ações',
-      cell: ({ row }: { row: { original: UserData } }) => {        
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setUserToDelete(row.original)}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-              <span className="sr-only">Excluir Usuário</span>
-            </Button>
-          </div>
-        );
-      }
-    }
-  ];
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container p-4 max-w-7xl mx-auto">
@@ -407,116 +375,121 @@ const UserManagement = () => {
       </div>
       
       {error ? (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-          <AlertTriangle className="h-10 w-10 mx-auto text-red-500 mb-2" />
-          <p className="text-red-800 dark:text-red-200 mb-4 font-medium text-lg">
-            Ocorreu um erro ao carregar os usuários.
-          </p>
-          <p className="text-red-700 dark:text-red-300 mb-6 max-w-md mx-auto">
-            Não foi possível conectar ao servidor ou ocorreu um problema ao buscar os dados dos usuários. 
-            Por favor, tente novamente.
-          </p>
-          <Button 
-            variant="destructive" 
-            onClick={handleManualRetry}
-            disabled={isRetrying}
-            className="mx-auto flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
-            Tentar novamente
-          </Button>
-        </div>
+        <Card className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center p-4">
+              <AlertTriangle className="h-10 w-10 text-red-500 mb-2" />
+              <h2 className="text-xl font-bold text-red-700">Ocorreu um erro</h2>
+              <p className="text-sm text-red-600 mt-2">
+                {error instanceof Error ? error.message : 'Erro ao carregar os dados dos usuários.'}
+              </p>
+              <Button 
+                variant="destructive" 
+                onClick={handleManualRetry}
+                disabled={isRetrying}
+                className="mt-4 flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
+                Tentar novamente
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="bg-white dark:bg-fitness-darkGray rounded-lg shadow">
-          <DataTable
-            columns={[
-              {
-                accessorKey: 'user',
-                header: 'Usuário',
-                cell: ({ row }: { row: { original: UserData } }) => {
-                  const user = row.original;
-                  const firstName = user.raw_user_meta_data?.first_name || '';
-                  const lastName = user.raw_user_meta_data?.last_name || '';
-                  const email = user.email || '';
-                  
-                  return (
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarFallback className="bg-fitness-green">
-                          {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{firstName} {lastName}</p>
-                        <p className="text-xs text-muted-foreground">{email}</p>
-                      </div>
-                    </div>
-                  );
-                }
-              },
-              {
-                accessorKey: 'created_at',
-                header: 'Data de Registro',
-                cell: ({ row }: { row: { original: UserData } }) => {
-                  return format(new Date(row.original.created_at), 'dd/MM/yyyy');
-                }
-              },
-              {
-                accessorKey: 'last_sign_in_at',
-                header: 'Último Login',
-                cell: ({ row }: { row: { original: UserData } }) => {
-                  const lastSignIn = row.original.last_sign_in_at;
-                  return lastSignIn ? format(new Date(lastSignIn), 'dd/MM/yyyy HH:mm') : 'Nunca';
-                }
-              },
-              {
-                accessorKey: 'is_active',
-                header: 'Status',
-                cell: ({ row }: { row: { original: UserData } }) => {
-                  const isActive = !row.original.banned_until;
-                  
-                  return (
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={isActive}
-                        onCheckedChange={(checked) => {
-                          toggleUserStatus.mutate({
-                            userId: row.original.id,
-                            isActive: checked
-                          });
-                        }}
-                      />
-                      <span className={isActive ? 'text-green-600' : 'text-red-600'}>
-                        {isActive ? 'Ativo' : 'Desativado'}
-                      </span>
-                    </div>
-                  );
-                }
-              },
-              {
-                accessorKey: 'actions',
-                header: 'Ações',
-                cell: ({ row }: { row: { original: UserData } }) => {        
-                  return (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => setUserToDelete(row.original)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                        <span className="sr-only">Excluir Usuário</span>
-                      </Button>
-                    </div>
-                  );
-                }
-              }
-            ]}
-            data={filteredUsers}
-            isLoading={isLoading || isRetrying}
-          />
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Lista de Usuários</CardTitle>
+            <CardDescription>
+              {filteredUsers.length} usuário{filteredUsers.length !== 1 && 's'} encontrado{filteredUsers.length !== 1 && 's'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="w-full h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fitness-green"></div>
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="w-full py-16 text-center">
+                <p className="text-muted-foreground">Nenhum usuário encontrado.</p>
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Usuário</TableHead>
+                      <TableHead>Data de Registro</TableHead>
+                      <TableHead>Último Login</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => {
+                      const firstName = user.raw_user_meta_data?.first_name || '';
+                      const lastName = user.raw_user_meta_data?.last_name || '';
+                      const email = user.email || '';
+                      const isActive = !user.banned_until;
+                      
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarFallback className="bg-fitness-green text-white">
+                                  {firstName.charAt(0) || ''}{lastName.charAt(0) || ''}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{firstName} {lastName}</p>
+                                <p className="text-xs text-muted-foreground">{email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(user.created_at), 'dd/MM/yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            {user.last_sign_in_at 
+                              ? format(new Date(user.last_sign_in_at), 'dd/MM/yyyy HH:mm') 
+                              : 'Nunca'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={isActive}
+                                onCheckedChange={(checked) => {
+                                  toggleUserStatus.mutate({
+                                    userId: user.id,
+                                    isActive: checked
+                                  });
+                                }}
+                              />
+                              <span className={isActive ? 'text-green-600' : 'text-red-600'}>
+                                {isActive ? 'Ativo' : 'Desativado'}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setUserToDelete(user)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <span className="sr-only">Excluir Usuário</span>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Add User Dialog */}
