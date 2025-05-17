@@ -1,10 +1,11 @@
-
 import React from 'react';
-import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
+import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -29,6 +30,25 @@ const Dashboard = () => {
     },
   });
   
+  // Fetch users for the recent activity section
+  const { data: recentUsers, isLoading: usersLoading } = useQuery({
+    queryKey: ['admin-dashboard-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('debug_get_all_users');
+        
+      if (error) throw new Error(error.message);
+      
+      return (data || []).slice(0, 5).map(user => ({
+        id: user.user_id,
+        email: user.email,
+        user: (user.raw_user_meta_data?.first_name || '') + ' ' + (user.raw_user_meta_data?.last_name || ''),
+        time: user.created_at,
+        isActive: !user.banned_until,
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${user.raw_user_meta_data?.first_name || user.email}`,
+      }));
+    },
+  });
+
   // Fetch recent activity
   const { data: recentActivity, isLoading: activityLoading } = useQuery({
     queryKey: ['admin-recent-activity'],
@@ -127,52 +147,61 @@ const Dashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent User Activity */}
+        {/* Recent User Activity with User Management */}
         <div className="lg:col-span-2 bg-card rounded-lg border border-border p-4">
-          <h2 className="text-lg font-semibold mb-4">Recent User Activity</h2>
-          {activityLoading ? (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Usuários Recentes</h2>
+            <Link to="/admin/users">
+              <Button size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Gerenciar Usuários
+              </Button>
+            </Link>
+          </div>
+          
+          {usersLoading ? (
             <div className="flex items-center justify-center py-10">
               <Loader2 className="h-8 w-8 animate-spin text-fitness-green mr-2" />
-              <span>Loading activity...</span>
+              <span>Carregando usuários...</span>
             </div>
-          ) : recentActivity && recentActivity.length > 0 ? (
+          ) : recentUsers && recentUsers.length > 0 ? (
             <div className="space-y-4">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center p-3 hover:bg-muted rounded-lg transition-colors">
+              {recentUsers.map((user) => (
+                <div key={user.id} className="flex items-center p-3 hover:bg-muted rounded-lg transition-colors">
                   <div className="h-10 w-10 rounded-full overflow-hidden mr-3">
                     <img
-                      src={activity.avatar}
-                      alt={activity.user}
+                      src={user.avatar}
+                      alt={user.user || user.email}
                       className="h-full w-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${activity.user}`;
+                        (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`;
                       }}
                     />
                   </div>
                   <div className="flex-grow">
-                    <h3 className="font-medium">{activity.user}</h3>
+                    <h3 className="font-medium">{user.user || 'Novo Usuário'}</h3>
                     <div className="text-sm text-muted-foreground flex flex-col sm:flex-row sm:items-center gap-1">
-                      <span>{activity.action}</span>
+                      <span>{user.email}</span>
                       <span className="hidden sm:inline">•</span>
                       <span>
-                        {activity.time ? formatDistanceToNow(new Date(activity.time), { addSuffix: true }) : 'Recently'}
+                        {user.time ? formatDistanceToNow(new Date(user.time), { addSuffix: true, locale: ptBR }) : 'Recentemente'}
                       </span>
                     </div>
                   </div>
-                  <button className="text-sm text-fitness-green hover:underline">
-                    View
-                  </button>
+                  <div className={`px-2 py-1 rounded-full text-xs ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {user.isActive ? 'Ativo' : 'Inativo'}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="py-10 text-center text-muted-foreground">
-              No recent activity found.
+              Nenhum usuário encontrado.
             </div>
           )}
-          <button className="w-full text-center text-fitness-green hover:underline py-2 mt-2 text-sm">
-            View All Activity
-          </button>
+          <Link to="/admin/users" className="block w-full text-center text-fitness-green hover:underline py-2 mt-2 text-sm">
+            Ver Todos os Usuários
+          </Link>
         </div>
         
         {/* Quick Actions */}
@@ -183,30 +212,30 @@ const Dashboard = () => {
               to="/admin/workouts/new" 
               className="block w-full bg-fitness-green text-white py-2 rounded-lg hover:bg-fitness-darkGreen transition-colors text-center"
             >
-              Add New Workout
+              Adicionar Nova Treinamento
             </Link>
             <button className="w-full bg-secondary text-foreground py-2 rounded-lg hover:bg-muted transition-colors">
-              Manage Appointments
+              Gerenciar Agendamentos
             </button>
             <button className="w-full bg-secondary text-foreground py-2 rounded-lg hover:bg-muted transition-colors">
-              Create Blog Post
+              Criar Post de Blog
             </button>
             <button className="w-full bg-secondary text-foreground py-2 rounded-lg hover:bg-muted transition-colors">
-              View Reports
+              Ver Relatórios
             </button>
           </div>
           
           {/* Recent Notifications */}
           <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-3">Recent Notifications</h2>
+            <h2 className="text-lg font-semibold mb-3">Notificações Recentes</h2>
             <div className="space-y-3">
               <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium">System Maintenance</h4>
-                <p className="text-sm text-muted-foreground">Scheduled for May 15, 2025 at 2:00 AM</p>
+                <h4 className="font-medium">Manutenção do Sistema</h4>
+                <p className="text-sm text-muted-foreground">Programada para 15 de Maio, 2025 às 2:00 AM</p>
               </div>
               <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium">New Feature Available</h4>
-                <p className="text-sm text-muted-foreground">Video workouts now available</p>
+                <h4 className="font-medium">Nova Funcionalidade Disponível</h4>
+                <p className="text-sm text-muted-foreground">Treinos de vídeo agora disponíveis</p>
               </div>
             </div>
           </div>

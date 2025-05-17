@@ -44,6 +44,7 @@ import ScheduleManagement from "@/pages/admin/ScheduleManagement";
 import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
+import UserManagement from "@/pages/admin/UserManagement"; // Import the UserManagement component
 import AppointmentManagement from "@/pages/admin/AppointmentManagement"; // Import the new AppointmentManagement component
 import RLSChecker from './pages/admin/RLSChecker'; // Import the new RLS checker page
 
@@ -106,6 +107,8 @@ const App = () => {
           <Route path="appointments" element={<AppointmentManagement />} />
           {/* Payment */}
           <Route path="payment-methods" element={<PaymentMethodManagement />} />
+          {/* Users */}
+          <Route path="users" element={<UserManagement />} />
           {/* RLS Checker */}
           <Route path="rls-checker" element={<RLSChecker />} />
         </Route>
