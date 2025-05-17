@@ -8,8 +8,7 @@ import {
   ImageIcon, 
   Clock, 
   CalendarIcon, 
-  CreditCard, 
-  Users, 
+  CreditCard,
   Shield,
   Library
 } from 'lucide-react';
@@ -143,18 +142,6 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
             >
               <CreditCard className="h-4 w-4" />
               Métodos de Pagamento
-            </NavLink>
-            
-            <NavLink
-              to="/admin/users"
-              className={({ isActive }) => 
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
-                ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
-              }
-              onClick={handleClick}
-            >
-              <Users className="h-4 w-4" />
-              Usuários
             </NavLink>
             
             <NavLink
