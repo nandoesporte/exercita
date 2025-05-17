@@ -26,11 +26,10 @@ type NavItemProps = {
   to: string;
   icon: React.ElementType;
   label: string;
-  badge?: string;
   onClick?: () => void;
 }
 
-const NavItem = ({ to, icon: Icon, label, badge, onClick }: NavItemProps) => {
+const NavItem = ({ to, icon: Icon, label, onClick }: NavItemProps) => {
   return (
     <NavLink
       to={to}
@@ -44,11 +43,6 @@ const NavItem = ({ to, icon: Icon, label, badge, onClick }: NavItemProps) => {
         <Icon className="h-4 w-4" />
         <span>{label}</span>
       </div>
-      {badge && (
-        <Badge variant="outline" className="text-xs bg-fitness-green/10 text-fitness-green">
-          {badge}
-        </Badge>
-      )}
       <ChevronRight className="h-4 w-4 ml-auto opacity-50" />
     </NavLink>
   );
@@ -70,13 +64,13 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
     {
       title: "Funcionalidades",
       items: [
-        { to: "/admin/workouts", icon: DumbbellIcon, label: "Treinos", badge: "5" },
+        { to: "/admin/workouts", icon: DumbbellIcon, label: "Treinos" },
         { to: "/admin/exercises", icon: DumbbellIcon, label: "Exercícios" },
         { to: "/admin/exercises/library", icon: Library, label: "Biblioteca de Exercícios" },
         { to: "/admin/products", icon: Gift, label: "Produtos" },
         { to: "/admin/photos", icon: ImageIcon, label: "Fotos da Academia" },
         { to: "/admin/schedule", icon: Clock, label: "Agenda" },
-        { to: "/admin/appointments", icon: CalendarIcon, label: "Consultas", badge: "3" },
+        { to: "/admin/appointments", icon: CalendarIcon, label: "Consultas" },
         { to: "/admin/payment-methods", icon: CreditCard, label: "Métodos de Pagamento" },
         { to: "/admin/users", icon: Users, label: "Usuários" },
         { to: "/admin/rls-checker", icon: Shield, label: "Verificador de RLS" }
@@ -98,7 +92,6 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
                   to={item.to} 
                   icon={item.icon} 
                   label={item.label} 
-                  badge={item.badge}
                   onClick={handleClick}
                 />
               ))}

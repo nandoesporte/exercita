@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus, Gift, ImageIcon, CalendarIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -33,17 +34,46 @@ const Dashboard = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const isMobile = useIsMobile();
 
-  // Fetch statistics
+  // Fetch statistics including real appointment data
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: async () => {
-      // Mock stats data for now - would be replaced with an actual API call
+      // Get users count
+      const { data: usersData, error: usersError } = await supabase.rpc('debug_get_all_users');
+      if (usersError) console.error("Error fetching users:", usersError);
+      
+      // Get workouts count
+      const { count: workoutsCount, error: workoutsError } = await supabase
+        .from('workouts')
+        .select('*', { count: 'exact', head: true });
+      if (workoutsError) console.error("Error fetching workouts:", workoutsError);
+      
+      // Get appointments count
+      const { count: appointmentsCount, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true });
+      if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
+      
       return {
-        users: 42,
-        workouts: 15,
-        appointments: 8,
-        revenue: 12540
+        users: usersData?.length || 0,
+        workouts: workoutsCount || 0,
+        appointments: appointmentsCount || 0
       };
+    },
+  });
+
+  // Fetch appointments for display
+  const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery({
+    queryKey: ['admin-dashboard-appointments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('appointment_date', { ascending: true })
+        .limit(3);
+      
+      if (error) throw error;
+      return data || [];
     },
   });
 
@@ -199,15 +229,7 @@ const Dashboard = () => {
       trend: 'up', 
       icon: CalendarCheck,
       isLoading: statsLoading
-    },
-    { 
-      title: 'Faturamento', 
-      value: 'R$ 12.540', 
-      change: '-2%', 
-      trend: 'down', 
-      icon: BarChart3,
-      isLoading: false
-    },
+    }
   ];
 
   return (
@@ -302,8 +324,8 @@ const Dashboard = () => {
         </Dialog>
       </div>
       
-      {/* Stats Cards - Responsive Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Stats Cards - Responsive Grid (without revenue) */}
+      <div className="grid grid-cols-3 gap-3">
         {stats.map((stat) => (
           <div key={stat.title} className="bg-card rounded-lg border border-border p-3">
             <div className="flex items-center justify-between">
@@ -416,7 +438,7 @@ const Dashboard = () => {
           </Link>
         </div>
         
-        {/* Quick Actions - Mobile Optimized */}
+        {/* Quick Actions and Recent Appointments - Mobile Optimized */}
         <div className="bg-card rounded-lg border border-border p-4">
           <h2 className="text-base font-semibold mb-3">Ações Rápidas</h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-2">
@@ -447,18 +469,36 @@ const Dashboard = () => {
             </Link>
           </div>
           
-          {/* Recent Notifications - Mobile Friendly */}
+          {/* Recent Appointments */}
           <div className="mt-4">
-            <h2 className="text-base font-semibold mb-2">Notificações</h2>
+            <h2 className="text-base font-semibold mb-2">Consultas Recentes</h2>
             <div className="space-y-2">
-              <div className="p-2 bg-muted rounded-lg">
-                <h4 className="font-medium text-sm">Manutenção do Sistema</h4>
-                <p className="text-xs text-muted-foreground">15/05/2025 às 2:00</p>
-              </div>
-              <div className="p-2 bg-muted rounded-lg">
-                <h4 className="font-medium text-sm">Nova Funcionalidade</h4>
-                <p className="text-xs text-muted-foreground">Treinos em vídeo disponíveis</p>
-              </div>
+              {appointmentsLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin text-fitness-green mr-2" />
+                  <span className="text-sm">Carregando...</span>
+                </div>
+              ) : appointmentsData && appointmentsData.length > 0 ? (
+                appointmentsData.map((appointment: any) => (
+                  <div key={appointment.id} className="p-2 bg-muted rounded-lg">
+                    <h4 className="font-medium text-sm">{appointment.title}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(parseISO(appointment.appointment_date), { 
+                        addSuffix: true, 
+                        locale: ptBR 
+                      })}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-2">
+                  Nenhuma consulta encontrada
+                </div>
+              )}
+              
+              <Link to="/admin/appointments" className="block w-full text-center text-fitness-green hover:underline py-2 mt-2 text-sm">
+                Gerenciar Consultas
+              </Link>
             </div>
           </div>
         </div>

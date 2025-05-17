@@ -19,6 +19,7 @@ import Store from "@/pages/Store";
 import ProductDetail from "@/pages/ProductDetail";
 import Schedule from "@/pages/Schedule";
 import GymPhotos from "@/components/GymPhotos"; // Import the new GymPhotos component
+import Appointments from "@/pages/Appointments";
 
 // Profile related pages
 import AccountInfo from "@/pages/AccountInfo";
@@ -45,7 +46,7 @@ import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
 import UserManagement from "@/pages/admin/UserManagement"; // Re-import the UserManagement component
-import AppointmentManagement from "@/pages/admin/AppointmentManagement"; 
+import AppointmentManagement from "@/pages/admin/AppointmentManagement";
 import RLSChecker from './pages/admin/RLSChecker';
 
 const App = () => {
@@ -73,6 +74,7 @@ const App = () => {
           <Route path="/store/:id" element={<ProductDetail />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/gym-photos" element={<GymPhotos />} />
+          <Route path="/appointments" element={<Appointments />} />
           
           {/* Profile related pages */}
           <Route path="/account" element={<AccountInfo />} />
