@@ -670,6 +670,14 @@ export type Database = {
           banned_until: string
         }[]
       }
+      get_tables_without_rls: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          has_rls: boolean
+          row_count: number
+        }[]
+      }
       handle_kiwify_webhook: {
         Args: { payload: Json }
         Returns: Json

@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 interface TableData {
   table_name: string;
   has_rls: boolean;
-  row_count: number;
+  row_count: bigint;
 }
 
 // Component for showing tables without RLS
