@@ -19,9 +19,6 @@ const Login = () => {
   const searchParams = new URLSearchParams(location.search);
   const needsAdminAccess = searchParams.get('adminAccess') === 'required';
   
-  // Show admin login automatically if redirected from admin page
-  const [showAdminLogin, setShowAdminLogin] = useState(needsAdminAccess);
-  
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -46,7 +43,7 @@ const Login = () => {
   useEffect(() => {
     // If redirected from admin page with adminAccess=required, show a message
     if (needsAdminAccess) {
-      setShowAdminLogin(true);
+      toast.info("Acesso administrativo necessário. Por favor, faça login.");
     }
   }, [needsAdminAccess]);
   
@@ -226,49 +223,40 @@ const Login = () => {
                   ) : "Entrar"}
                 </Button>
 
-                <div className="text-center">
-                  <button 
-                    type="button" 
-                    onClick={() => setShowAdminLogin(!showAdminLogin)}
-                    className="text-sm text-fitness-green hover:underline"
-                  >
-                    {showAdminLogin ? "Ocultar Login Admin" : "Login Admin"}
-                  </button>
-                </div>
+                {/* Removido botão de mostrar/esconder o formulário admin */}
 
-                {showAdminLogin && (
-                  <div className="mt-4 border border-gray-200 rounded-md p-4">
-                    <form onSubmit={handleAdminLogin}>
-                      <div className="space-y-4">
-                        <div className="flex items-center text-amber-600 mb-2">
-                          <AlertTriangle size={16} className="mr-2" />
-                          <span className="text-sm">Acesso administrativo apenas</span>
-                        </div>
-                        <div>
-                          <label htmlFor="admin-password" className="block text-sm font-medium mb-1">
-                            Senha de Administrador
-                          </label>
-                          <Input
-                            id="admin-password"
-                            type="password"
-                            value={adminPassword}
-                            onChange={(e) => setAdminPassword(e.target.value)}
-                            placeholder="Senha de administrador"
-                            required
-                          />
-                        </div>
-                        <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Verificando...
-                            </>
-                          ) : "Acessar Admin"}
-                        </Button>
+                {/* O formulário de login admin está sempre visível */}
+                <div className="mt-4 border border-gray-200 rounded-md p-4">
+                  <form onSubmit={handleAdminLogin}>
+                    <div className="space-y-4">
+                      <div className="flex items-center text-amber-600 mb-2">
+                        <AlertTriangle size={16} className="mr-2" />
+                        <span className="text-sm">Acesso administrativo apenas</span>
                       </div>
-                    </form>
-                  </div>
-                )}
+                      <div>
+                        <label htmlFor="admin-password" className="block text-sm font-medium mb-1">
+                          Senha de Administrador
+                        </label>
+                        <Input
+                          id="admin-password"
+                          type="password"
+                          value={adminPassword}
+                          onChange={(e) => setAdminPassword(e.target.value)}
+                          placeholder="Senha de administrador"
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Verificando...
+                          </>
+                        ) : "Acessar Admin"}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </form>
           </CardContent>
