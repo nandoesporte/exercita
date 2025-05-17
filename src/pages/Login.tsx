@@ -38,7 +38,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
   
   // Define the login form
   const loginForm = useForm<LoginFormValues>({
@@ -84,10 +83,11 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      console.log("Attempting login with:", values.email);
       await signIn(values.email, values.password);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error details:", error);
-      // Form is already handling validation errors
+      toast.error(error.message || "Erro ao fazer login");
     } finally {
       setIsLoading(false);
     }
@@ -106,9 +106,9 @@ const Login = () => {
       await signUp(values.email, values.password, metadata);
       toast.success("Conta criada com sucesso! Você já pode entrar.");
       loginForm.setValue("email", values.email);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      // Form is already handling validation errors
+      toast.error(error.message || "Erro ao criar conta");
     } finally {
       setIsLoading(false);
     }

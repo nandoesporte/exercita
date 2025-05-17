@@ -18,17 +18,21 @@ begin
     raise exception 'Only administrators can create users';
   end if;
 
-  -- Gerar um UUID para o usuário antes da inserção
+  -- Generate UUID for the user before insertion
   new_user_id := gen_random_uuid();
   
-  -- Inserir o usuário com o ID gerado
+  -- Insert the user with the generated ID
   insert into auth.users 
-    (id, email, raw_user_meta_data, email_confirmed_at, encrypted_password)
+    (id, email, raw_user_meta_data, email_confirmed_at)
   values 
-    (new_user_id, user_email, user_metadata, now(), crypt(user_password, gen_salt('bf')))
-  returning id into new_user_id;
+    (new_user_id, user_email, user_metadata, now());
   
-  -- Retorna os dados do usuário criado
+  -- Set the user's password explicitly with proper encryption
+  update auth.users 
+  set encrypted_password = crypt(user_password, gen_salt('bf'))
+  where id = new_user_id;
+  
+  -- Return the created user data
   select json_build_object(
     'id', new_user_id,
     'email', user_email,

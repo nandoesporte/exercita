@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -135,18 +136,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting to sign up with:", email, "and metadata:", metadata);
+      
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: metadata,
+          emailRedirectTo: window.location.origin,
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("SignUp error:", error);
+        throw error;
+      }
       
-      toast.success('Conta criada! Por favor, verifique seu email para confirmar sua conta.');
+      console.log("SignUp result:", data);
+      
+      if (data?.user) {
+        toast.success('Conta criada! Verifique seu email para confirmar.');
+      } else {
+        toast.info('Conta criada! Por favor, faça o login.');
+      }
     } catch (error: any) {
+      console.error("Exception during signup:", error);
       toast.error(error.message || 'Ocorreu um erro durante o cadastro');
       throw error;
     }

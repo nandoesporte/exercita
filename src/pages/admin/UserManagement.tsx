@@ -101,7 +101,7 @@ const UserManagement = () => {
       });
       
       try {
-        // Usando a função admin_create_user RPC atualizada
+        // Using the updated admin_create_user RPC function
         const { data, error } = await supabase.rpc('admin_create_user', {
           user_email: userData.email,
           user_password: userData.password,
