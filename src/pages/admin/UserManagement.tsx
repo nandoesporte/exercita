@@ -28,12 +28,13 @@ const UserManagement = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; user: UserData | null }>({ 
     show: false, 
     user: null 
   });
   
-  // Campos para novo usuário
+  // Fields for new user
   const [newUser, setNewUser] = useState({
     email: '',
     password: '',
@@ -41,7 +42,7 @@ const UserManagement = () => {
     lastName: ''
   });
 
-  // Carregar usuários
+  // Load users
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
@@ -58,7 +59,7 @@ const UserManagement = () => {
     }
   };
 
-  // Toggle do status do usuário (ativar/desativar)
+  // Toggle user status (activate/deactivate)
   const toggleUserStatus = async (userId: string, currentlyBanned: boolean) => {
     try {
       const { error } = await supabase.rpc(
@@ -68,7 +69,7 @@ const UserManagement = () => {
       
       if (error) throw error;
       
-      // Atualizar lista após toggle
+      // Update list after toggle
       toast.success(currentlyBanned 
         ? 'Usuário ativado com sucesso' 
         : 'Usuário desativado com sucesso'
@@ -80,7 +81,7 @@ const UserManagement = () => {
     }
   };
 
-  // Excluir usuário
+  // Delete user
   const deleteUser = async (userId: string) => {
     try {
       const { error } = await supabase.rpc(
@@ -99,7 +100,7 @@ const UserManagement = () => {
     }
   };
 
-  // Criar novo usuário
+  // Create new user
   const createUser = async () => {
     if (!newUser.email || !newUser.password) {
       toast.error('Email e senha são obrigatórios');
@@ -107,8 +108,10 @@ const UserManagement = () => {
     }
 
     try {
-      // Console log to debug
-      console.log('Creating user with:', {
+      setIsCreatingUser(true);
+      
+      // Debug data for user creation request
+      console.log('Dados para criação de usuário:', {
         user_email: newUser.email,
         user_password: newUser.password,
         user_metadata: {
@@ -129,9 +132,12 @@ const UserManagement = () => {
         }
       );
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na resposta:', error);
+        throw error;
+      }
       
-      console.log('User creation response:', data);
+      console.log('Resposta da criação de usuário:', data);
       
       toast.success('Usuário criado com sucesso');
       setShowCreateDialog(false);
@@ -139,11 +145,13 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error: any) {
       console.error('Erro ao criar usuário:', error);
-      toast.error(`Erro ao criar usuário: ${error.message}`);
+      toast.error(`Erro ao criar usuário: ${error.message || 'Ocorreu um erro desconhecido'}`);
+    } finally {
+      setIsCreatingUser(false);
     }
   };
 
-  // Carregar usuários ao iniciar
+  // Load users on startup
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -247,7 +255,7 @@ const UserManagement = () => {
         isLoading={isLoading} 
       />
 
-      {/* Diálogo para criar usuário */}
+      {/* Dialog for creating a user */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
@@ -294,13 +302,15 @@ const UserManagement = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancelar</Button>
-            <Button onClick={createUser}>Criar Usuário</Button>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} disabled={isCreatingUser}>Cancelar</Button>
+            <Button onClick={createUser} disabled={isCreatingUser}>
+              {isCreatingUser ? 'Criando...' : 'Criar Usuário'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Diálogo para confirmar exclusão */}
+      {/* Confirmation dialog for deletion */}
       <Dialog open={confirmDelete.show} onOpenChange={(open) => !open && setConfirmDelete({ show: false, user: null })}>
         <DialogContent>
           <DialogHeader>
