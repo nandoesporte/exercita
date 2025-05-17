@@ -12,7 +12,7 @@ import { CheckCircle, XCircle, Trash2, UserPlus, Lock, Unlock, RefreshCw } from 
 import { Separator } from '@/components/ui/separator';
 
 type UserData = {
-  id: string;
+  user_id: string; // Atualizado para usar user_id em vez de id
   email: string;
   raw_user_meta_data: {
     first_name?: string;
@@ -46,8 +46,8 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      // Use .rpc() com seu nome correto
-      const { data, error } = await supabase.rpc('get_all_users');
+      // Usar a nova função de debug
+      const { data, error } = await supabase.rpc('debug_get_all_users');
       
       if (error) {
         console.error('Erro ao carregar usuários:', error);
@@ -216,7 +216,7 @@ const UserManagement = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toggleUserStatus(row.original.id, banned)}
+              onClick={() => toggleUserStatus(row.original.user_id, banned)}
               title={banned ? "Ativar usuário" : "Desativar usuário"}
             >
               {banned ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
@@ -332,7 +332,7 @@ const UserManagement = () => {
             <Button variant="outline" onClick={() => setConfirmDelete({ show: false, user: null })}>Cancelar</Button>
             <Button 
               variant="destructive" 
-              onClick={() => confirmDelete.user && deleteUser(confirmDelete.user.id)}
+              onClick={() => confirmDelete.user && deleteUser(confirmDelete.user.user_id)}
             >
               Excluir
             </Button>

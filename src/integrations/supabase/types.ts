@@ -659,6 +659,17 @@ export type Database = {
         Args: { user_id: string }
         Returns: undefined
       }
+      debug_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          email: string
+          raw_user_meta_data: Json
+          created_at: string
+          last_sign_in_at: string
+          banned_until: string
+        }[]
+      }
       get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
