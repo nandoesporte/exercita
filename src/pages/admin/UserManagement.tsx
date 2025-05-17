@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -100,7 +99,7 @@ const UserManagement = () => {
     }
   };
 
-  // Create new user
+  // Create new user - updated to work with the fixed backend function
   const createUser = async () => {
     if (!newUser.email || !newUser.password) {
       toast.error('Email e senha são obrigatórios');
@@ -110,14 +109,15 @@ const UserManagement = () => {
     try {
       setIsCreatingUser(true);
       
-      // Debug data for user creation request
-      console.log('Dados para criação de usuário:', {
+      // Construct the user metadata
+      const userMetadata = {
+        first_name: newUser.firstName,
+        last_name: newUser.lastName
+      };
+      
+      console.log('Criando usuário com os dados:', {
         user_email: newUser.email,
-        user_password: newUser.password,
-        user_metadata: {
-          first_name: newUser.firstName,
-          last_name: newUser.lastName
-        }
+        user_metadata: userMetadata
       });
       
       const { data, error } = await supabase.rpc(
@@ -125,10 +125,7 @@ const UserManagement = () => {
         {
           user_email: newUser.email,
           user_password: newUser.password,
-          user_metadata: {
-            first_name: newUser.firstName,
-            last_name: newUser.lastName
-          }
+          user_metadata: userMetadata
         }
       );
       
