@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,6 +46,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
+      // Use .rpc() com seu nome correto
       const { data, error } = await supabase.rpc('get_all_users');
       
       if (error) {
