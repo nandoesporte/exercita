@@ -108,12 +108,26 @@ const Login = () => {
     
     try {
       console.log('Attempting login with:', loginEmail);
+      
+      // Add extra debugging to check credentials
+      console.log('Login credentials:', { 
+        email: loginEmail, 
+        passwordLength: loginPassword.length 
+      });
+      
       await signIn(loginEmail, loginPassword);
       console.log('Login successful, setting loginSuccess state');
       // Mark login as successful to trigger PWA prompt
       setLoginSuccess(true);
     } catch (error) {
       console.error("Login error:", error);
+      
+      // Show more specific error message
+      if ((error as Error).message.includes('Invalid login credentials')) {
+        toast.error("Credenciais inválidas. Por favor, verifique seu email e senha.");
+      } else {
+        toast.error(`Erro ao fazer login: ${(error as Error).message}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +144,7 @@ const Login = () => {
       setLoginSuccess(true);
     } catch (error) {
       console.error("Admin login error:", error);
+      toast.error(`Erro de login admin: ${(error as Error).message}`);
     } finally {
       setIsLoading(false);
     }
@@ -175,6 +190,7 @@ const Login = () => {
                     onChange={(e) => setLoginEmail(e.target.value)}
                     placeholder="nome@exemplo.com"
                     required
+                    autoComplete="email"
                   />
                 </div>
                 
@@ -189,6 +205,7 @@ const Login = () => {
                     onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="••••••••"
                     required
+                    autoComplete="current-password"
                   />
                 </div>
                 

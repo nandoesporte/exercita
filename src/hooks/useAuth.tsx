@@ -157,12 +157,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to sign in:", email);
       
+      // Add extra debugging logging to check the login attempt
+      console.log("Login credentials:", { 
+        email, 
+        passwordLength: password.length 
+      });
+      
+      // Attempt to sign in with credential validation first
+      const { error: validationError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (validationError) {
+        console.error("Sign in validation error:", validationError);
+        throw validationError;
+      }
+      
+      // If validation passes, perform the actual sign in
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Sign in error:", error);
+        throw error;
+      }
       
       console.log("Sign in successful:", { 
         user: data.user?.email,
