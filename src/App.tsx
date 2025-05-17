@@ -44,9 +44,9 @@ import ScheduleManagement from "@/pages/admin/ScheduleManagement";
 import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
-import UserManagement from "@/pages/admin/UserManagement"; // Import the UserManagement component
-import AppointmentManagement from "@/pages/admin/AppointmentManagement"; // Import the new AppointmentManagement component
-import RLSChecker from './pages/admin/RLSChecker'; // Import the new RLS checker page
+import UserManagement from "@/pages/admin/UserManagement"; // Re-import the UserManagement component
+import AppointmentManagement from "@/pages/admin/AppointmentManagement"; 
+import RLSChecker from './pages/admin/RLSChecker';
 
 const App = () => {
   console.log("App component rendering");
