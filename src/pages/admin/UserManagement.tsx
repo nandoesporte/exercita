@@ -91,10 +91,14 @@ const UserManagement = () => {
     },
   });
 
-  // Create user mutation - Using admin_create_user RPC function instead of auth.admin API
+  // Create user mutation - Updated with improved error handling
   const createUserMutation = useMutation({
     mutationFn: async (userData: FormValues) => {
-      console.log("Creating user with:", userData.email);
+      console.log("Creating user with:", userData.email, "and metadata:", {
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+      });
+      
       // Using the admin_create_user RPC function which runs with elevated privileges
       const { data, error } = await supabase.rpc('admin_create_user', {
         user_email: userData.email,
@@ -116,10 +120,11 @@ const UserManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setIsCreateUserOpen(false);
-      toast.success('Usuário criado com sucesso!');
+      toast.success('Usuário criado com sucesso! O usuário agora pode fazer login com as credenciais fornecidas.');
       form.reset();
     },
     onError: (error: Error) => {
+      console.error("User creation failed:", error);
       toast.error(`Erro ao criar usuário: ${error.message}`);
     },
   });
@@ -298,7 +303,7 @@ const UserManagement = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="email@exemplo.com" {...field} />
+                        <Input placeholder="email@exemplo.com" type="email" autoComplete="email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -311,7 +316,7 @@ const UserManagement = () => {
                     <FormItem>
                       <FormLabel>Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
+                        <Input type="password" placeholder="******" autoComplete="new-password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
