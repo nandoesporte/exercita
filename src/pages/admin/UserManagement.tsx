@@ -91,12 +91,15 @@ const UserManagement = () => {
     },
   });
 
-  // Create user mutation
+  // Create user mutation - Fixed to ensure proper user creation with working login
   const createUserMutation = useMutation({
     mutationFn: async (userData: FormValues) => {
-      const { data, error } = await supabase.rpc('admin_create_user', {
-        user_email: userData.email,
-        user_password: userData.password,
+      // Using signUp method instead of direct admin_create_user RPC
+      // This ensures the password is properly hashed and the user can login
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: userData.email,
+        password: userData.password,
+        email_confirm: true,
         user_metadata: {
           first_name: userData.firstName,
           last_name: userData.lastName,
