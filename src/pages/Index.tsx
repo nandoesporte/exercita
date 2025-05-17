@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { 
@@ -18,7 +18,7 @@ import { WorkoutCard } from '@/components/ui/workout-card';
 import { useStore } from '@/hooks/useStore';
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { profile } = useProfile();
   const { data: workouts, isLoading } = useWorkouts();
   const { featuredProducts, isLoadingFeaturedProducts } = useStore();
@@ -48,6 +48,22 @@ const Index = () => {
         <p className="text-xl text-gray-200">
           Seus planos personalizados estão prontos
         </p>
+        
+        {/* Admin button - only visible for admin users on mobile */}
+        {isAdmin && (
+          <div className="mt-4 md:hidden">
+            <Button 
+              variant="outline" 
+              className="bg-fitness-dark border-fitness-orange text-fitness-orange hover:bg-fitness-darkGray"
+              asChild
+            >
+              <Link to="/admin">
+                <Settings className="mr-2 h-5 w-5" />
+                Área do Personal
+              </Link>
+            </Button>
+          </div>
+        )}
       </section>
       
       {/* Card Principal de Treino */}
