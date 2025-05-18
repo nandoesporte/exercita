@@ -75,7 +75,7 @@ const GymPhotoManagement = () => {
 
         <Alert className="mb-6 bg-blue-50">
           <Info className="h-4 w-4" />
-          <AlertDescription className="ml-2">
+          <AlertDescription>
             Analise as fotos dos usuários para detectar equipamentos e gerar treinos personalizados.
           </AlertDescription>
         </Alert>
