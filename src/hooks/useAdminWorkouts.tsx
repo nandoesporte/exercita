@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -601,38 +602,84 @@ export function useAdminWorkouts() {
 
       // Process each target day
       for (const targetDay of targetDaysOfWeek) {
-        // Get current max position in target day
-        const { data: maxPositionData, error: maxPosError } = await supabase
-          .from('workout_exercises')
-          .select('order_position')
-          .eq('workout_id', workoutId)
-          .eq('day_of_week', targetDay)
-          .order('order_position', { ascending: false })
-          .limit(1);
+        try {
+          // First, check if we have any exercises that would create a conflict
+          const { data: existingExercises, error: existingError } = await supabase
+            .from('workout_exercises')
+            .select('exercise_id, order_position')
+            .eq('workout_id', workoutId)
+            .eq('day_of_week', targetDay);
+            
+          if (existingError) {
+            throw new Error(`Error checking existing exercises: ${existingError.message}`);
+          }
+          
+          // Map of exercise_id to existing order positions to avoid conflicts
+          const existingMap = new Map();
+          existingExercises?.forEach(ex => {
+            existingMap.set(ex.exercise_id, true);
+          });
+          
+          // Get the highest position number in the target day
+          const { data: maxPositionData, error: maxPosError } = await supabase
+            .from('workout_exercises')
+            .select('order_position')
+            .eq('workout_id', workoutId)
+            .eq('day_of_week', targetDay)
+            .order('order_position', { ascending: false })
+            .limit(1);
 
-        if (maxPosError) {
-          throw new Error(`Error getting max position: ${maxPosError.message}`);
-        }
+          if (maxPosError) {
+            throw new Error(`Error getting max position: ${maxPosError.message}`);
+          }
 
-        const startPosition = maxPositionData?.length > 0 ? (maxPositionData[0].order_position || 0) + 1 : 1;
+          const startPosition = maxPositionData?.length > 0 ? (maxPositionData[0].order_position || 0) + 1 : 1;
 
-        // Prepare exercises for the target day
-        const exercisesToInsert = sourceExercises.map((exercise, index) => {
-          const { id, created_at, updated_at, ...exerciseData } = exercise;
-          return {
-            ...exerciseData,
-            day_of_week: targetDay,
-            order_position: startPosition + index,
-          };
-        });
+          // Prepare exercises for the target day
+          const exercisesToInsert = sourceExercises
+            .filter(exercise => {
+              // Filter out section titles that might already exist
+              if (exercise.is_title_section && exercise.section_title) {
+                const existingTitle = existingExercises?.find(ex => 
+                  ex.is_title_section && ex.section_title === exercise.section_title
+                );
+                return !existingTitle;
+              }
+              
+              // If it's a regular exercise with an exercise_id, check for conflicts
+              if (exercise.exercise_id && existingMap.has(exercise.exercise_id)) {
+                // Skip this exercise to avoid conflict
+                console.log(`Skipping exercise_id ${exercise.exercise_id} as it already exists in target day`);
+                return false;
+              }
+              
+              return true;
+            })
+            .map((exercise, index) => {
+              const { id, created_at, updated_at, ...exerciseData } = exercise;
+              return {
+                ...exerciseData,
+                day_of_week: targetDay,
+                order_position: startPosition + index,
+              };
+            });
 
-        // Insert exercises into target day
-        const { error: insertError } = await supabase
-          .from('workout_exercises')
-          .insert(exercisesToInsert);
+          if (exercisesToInsert.length === 0) {
+            console.log(`No new exercises to insert for ${targetDay}`);
+            continue;
+          }
 
-        if (insertError) {
-          throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
+          // Insert exercises into target day
+          const { error: insertError } = await supabase
+            .from('workout_exercises')
+            .insert(exercisesToInsert);
+
+          if (insertError) {
+            throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
+          }
+        } catch (error) {
+          console.error(`Error processing day ${targetDay}:`, error);
+          throw error;
         }
       }
     },
