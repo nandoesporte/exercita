@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings, Calendar } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
-import { useWorkouts } from '@/hooks/useWorkouts';
+import { useRecommendedWorkoutsForUser } from '@/hooks/useWorkouts';
 import { 
   Carousel,
   CarouselContent,
@@ -23,17 +23,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const { profile } = useProfile();
-  const { data: workouts, isLoading } = useWorkouts();
+  const userId = user?.id;
+  const { data: userWorkouts, isLoading } = useRecommendedWorkoutsForUser(userId);
   const { data: workoutHistory } = useWorkoutHistory();
   const { featuredProducts, isLoadingFeaturedProducts } = useStore();
   
-  // Verificar se o usuário já tem algum treino atribuído a ele
-  const hasAssignedWorkout = workoutHistory && workoutHistory.length > 0;
+  // Debug logs
+  console.log('Current userId:', userId);
+  console.log('User workouts on home page:', userWorkouts);
   
-  // Obter o treino recomendado com base no nível de condicionamento físico do usuário ou no primeiro treino em destaque
-  const recommendedWorkout = workouts?.find(workout => 
-    workout.level === (profile?.fitness_goal?.toLowerCase() || 'intermediate')
-  ) || workouts?.[0];
+  // Verificar se o usuário já tem algum treino atribuído a ele
+  const hasAssignedWorkout = userWorkouts && userWorkouts.length > 0;
+  
+  // Obter o treino recomendado específico para este usuário - use o primeiro disponível
+  const recommendedWorkout = userWorkouts && userWorkouts.length > 0 
+    ? userWorkouts[0] 
+    : null;
   
   // Horário atual para saudação personalizada
   const hour = new Date().getHours();
@@ -238,49 +243,26 @@ const Index = () => {
           className="w-full"
         >
           <CarouselContent className="py-2">
-            {workouts?.slice(0, 5).map((workout) => (
-              <CarouselItem key={workout.id} className="md:basis-1/2 lg:basis-1/3">
-                <WorkoutCard 
-                  id={workout.id}
-                  title={workout.title}
-                  image={workout.image_url || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop"}
-                  duration={`${workout.duration || 30} min`}
-                  level={workout.level === 'beginner' ? 'Iniciante' : workout.level === 'intermediate' ? 'Intermediário' : 'Avançado'}
-                  calories={workout.calories}
-                />
-              </CarouselItem>
-            ))}
-            {(!workouts || workouts.length === 0) && (
+            {hasAssignedWorkout ? (
+              userWorkouts?.map((workout) => (
+                <CarouselItem key={workout.id} className="md:basis-1/2 lg:basis-1/3">
+                  <WorkoutCard 
+                    id={workout.id}
+                    title={workout.title}
+                    image={workout.image_url || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop"}
+                    duration={`${workout.duration || 30} min`}
+                    level={workout.level === 'beginner' ? 'Iniciante' : workout.level === 'intermediate' ? 'Intermediário' : 'Avançado'}
+                    calories={workout.calories}
+                    daysOfWeek={workout.days_of_week}
+                  />
+                </CarouselItem>
+              ))
+            ) : (
               <>
                 <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-                  <WorkoutCard 
-                    id="1"
-                    title="Treino Full Body"
-                    image="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop"
-                    duration="45 min"
-                    level="Iniciante"
-                    calories={320}
-                  />
-                </CarouselItem>
-                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-                  <WorkoutCard 
-                    id="2"
-                    title="HIIT Cardio"
-                    image="https://images.unsplash.com/photo-1434682881908-b43d0467b798?q=80&w=1474&auto=format&fit=crop"
-                    duration="30 min"
-                    level="Intermediário"
-                    calories={450}
-                  />
-                </CarouselItem>
-                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-                  <WorkoutCard 
-                    id="3"
-                    title="Core e Abdômen"
-                    image="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1470&auto=format&fit=crop"
-                    duration="25 min"
-                    level="Avançado"
-                    calories={280}
-                  />
+                  <div className="bg-fitness-darkGray/30 rounded-xl p-8 text-center">
+                    <p className="text-gray-300">Nenhum treino disponível. Agende uma consultoria.</p>
+                  </div>
                 </CarouselItem>
               </>
             )}

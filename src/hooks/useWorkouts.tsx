@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -298,7 +299,12 @@ export function useRecommendedWorkoutsForUser(userId: string | undefined) {
   return useQuery({
     queryKey: ['recommended-workouts-for-user', userId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId) {
+        console.log('No user ID provided to useRecommendedWorkoutsForUser, returning empty array');
+        return [];
+      }
+      
+      console.log(`Fetching recommended workouts for user: ${userId}`);
       
       // Busque apenas recomendações específicas para este usuário (não globais)
       const { data: userRecommendations, error: recError } = await supabase
@@ -317,7 +323,7 @@ export function useRecommendedWorkoutsForUser(userId: string | undefined) {
       }
       
       const recommendationIds = userRecommendations.map(item => item.workout_id);
-      console.log(`Treinos recomendados para usuário ${userId}:`, recommendationIds);
+      console.log(`IDs de treinos recomendados para usuário ${userId}:`, recommendationIds);
       
       if (recommendationIds.length === 0) {
         return [];
@@ -356,6 +362,8 @@ export function useRecommendedWorkoutsForUser(userId: string | undefined) {
       if (workoutsError) {
         throw new Error(`Erro ao buscar treinos: ${workoutsError.message}`);
       }
+      
+      console.log(`Encontrados ${workouts.length} treinos para o usuário ${userId}`);
       
       // Adicione os dias da semana para cada treino
       const workoutsWithDays = await Promise.all(workouts.map(async (workout) => {

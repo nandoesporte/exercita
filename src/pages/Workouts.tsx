@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, Calendar } from 'lucide-react';
 import { WorkoutCard } from '@/components/ui/workout-card';
@@ -39,20 +40,27 @@ const Workouts = () => {
   
   // Log para debug
   useEffect(() => {
-    console.log(`UserId atual: ${userId}`);
-    console.log('Treinos recomendados:', userWorkouts);
-  }, [userId, userWorkouts]);
+    console.log(`UserId atual na tela Workouts: ${userId}`);
+    console.log('Treinos recomendados na tela Workouts:', userWorkouts);
+    if (selectedDay) {
+      console.log('Treinos para o dia selecionado:', dayWorkouts);
+    }
+  }, [userId, userWorkouts, dayWorkouts, selectedDay]);
   
   // Determine quais treinos exibir com base no dia selecionado
-  const workouts = selectedDay 
-    ? (dayWorkouts?.filter(workout => {
-        // Para treinos filtrados por dia, exibir apenas os que foram recomendados para este usuário
-        return userWorkouts?.some(userWorkout => userWorkout.id === workout.id);
-      }) || [])
-    : userWorkouts || [];
-    
-  console.log('Treinos filtrados sendo exibidos:', workouts);
+  let workouts: Workout[] = [];
   
+  if (selectedDay && dayWorkouts) {
+    // Se um dia estiver selecionado, filtre os treinos do dia que também estão recomendados para o usuário
+    workouts = dayWorkouts.filter(dayWorkout => 
+      userWorkouts?.some(userWorkout => userWorkout.id === dayWorkout.id)
+    );
+    console.log(`Treinos filtrados para o dia ${selectedDay} e usuário ${userId}:`, workouts);
+  } else {
+    // Se nenhum dia estiver selecionado, mostre todos os treinos do usuário
+    workouts = userWorkouts || [];
+  }
+    
   const isLoadingWorkouts = selectedDay 
     ? isLoadingDayWorkouts 
     : isLoadingUserWorkouts;
@@ -190,7 +198,7 @@ const Workouts = () => {
           </ScrollArea>
         ) : !isLoadingWorkouts && (
           <div className="text-center py-12 flex-1 flex flex-col justify-center">
-            <p className="text-muted-foreground">Nenhum treino encontrado. Tente outra busca.</p>
+            <p className="text-muted-foreground">Nenhum treino encontrado. Tente outra busca ou entre em contato com seu personal trainer.</p>
           </div>
         )}
       </section>
