@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Search, Calendar } from 'lucide-react';
 import { WorkoutCard } from '@/components/ui/workout-card';
-import { useWorkouts, useWorkoutCategories, useWorkoutsByDay } from '@/hooks/useWorkouts';
+import { useWorkouts, useWorkoutCategories, useWorkoutsByDay, useRecommendedWorkoutsForUser } from '@/hooks/useWorkouts';
 import { Database } from '@/integrations/supabase/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from '@/contexts/auth/useAuth'; 
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -29,13 +30,27 @@ const Workouts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const { session } = useAuth();
+  const userId = session?.user?.id;
   
+  // Obter treinos recomendados para o usuário
+  const { data: userWorkouts, isLoading: isLoadingUserWorkouts } = useRecommendedWorkoutsForUser(userId);
   const { data: allWorkouts, isLoading: isLoadingAllWorkouts } = useWorkouts();
   const { data: dayWorkouts, isLoading: isLoadingDayWorkouts } = useWorkoutsByDay(selectedDay);
   const { data: categories, isLoading: isLoadingCategories } = useWorkoutCategories();
   
-  const workouts = selectedDay ? dayWorkouts : allWorkouts;
-  const isLoadingWorkouts = selectedDay ? isLoadingDayWorkouts : isLoadingAllWorkouts;
+  // Determine quais treinos exibir com base na disponibilidade de treinos recomendados
+  const workouts = selectedDay 
+    ? dayWorkouts 
+    : userWorkouts && userWorkouts.length > 0 
+      ? userWorkouts 
+      : allWorkouts;
+  
+  const isLoadingWorkouts = selectedDay 
+    ? isLoadingDayWorkouts 
+    : (userWorkouts && userWorkouts.length > 0) 
+      ? isLoadingUserWorkouts 
+      : isLoadingAllWorkouts;
   
   // Combine built-in filters with category filters
   const filterCategories = ['Todos', 'Iniciante', 'Intermediário', 'Avançado', 'Rápido'];

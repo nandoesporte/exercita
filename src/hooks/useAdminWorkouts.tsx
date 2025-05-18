@@ -156,10 +156,24 @@ export function useAdminWorkouts() {
           
           if (historyError) {
             console.error("Error assigning workout to user:", historyError);
-            // We don't throw here to ensure the workout is still created even if user assignment fails
             toast.error(`Error assigning workout to user: ${historyError.message}`);
           } else {
             console.log("Workout assigned to user successfully");
+          }
+
+          // Também adicione este treino como uma recomendação específica para este usuário
+          const { error: recommendationError } = await supabase
+            .from('workout_recommendations')
+            .insert({
+              user_id: formData.user_id,
+              workout_id: workout.id
+            });
+          
+          if (recommendationError) {
+            console.error("Error creating workout recommendation:", recommendationError);
+            toast.error(`Error creating workout recommendation: ${recommendationError.message}`);
+          } else {
+            console.log("Workout recommendation added successfully");
           }
         }
       
@@ -172,6 +186,7 @@ export function useAdminWorkouts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
       queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['recommended-workouts-for-user'] });
       toast.success('Workout created successfully');
     },
     onError: (error: Error) => {

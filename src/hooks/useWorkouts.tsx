@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -291,5 +290,117 @@ export function useWorkoutCategories() {
       
       return data;
     },
+  });
+}
+
+// Nova função para obter treinos recomendados para um usuário específico
+export function useRecommendedWorkoutsForUser(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['recommended-workouts-for-user', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      
+      // Primeiro, busque os treinos diretamente atribuídos ao usuário
+      const { data: userWorkoutsHistory, error: historyError } = await supabase
+        .from('user_workout_history')
+        .select('workout_id')
+        .eq('user_id', userId);
+      
+      if (historyError) {
+        console.error("Erro ao buscar histórico de treinos do usuário:", historyError);
+      }
+      
+      const userWorkoutIds = (userWorkoutsHistory || []).map(item => item.workout_id);
+      
+      // Segundo, busque recomendações personalizadas para este usuário
+      const { data: userRecommendations, error: recError } = await supabase
+        .from('workout_recommendations')
+        .select('workout_id')
+        .eq('user_id', userId);
+      
+      if (recError) {
+        console.error("Erro ao buscar recomendações de treinos:", recError);
+      }
+      
+      const recommendationIds = (userRecommendations || []).map(item => item.workout_id);
+      
+      // Terceiro, busque recomendações globais (para todos os usuários - user_id is null)
+      const { data: globalRecommendations, error: globalError } = await supabase
+        .from('workout_recommendations')
+        .select('workout_id')
+        .is('user_id', null);
+      
+      if (globalError) {
+        console.error("Erro ao buscar recomendações globais:", globalError);
+      }
+      
+      const globalRecommendationIds = (globalRecommendations || []).map(item => item.workout_id);
+      
+      // Combine todos os IDs de treinos, removendo duplicatas
+      const allWorkoutIds = [...new Set([
+        ...userWorkoutIds,
+        ...recommendationIds,
+        ...globalRecommendationIds
+      ])];
+      
+      if (allWorkoutIds.length === 0) {
+        return [];
+      }
+      
+      // Busque os detalhes completos dos treinos
+      const { data: workouts, error: workoutsError } = await supabase
+        .from('workouts')
+        .select(`
+          *,
+          category:category_id (
+            id, 
+            name,
+            icon,
+            color
+          ),
+          workout_exercises (
+            id,
+            sets,
+            reps,
+            duration,
+            rest,
+            order_position,
+            exercise:exercise_id (
+              id,
+              name,
+              description,
+              image_url,
+              video_url
+            )
+          )
+        `)
+        .in('id', allWorkoutIds)
+        .order('created_at', { ascending: false });
+      
+      if (workoutsError) {
+        throw new Error(`Erro ao buscar treinos: ${workoutsError.message}`);
+      }
+      
+      // Adicione os dias da semana para cada treino
+      const workoutsWithDays = await Promise.all(workouts.map(async (workout) => {
+        const { data: daysData, error: daysError } = await supabase
+          .from('workout_days')
+          .select('day_of_week')
+          .eq('workout_id', workout.id);
+
+        if (daysError) {
+          console.error(`Erro ao buscar dias para o treino ${workout.id}:`, daysError);
+          return workout;
+        }
+
+        return {
+          ...workout,
+          days_of_week: daysData.map(d => d.day_of_week)
+        };
+      }));
+      
+      return workoutsWithDays as Workout[];
+    },
+    enabled: !!userId,
   });
 }
