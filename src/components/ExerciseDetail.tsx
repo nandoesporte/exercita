@@ -189,23 +189,23 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Dumbbell size={16} />
-                  <span className="text-sm">Séries</span>
+                  <Dumbbell size={16} className="text-fitness-orange" />
+                  <span className="text-sm font-medium">Séries</span>
                 </div>
-                <p className="text-xl font-bold">{sets}</p>
+                <p className="text-xl font-bold text-white">{sets}</p>
               </div>
               
               {showReps ? (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Dumbbell size={16} />
-                    <span className="text-sm">Repetições</span>
+                    <Dumbbell size={16} className="text-fitness-orange" />
+                    <span className="text-sm font-medium">Repetições</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="text-xl font-bold">{reps}</p>
+                    <p className="text-xl font-bold text-white">{reps}</p>
                     {showWeight && (
-                      <span className="flex items-center gap-1 bg-fitness-darkGray/20 px-2 py-0.5 rounded-full text-sm">
-                        <Weight className="h-3 w-3" />
+                      <span className="flex items-center gap-1 bg-fitness-darkGray/30 px-2 py-1 rounded-full text-sm font-medium text-white">
+                        <Weight className="h-3 w-3 text-fitness-orange" />
                         {weight}kg
                       </span>
                     )}
@@ -214,10 +214,10 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
               ) : formattedDuration ? (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Clock size={16} />
-                    <span className="text-sm">Duração</span>
+                    <Clock size={16} className="text-fitness-orange" />
+                    <span className="text-sm font-medium">Duração</span>
                   </div>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold text-white">
                     {formattedDuration.value} {formattedDuration.unit}
                     {formattedDuration.unit === 'min' && (
                       <span className="text-sm font-normal ml-1 text-muted-foreground">
@@ -232,13 +232,13 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
               {showRest && (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Clock size={16} />
-                    <span className="text-sm">Descanso</span>
+                    <Clock size={16} className="text-fitness-orange" />
+                    <span className="text-sm font-medium">Descanso</span>
                   </div>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <p className="text-xl font-bold">
+                        <p className="text-xl font-bold text-white">
                           {rest >= 60 && rest % 60 === 0 
                             ? `${rest / 60} min` 
                             : `${rest} seg`}
@@ -259,9 +259,9 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 <div className="p-4 border rounded-lg bg-fitness-darkGray/5">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Weight size={16} className="text-fitness-orange" />
-                    <span className="text-sm">Carga</span>
+                    <span className="text-sm font-medium">Carga</span>
                   </div>
-                  <p className="text-xl font-bold flex items-center">
+                  <p className="text-xl font-bold text-white flex items-center">
                     {weight} <span className="ml-1">kg</span>
                   </p>
                 </div>

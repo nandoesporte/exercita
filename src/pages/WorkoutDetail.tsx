@@ -487,22 +487,22 @@ const WorkoutDetail = () => {
                                     <h3 className="font-medium">
                                       {workoutExercise.exercise?.name || "Exercício desconhecido"}
                                     </h3>
-                                    <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-1">
-                                      <span>{workoutExercise.sets} séries</span>
-                                      <span>•</span>
+                                    <div className="text-sm flex flex-wrap items-center gap-x-1">
+                                      <span className="font-semibold text-white">{workoutExercise.sets} séries</span>
+                                      <span className="text-muted-foreground">•</span>
                                       {workoutExercise.reps && workoutExercise.reps > 0 ? (
                                         <div className="flex items-center gap-1">
-                                          <span>{workoutExercise.reps} repetições</span>
+                                          <span className="font-semibold text-white">{workoutExercise.reps} repetições</span>
                                           {hasWeight && (
-                                            <span className="flex items-center gap-0.5 bg-fitness-darkGray/20 px-1.5 py-0.5 rounded-full text-xs">
-                                              <Weight className="h-3 w-3" />
-                                              {workoutExercise.weight}kg
+                                            <span className="flex items-center gap-0.5 bg-fitness-darkGray/30 px-2 py-1 rounded-full text-sm font-medium text-white">
+                                              <Weight className="h-3 w-3 text-fitness-orange" />
+                                              <span>{workoutExercise.weight}kg</span>
                                             </span>
                                           )}
                                         </div>
                                       ) : (
                                         workoutExercise.duration && workoutExercise.duration > 0 && (
-                                          <span>{formatDuration(workoutExercise.duration)}</span>
+                                          <span className="font-semibold text-white">{formatDuration(workoutExercise.duration)}</span>
                                         )
                                       )}
                                     </div>

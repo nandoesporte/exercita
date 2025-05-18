@@ -228,15 +228,15 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               )}
               {exercise.sets && (
                 <div>
-                  <span className="text-muted-foreground">Séries:</span> {exercise.sets}
+                  <span className="font-semibold text-white">Séries:</span> <span className="font-medium text-white">{exercise.sets}</span>
                 </div>
               )}
               {exercise.reps && (
                 <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">Repetições:</span> {exercise.reps}
+                  <span className="font-semibold text-white">Repetições:</span> <span className="font-medium text-white">{exercise.reps}</span>
                   {exercise.weight && exercise.weight > 0 && (
-                    <span className="flex items-center gap-0.5 bg-fitness-darkGray/20 px-1.5 rounded-full text-xs">
-                      <Weight className="h-3 w-3" />
+                    <span className="flex items-center gap-0.5 bg-fitness-darkGray/30 px-2 py-0.5 rounded-full text-sm font-medium text-white">
+                      <Weight className="h-3 w-3 text-fitness-orange" />
                       {exercise.weight}kg
                     </span>
                   )}
@@ -244,30 +244,30 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               )}
               {exercise.duration !== undefined && exercise.duration !== null && exercise.duration > 0 && (
                 <div>
-                  <span className="text-muted-foreground">Duração:</span> {formatDuration(exercise.duration) || 'Não especificada'}
+                  <span className="font-semibold text-white">Duração:</span> <span className="font-medium text-white">{formatDuration(exercise.duration) || 'Não especificada'}</span>
                 </div>
               )}
               {exercise.rest !== undefined && exercise.rest !== null && (
                 <div>
-                  <span className="text-muted-foreground">Descanso:</span> {
+                  <span className="font-semibold text-white">Descanso:</span> <span className="font-medium text-white">{
                     exercise.rest >= 60 && exercise.rest % 60 === 0
                       ? `${exercise.rest / 60} min`
                       : `${exercise.rest} seg`
-                  }
+                  }</span>
                 </div>
               )}
               {exercise.weight && (
                 <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">Peso:</span> 
-                  <span className="flex items-center gap-1">
-                    <Weight className="h-4 w-4" />
+                  <span className="font-semibold text-white">Peso:</span> 
+                  <span className="flex items-center gap-1 font-medium text-white">
+                    <Weight className="h-4 w-4 text-fitness-orange" />
                     {exercise.weight}kg
                   </span>
                 </div>
               )}
               {exercise.day_of_week && (
                 <div>
-                  <span className="text-muted-foreground">Dia:</span> {exercise.day_of_week}
+                  <span className="font-semibold text-white">Dia:</span> <span className="font-medium text-white">{exercise.day_of_week}</span>
                 </div>
               )}
             </div>
