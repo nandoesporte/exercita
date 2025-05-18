@@ -7,7 +7,7 @@ export type AuthContextType = {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<void>;
+  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
   adminLogin: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
