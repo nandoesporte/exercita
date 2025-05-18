@@ -19,6 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ExerciseSelectorProps {
   onSelectExercise: (exerciseId: string, exerciseName: string) => void;
@@ -28,6 +35,8 @@ interface ExerciseSelectorProps {
 export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [previewExercise, setPreviewExercise] = useState<any | null>(null);
   const isMobile = useIsMobile();
   
   const { exercises, categories, isLoading } = useAdminExercises();
@@ -43,8 +52,20 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
     setSelectedCategory(value === 'all' ? null : value);
   };
 
+  const handlePreview = (exercise: any) => {
+    setPreviewExercise(exercise);
+  };
+
+  const handleSelectAndClose = (exerciseId: string, exerciseName: string) => {
+    onSelectExercise(exerciseId, exerciseName);
+    setIsOpen(false);
+    if (onClose) {
+      onClose();
+    }
+  };
+
   // Render the exercise selector content
-  const renderContent = () => (
+  const renderSelectorContent = () => (
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
@@ -85,8 +106,8 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
         </Tabs>
       )}
       
-      {/* Exercise List */}
-      <ScrollArea className={isMobile ? "h-[300px]" : "h-[400px]"}>
+      {/* Exercise List with GIF Previews */}
+      <ScrollArea className={isMobile ? "h-[350px]" : "h-[450px]"}>
         {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -97,12 +118,7 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
               <div key={exercise.id} className="border rounded-md overflow-hidden bg-card hover:border-primary transition-colors">
                 <div 
                   className="cursor-pointer"
-                  onClick={() => {
-                    onSelectExercise(exercise.id, exercise.name);
-                    if (isMobile && onClose) {
-                      onClose();
-                    }
-                  }}
+                  onClick={() => handlePreview(exercise)}
                 >
                   <div className="aspect-square relative bg-muted">
                     {exercise.image_url ? (
@@ -121,6 +137,18 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
                   <div className="p-3">
                     <h4 className="font-medium text-sm">{exercise.name}</h4>
                     <p className="text-xs text-muted-foreground">{exercise.category?.name || 'Sem categoria'}</p>
+                    <div className="flex justify-between items-center mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectAndClose(exercise.id, exercise.name);
+                        }}
+                      >
+                        Selecionar
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -134,12 +162,124 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
       </ScrollArea>
       
       {isMobile && (
-        <Button variant="outline" className="w-full" onClick={onClose}>
+        <Button variant="outline" className="w-full" onClick={() => setIsOpen(false)}>
           Fechar
         </Button>
       )}
     </div>
   );
 
-  return renderContent();
+  // Preview modal for exercise details
+  const renderExercisePreview = () => {
+    if (!previewExercise) return null;
+    
+    return (
+      <Dialog open={!!previewExercise} onOpenChange={(open) => !open && setPreviewExercise(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{previewExercise.name}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Exercise Image or Video */}
+            <div className="aspect-square relative bg-muted rounded-md overflow-hidden">
+              {previewExercise.video_url ? (
+                <video 
+                  src={previewExercise.video_url} 
+                  autoPlay 
+                  loop 
+                  muted 
+                  className="w-full h-full object-cover"
+                />
+              ) : previewExercise.image_url ? (
+                <img 
+                  src={previewExercise.image_url} 
+                  alt={previewExercise.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Sem imagem
+                </div>
+              )}
+            </div>
+            
+            {/* Exercise Details */}
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-sm font-medium">Categoria</h4>
+                <p className="text-sm text-muted-foreground">
+                  {previewExercise.category?.name || 'Não especificada'}
+                </p>
+              </div>
+              
+              {previewExercise.description && (
+                <div>
+                  <h4 className="text-sm font-medium">Descrição</h4>
+                  <p className="text-sm text-muted-foreground">{previewExercise.description}</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex justify-between gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setPreviewExercise(null)}
+              >
+                Fechar
+              </Button>
+              <Button 
+                variant="default" 
+                className="flex-1"
+                onClick={() => {
+                  handleSelectAndClose(previewExercise.id, previewExercise.name);
+                  setPreviewExercise(null);
+                }}
+              >
+                Selecionar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  // Component based on device type (mobile: drawer, desktop: content)
+  return (
+    <>
+      {isMobile ? (
+        <Drawer open={isOpen} onOpenChange={setIsOpen}>
+          <DrawerTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <Search className="mr-2 h-4 w-4" />
+              Escolher Exercício
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="p-4 max-h-[85dvh]">
+            {renderSelectorContent()}
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <Search className="mr-2 h-4 w-4" />
+              Escolher Exercício
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Escolher Exercício</DialogTitle>
+            </DialogHeader>
+            {renderSelectorContent()}
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {renderExercisePreview()}
+    </>
+  );
 }
