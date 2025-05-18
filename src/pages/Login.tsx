@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
@@ -11,7 +12,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().email("Digite um email válido"),
@@ -83,54 +83,20 @@ const Login = () => {
     try {
       console.log("Attempting login with:", values.email);
       
-      // Try a more direct login approach with better error handling
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      const result = await signIn(values.email, values.password);
       
-      if (error) {
-        console.error("Login error details:", error);
-        
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error("Credenciais inválidas. Por favor, verifique seu email e senha.");
-        } else {
-          toast.error(error.message || "Erro ao fazer login");
-        }
-        return;
-      }
-      
-      console.log("Login successful:", data);
-      
-      // Check if user has instance_id
-      const currentUser = data.user;
-      if (currentUser && !currentUser.user_metadata?.instance_id) {
-        console.log("User missing instance_id, updating profile...");
-        
-        // Update user metadata with instance_id if missing
-        const { error: updateError } = await supabase.auth.updateUser({
-          data: { 
-            instance_id: crypto.randomUUID(),
-            // Preserve existing metadata
-            first_name: currentUser.user_metadata?.first_name,
-            last_name: currentUser.user_metadata?.last_name
-          }
-        });
-        
-        if (updateError) {
-          console.error("Error updating user instance_id:", updateError);
-        } else {
-          console.log("User instance_id updated successfully");
-        }
-      }
-      
-      // Success message
+      console.log("Login successful:", result);
       toast.success("Login realizado com sucesso!");
       
       // The redirect will be handled by the useEffect above that watches for user changes
     } catch (error: any) {
       console.error("Login error details:", error);
-      toast.error(error.message || "Erro ao fazer login");
+      
+      if (error.message && error.message.includes('Invalid login credentials')) {
+        toast.error("Credenciais inválidas. Por favor, verifique seu email e senha.");
+      } else {
+        toast.error(error.message || "Erro ao fazer login");
+      }
     } finally {
       setIsLoading(false);
     }
