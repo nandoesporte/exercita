@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell, Scale } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
@@ -185,28 +184,24 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                   </div>
                   <p className="text-xl font-bold">{reps}</p>
                 </div>
-              ) : formattedDuration ? (
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Clock size={16} />
-                    <span className="text-sm">Duração</span>
-                  </div>
-                  <p className="text-xl font-bold">
-                    {formattedDuration.value} {formattedDuration.unit}
-                    {formattedDuration.unit === 'min' && (
-                      <span className="text-sm font-normal ml-1 text-muted-foreground">
-                        ({formattedDuration.value * 60} segundos)
-                      </span>
-                    )}
-                  </p>
-                </div>
               ) : (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
                     <span className="text-sm">Duração</span>
                   </div>
-                  <p className="text-xl font-bold text-muted-foreground">Não especificada</p>
+                  {formattedDuration ? (
+                    <p className="text-xl font-bold">
+                      {formattedDuration.value} {formattedDuration.unit}
+                      {formattedDuration.unit === 'min' && (
+                        <span className="text-sm font-normal ml-1 text-muted-foreground">
+                          ({formattedDuration.value * 60} segundos)
+                        </span>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="text-xl font-bold text-muted-foreground">Não especificada</p>
+                  )}
                 </div>
               )}
               
