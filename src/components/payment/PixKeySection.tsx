@@ -23,7 +23,7 @@ const PixKeySection = ({
   const [pixKey, setPixKey] = useState('');
   const [pixKeyType, setPixKeyType] = useState('cpf');
   const [isEditingPix, setIsEditingPix] = useState(false);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const handleSavePix = async () => {
     if (!pixKey) {
@@ -34,46 +34,78 @@ const PixKeySection = ({
     try {
       console.log("Saving user PIX key:", { pixKeyType, pixKey });
       
-      // If this is a user setting their personal PIX key
       if (user) {
-        // First check if user already has a PIX key
-        const { data: existingKey, error: fetchError } = await supabase
-          .from('user_pix_keys')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+        // If the user is an admin, they can use the pix_keys table
+        if (isAdmin) {
+          console.log("Admin is saving PIX key to pix_keys table");
           
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error("Error checking existing PIX key:", fetchError);
-          throw fetchError;
-        }
-          
-        // Update or insert PIX key
-        if (existingKey) {
-          const { error: updateError } = await supabase
-            .from('user_pix_keys')
-            .update({ 
-              key_type: pixKeyType,
-              key_value: pixKey 
-            })
-            .eq('user_id', user.id);
+          // First check if there are any existing PIX keys
+          const { data: existingKeys } = await supabase
+            .from('pix_keys')
+            .select('id, is_primary')
+            .limit(1);
             
-          if (updateError) {
-            console.error("Error updating PIX key:", updateError);
-            throw updateError;
-          }
-        } else {
+          const isPrimary = !existingKeys || existingKeys.length === 0;
+          
+          // Insert the new PIX key
           const { error: insertError } = await supabase
-            .from('user_pix_keys')
+            .from('pix_keys')
             .insert({
-              user_id: user.id,
               key_type: pixKeyType,
-              key_value: pixKey
+              key_value: pixKey,
+              recipient_name: user.user_metadata?.first_name ? 
+                `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : 
+                'Usuário da Academia',
+              is_primary: isPrimary
             });
             
           if (insertError) {
             console.error("Error inserting PIX key:", insertError);
             throw insertError;
+          }
+        } else {
+          // Regular user - save to user_pix_keys table
+          console.log("Regular user saving to user_pix_keys table");
+          
+          // First check if user already has a PIX key
+          const { data: existingKey, error: fetchError } = await supabase
+            .from('user_pix_keys')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+            
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            console.error("Error checking existing PIX key:", fetchError);
+            throw fetchError;
+          }
+            
+          // Update or insert PIX key
+          if (existingKey) {
+            const { error: updateError } = await supabase
+              .from('user_pix_keys')
+              .update({ 
+                key_type: pixKeyType,
+                key_value: pixKey 
+              })
+              .eq('user_id', user.id);
+              
+            if (updateError) {
+              console.error("Error updating PIX key:", updateError);
+              throw updateError;
+            }
+          } else {
+            const { error: insertError } = await supabase
+              .from('user_pix_keys')
+              .insert({
+                user_id: user.id,
+                key_type: pixKeyType,
+                key_value: pixKey
+              });
+              
+            if (insertError) {
+              console.error("Error inserting PIX key:", insertError);
+              throw insertError;
+            }
           }
         }
       }
