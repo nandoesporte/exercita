@@ -9,17 +9,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import PaymentTabs from '@/components/profile/PaymentTabs';
-import ProfileImageCropper from '@/components/profile/ProfileImageCropper';
 
 const Profile = () => {
   const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey } = useProfile();
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
-  const [cropperImage, setCropperImage] = useState<string | null>(null);
-  const [isCropperOpen, setIsCropperOpen] = useState(false);
   
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -50,45 +47,19 @@ const Profile = () => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Tipo de arquivo inválido. Por favor, selecione uma imagem JPEG, PNG ou GIF");
+      toast('Please select a valid image file (JPEG, PNG, or GIF)');
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. A imagem deve ter menos de 5MB");
+      toast('Image size should be less than 5MB');
       return;
     }
     
-    // Create a URL for the image to display in the cropper
-    const imageUrl = URL.createObjectURL(file);
-    setCropperImage(imageUrl);
-    setIsCropperOpen(true);
-  };
-  
-  const handleCropComplete = (croppedImage: Blob) => {
-    // Convert Blob to File for upload
-    const fileName = fileInputRef.current?.files?.[0]?.name || "profile.jpg";
-    const croppedFile = new File([croppedImage], fileName, { 
-      type: croppedImage.type 
-    });
-    
-    // Upload the cropped image
-    uploadProfileImage(croppedFile);
-    
-    // Clean up the object URL we created
-    if (cropperImage) {
-      URL.revokeObjectURL(cropperImage);
-    }
-  };
-
-  const handleCloseCropper = () => {
-    setIsCropperOpen(false);
-    if (cropperImage) {
-      URL.revokeObjectURL(cropperImage);
-      setCropperImage(null);
-    }
+    // Upload the image
+    uploadProfileImage(file);
   };
   
   if (isLoading) {
@@ -143,16 +114,6 @@ const Profile = () => {
             <p className="text-sm mt-1">Membro desde {userData.memberSince}</p>
           </div>
         </div>
-        
-        {/* Image Cropper Dialog */}
-        {cropperImage && (
-          <ProfileImageCropper 
-            image={cropperImage}
-            onCropComplete={handleCropComplete}
-            isOpen={isCropperOpen}
-            onClose={handleCloseCropper}
-          />
-        )}
         
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
