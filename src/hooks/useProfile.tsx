@@ -128,12 +128,19 @@ export function useProfile() {
         queryClient.setQueryData(['profile', user?.id], updatedProfile);
         // Force refetch to ensure fresh data from server
         queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-        toast.success('Perfil atualizado com sucesso');
+        toast({
+          title: "Sucesso",
+          description: "Perfil atualizado com sucesso",
+        });
       }
     },
     onError: (error: Error) => {
       console.error('Erro na atualização do perfil:', error);
-      toast.error(error.message || 'Falha ao atualizar o perfil');
+      toast({
+        title: "Erro",
+        description: error.message || 'Falha ao atualizar o perfil',
+        variant: "destructive"
+      });
     }
   });
   
@@ -207,11 +214,18 @@ export function useProfile() {
       
       // Force refetch to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      toast.success('Foto de perfil atualizada com sucesso');
+      toast({
+        title: "Sucesso",
+        description: "Foto de perfil atualizada com sucesso",
+      });
     },
     onError: (error: Error) => {
       console.error('Erro ao atualizar foto de perfil:', error);
-      toast.error(error.message || 'Falha ao atualizar foto de perfil');
+      toast({
+        title: "Erro", 
+        description: error.message || 'Falha ao atualizar foto de perfil',
+        variant: "destructive"
+      });
     }
   });
   
