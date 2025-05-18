@@ -5,35 +5,18 @@ returns trigger
 language plpgsql
 security definer set search_path = ''
 as $$
-declare
-  user_instance_id uuid;
 begin
-  -- Extract instance_id from user metadata or use a new UUID if not found
-  if new.raw_user_meta_data->>'instance_id' is not null then
-    user_instance_id := (new.raw_user_meta_data->>'instance_id')::uuid;
-  else
-    user_instance_id := gen_random_uuid();
-    
-    -- Update the user with the new instance_id
-    update auth.users
-    set raw_user_meta_data = 
-      jsonb_set(raw_user_meta_data, '{instance_id}', to_jsonb(user_instance_id::text))
-    where id = new.id;
-  end if;
-  
   insert into public.profiles (
     id, 
     first_name, 
     last_name, 
-    avatar_url,
-    instance_id
+    avatar_url
   )
   values (
     new.id,
     new.raw_user_meta_data->>'first_name',
     new.raw_user_meta_data->>'last_name',
-    new.raw_user_meta_data->>'avatar_url',
-    user_instance_id
+    new.raw_user_meta_data->>'avatar_url'
   );
   return new;
 end;
