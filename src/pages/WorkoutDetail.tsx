@@ -439,54 +439,56 @@ const WorkoutDetail = () => {
                       </h3>
                       {activeDay && exercisesByDay[activeDay]?.length > 0 ? (
                         <div className="space-y-3">
-                          {exercisesByDay[activeDay].map((workoutExercise, index) => (
-                            <button 
-                              key={workoutExercise.id}
-                              onClick={() => workoutExercise.is_title_section ? undefined : handleExerciseClick(workoutExercise.id)}
-                              className={`w-full flex items-center p-3 border rounded-lg transition-colors text-left ${
-                                workoutExercise.is_title_section 
-                                  ? 'bg-fitness-darkGray/40 border-fitness-darkGray/30' 
-                                  : 'hover:bg-muted/50 cursor-pointer'
-                              }`}
-                            >
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                workoutExercise.is_title_section 
-                                  ? 'bg-fitness-orange/20 text-fitness-orange' 
-                                  : 'bg-fitness-orange/20 text-fitness-orange font-medium'
-                              }`}>
-                                {workoutExercise.is_title_section ? (
-                                  <FileText className="h-4 w-4" />
-                                ) : (
-                                  index + 1
-                                )}
-                              </div>
-                              <div className="ml-3 flex-grow">
-                                {workoutExercise.is_title_section ? (
-                                  <h3 className="font-semibold text-fitness-orange">{workoutExercise.section_title}</h3>
-                                ) : (
-                                  <>
-                                    <h3 className="font-medium">
-                                      {workoutExercise.exercise?.name || "Exercício desconhecido"}
-                                    </h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {workoutExercise.sets} séries
-                                      {workoutExercise.reps && workoutExercise.reps > 0 
-                                        ? ` • ${workoutExercise.reps} repetições` 
-                                        : workoutExercise.duration && workoutExercise.duration > 0
-                                          ? ` • ${formatDuration(workoutExercise.duration)}`
-                                          : ''
-                                      }
+                          {exercisesByDay[activeDay].map((workoutExercise, index) => {
+                            // Check if this is a section title
+                            if (workoutExercise.is_title_section) {
+                              return (
+                                <div 
+                                  key={workoutExercise.id}
+                                  className="bg-fitness-darkGray/40 border border-fitness-darkGray/30 p-3 rounded-lg"
+                                >
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-fitness-orange/20 text-fitness-orange">
+                                      <FileText className="h-4 w-4" />
                                     </div>
-                                  </>
-                                )}
-                              </div>
-                              {!workoutExercise.is_title_section && (
+                                    <h3 className="ml-3 font-semibold text-fitness-orange">
+                                      {workoutExercise.section_title}
+                                    </h3>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            
+                            // Regular exercise item
+                            return (
+                              <button 
+                                key={workoutExercise.id}
+                                onClick={() => handleExerciseClick(workoutExercise.id)}
+                                className="w-full flex items-center p-3 border rounded-lg transition-colors text-left hover:bg-muted/50 cursor-pointer"
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 text-fitness-orange font-medium flex items-center justify-center">
+                                  {index + 1}
+                                </div>
+                                <div className="ml-3 flex-grow">
+                                  <h3 className="font-medium">
+                                    {workoutExercise.exercise?.name || "Exercício desconhecido"}
+                                  </h3>
+                                  <div className="text-sm text-muted-foreground">
+                                    {workoutExercise.sets} séries
+                                    {workoutExercise.reps && workoutExercise.reps > 0 
+                                      ? ` • ${workoutExercise.reps} repetições` 
+                                      : workoutExercise.duration && workoutExercise.duration > 0
+                                        ? ` • ${formatDuration(workoutExercise.duration)}`
+                                        : ''
+                                    }
+                                  </div>
+                                </div>
                                 <div className="text-fitness-orange">
                                   <Info size={18} />
                                 </div>
-                              )}
-                            </button>
-                          ))}
+                              </button>
+                            );
+                          })}
                         </div>
                       ) : (
                         <p className="text-muted-foreground text-sm">Nenhum exercício programado para este dia.</p>
