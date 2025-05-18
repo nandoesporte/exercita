@@ -47,8 +47,8 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   };
   
   // Helper function to format duration
-  const formatDuration = (seconds: number | null) => {
-    if (seconds === null || seconds === undefined) return null;
+  const formatDuration = (seconds: number | null | undefined) => {
+    if (seconds === null || seconds === undefined || seconds === 0) return null;
     
     // If duration is a multiple of 60, display in minutes
     if (seconds % 60 === 0 && seconds >= 60) {
@@ -206,7 +206,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Clock size={16} />
                     <span className="text-sm">Duração</span>
                   </div>
-                  <p className="text-xl font-bold">0 seg</p>
+                  <p className="text-xl font-bold text-muted-foreground">Não especificada</p>
                 </div>
               )}
               
