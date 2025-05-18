@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -50,7 +49,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
     { id: 'friday', name: 'Sexta-feira' },
     { id: 'saturday', name: 'Sábado' },
     { id: 'sunday', name: 'Domingo' },
-    { id: '', name: 'Todos os dias' },
+    { id: 'all', name: 'Todos os dias' }, // Changed from empty string to 'all'
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
