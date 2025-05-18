@@ -602,7 +602,7 @@ export function useAdminWorkouts() {
       // Process each target day
       for (const targetDay of targetDaysOfWeek) {
         try {
-          // First, check if we have any exercises that would create a conflict
+          // First, get existing exercises in the target day
           const { data: existingExercises, error: existingError } = await supabase
             .from('workout_exercises')
             .select('exercise_id, order_position, is_title_section, section_title')
@@ -613,10 +613,20 @@ export function useAdminWorkouts() {
             throw new Error(`Error checking existing exercises: ${existingError.message}`);
           }
           
-          // Map of exercise_id to existing order positions to avoid conflicts
-          const existingMap = new Map();
+          // Create maps for quick lookups
+          const existingExerciseMap = new Map();
+          const existingSectionTitles = new Set();
+          
           existingExercises?.forEach(ex => {
-            existingMap.set(ex.exercise_id, true);
+            // Track existing exercise IDs
+            if (ex.exercise_id) {
+              existingExerciseMap.set(ex.exercise_id, true);
+            }
+            
+            // Track existing section titles
+            if (ex.is_title_section && ex.section_title) {
+              existingSectionTitles.add(ex.section_title);
+            }
           });
           
           // Get the highest position number in the target day
@@ -633,33 +643,30 @@ export function useAdminWorkouts() {
           }
 
           const startPosition = maxPositionData?.length > 0 ? (maxPositionData[0].order_position || 0) + 1 : 1;
+          let nextPosition = startPosition;
 
-          // Prepare exercises for the target day
+          // Filter out exercises that would create conflicts
           const exercisesToInsert = sourceExercises
             .filter(exercise => {
-              // Filter out section titles that might already exist
+              // Filter out section titles that already exist
               if (exercise.is_title_section && exercise.section_title) {
-                const existingTitle = existingExercises?.find(ex => 
-                  ex.is_title_section && ex.section_title === exercise.section_title
-                );
-                return !existingTitle;
+                return !existingSectionTitles.has(exercise.section_title);
               }
               
               // If it's a regular exercise with an exercise_id, check for conflicts
-              if (exercise.exercise_id && existingMap.has(exercise.exercise_id)) {
-                // Skip this exercise to avoid conflict
+              if (exercise.exercise_id && existingExerciseMap.has(exercise.exercise_id)) {
                 console.log(`Skipping exercise_id ${exercise.exercise_id} as it already exists in target day`);
                 return false;
               }
               
               return true;
             })
-            .map((exercise, index) => {
+            .map(exercise => {
               const { id, created_at, updated_at, ...exerciseData } = exercise;
               return {
                 ...exerciseData,
                 day_of_week: targetDay,
-                order_position: startPosition + index,
+                order_position: nextPosition++, // Increment position for each exercise
               };
             });
 
@@ -674,6 +681,7 @@ export function useAdminWorkouts() {
             .insert(exercisesToInsert);
 
           if (insertError) {
+            console.error(`Error details when cloning to ${targetDay}:`, insertError);
             throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
           }
         } catch (error) {
