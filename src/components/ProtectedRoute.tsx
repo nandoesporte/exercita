@@ -6,11 +6,10 @@ import { checkAuthSession } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  roles?: string[];
   isAdminRoute?: boolean;
 }
 
-const ProtectedRoute = ({ children, roles, isAdminRoute = false }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
   const [isCheckingSession, setIsCheckingSession] = useState(false);
@@ -24,7 +23,6 @@ const ProtectedRoute = ({ children, roles, isAdminRoute = false }: ProtectedRout
       userId: user?.id,
       isAdmin, 
       adminOnly: isAdminRoute,
-      rolesRequired: roles,
       loading
     });
     
@@ -43,7 +41,7 @@ const ProtectedRoute = ({ children, roles, isAdminRoute = false }: ProtectedRout
         setIsCheckingSession(false);
       });
     }
-  }, [user, loading, isAdmin, isAdminRoute, location.pathname, isCheckingSession, roles]);
+  }, [user, loading, isAdmin, isAdminRoute, location.pathname, isCheckingSession]);
 
   // Show loading state if either the auth context is loading or we're checking the session
   if (loading || isCheckingSession) {
@@ -72,18 +70,6 @@ const ProtectedRoute = ({ children, roles, isAdminRoute = false }: ProtectedRout
     
     // Redirect to admin login instead of homepage
     return <Navigate to="/login?adminAccess=required" replace />;
-  }
-  
-  // Check for specific roles if provided
-  if (roles && roles.length > 0) {
-    // If roles are required and the user is not an admin (admins bypass role checks)
-    if (!isAdmin && roles.includes('admin')) {
-      console.log("Access denied: User does not have required role", {
-        userId: user.id,
-        requiredRoles: roles
-      });
-      return <Navigate to="/login?roleAccess=required" replace />;
-    }
   }
 
   // If we reach here, user is authenticated and has proper permissions

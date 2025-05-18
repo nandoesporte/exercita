@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -128,7 +128,7 @@ export function useProfile() {
         queryClient.setQueryData(['profile', user?.id], updatedProfile);
         // Force refetch to ensure fresh data from server
         queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-        toast.success('Perfil atualizado com sucesso');
+        toast.success("Perfil atualizado com sucesso");
       }
     },
     onError: (error: Error) => {
@@ -207,7 +207,7 @@ export function useProfile() {
       
       // Force refetch to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      toast.success('Foto de perfil atualizada com sucesso');
+      toast.success("Foto de perfil atualizada com sucesso");
     },
     onError: (error: Error) => {
       console.error('Erro ao atualizar foto de perfil:', error);

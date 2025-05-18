@@ -1,93 +1,133 @@
-import React from 'react';
-import './App.css';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import UserLayout from './components/layout/UserLayout';
-import AdminLayout from './components/layout/AdminLayout';
-import ProtectedRoute from './components/ProtectedRoute';
-import Login from './pages/Login';
-import Index from './pages/Index';
-import Profile from './pages/Profile';
-import Workouts from './pages/Workouts';
-import AccountInfo from './pages/AccountInfo';
-import GymPhotos from './components/GymPhotos';
-import History from './pages/History';
-import NotFound from './pages/NotFound';
-import Schedule from './pages/Schedule';
-import Store from './pages/Store';
-import PaymentMethods from './pages/PaymentMethods';
-import HealthStats from './pages/HealthStats';
-import Payment from './pages/Payment';
-import Notifications from './pages/Notifications';
-import Reminders from './pages/Reminders';
-import HelpCenter from './pages/HelpCenter';
-import InviteFriends from './pages/InviteFriends';
-import WorkoutDetail from './pages/WorkoutDetail';
-import Settings from './pages/Settings';
-import ProductDetail from './pages/ProductDetail';
-import WorkoutHistory from './pages/WorkoutHistory';
-import { useIsMobile } from './hooks/use-mobile';
-import { usePWAInstallPrompt } from './hooks/usePWAInstallPrompt';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
+import { Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/contexts/auth";
 
-function App() {
-  const isMobile = useIsMobile();
-  const { showPrompt, handleClosePrompt } = usePWAInstallPrompt();
+// Import layouts
+import UserLayout from "@/components/layout/UserLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
+
+// User pages
+import Index from "@/pages/Index";
+import Workouts from "@/pages/Workouts";
+import WorkoutDetail from "@/pages/WorkoutDetail";
+import History from "@/pages/History";
+import Profile from "@/pages/Profile";
+import Login from "@/pages/Login";
+import NotFound from "@/pages/NotFound";
+import Store from "@/pages/Store";
+import ProductDetail from "@/pages/ProductDetail";
+import Schedule from "@/pages/Schedule";
+import GymPhotos from "@/components/GymPhotos";
+import Appointments from "@/pages/Appointments";
+
+// Profile related pages
+import AccountInfo from "@/pages/AccountInfo";
+import Settings from "@/pages/Settings";
+import WorkoutHistory from "@/pages/WorkoutHistory";
+import Reminders from "@/pages/Reminders";
+import Notifications from "@/pages/Notifications";
+import PaymentMethods from "@/pages/PaymentMethods";
+import InviteFriends from "@/pages/InviteFriends";
+import HelpCenter from "@/pages/HelpCenter";
+
+// Admin pages
+import Dashboard from "@/pages/admin/Dashboard";
+import WorkoutManagement from "@/pages/admin/WorkoutManagement";
+import CreateWorkout from "@/pages/admin/CreateWorkout";
+import EditWorkout from "@/pages/admin/EditWorkout";
+import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
+import ExerciseManagement from "@/pages/admin/ExerciseManagement";
+import ProductManagement from "@/pages/admin/ProductManagement";
+import CreateProduct from "@/pages/admin/CreateProduct";
+import EditProduct from "@/pages/admin/EditProduct";
+import ScheduleManagement from "@/pages/admin/ScheduleManagement";
+import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
+import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
+import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
+import UserManagement from "@/pages/admin/UserManagement";
+import AppointmentManagement from "@/pages/admin/AppointmentManagement";
+import RLSChecker from './pages/admin/RLSChecker';
+
+const App = () => {
+  console.log("App component rendering");
+  const { user, loading } = useAuth();
+  
+  // Show loading state if auth context is loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
+      </div>
+    );
+  }
   
   return (
     <>
       <Routes>
-        {/* Public routes */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         
-        {/* User routes */}
-        <Route path="/" element={
+        {/* User Routes */}
+        <Route element={
           <ProtectedRoute>
             <UserLayout />
           </ProtectedRoute>
         }>
-          {/* User layout children */}
-          <Route index element={<Index />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="workouts" element={<Workouts />} />
-          <Route path="workout/:id" element={<WorkoutDetail />} />
-          <Route path="history" element={<History />} />
-          <Route path="workout-history/:id" element={<WorkoutHistory />} />
-          <Route path="schedule" element={<Schedule />} />
-          <Route path="store" element={<Store />} />
-          <Route path="store/:id" element={<ProductDetail />} />
-          <Route path="account-info" element={<AccountInfo />} />
-          <Route path="gym-photos" element={<GymPhotos />} />
-          <Route path="payment-methods" element={<PaymentMethods />} />
-          <Route path="health-stats" element={<HealthStats />} />
-          <Route path="payment" element={<Payment />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="reminders" element={<Reminders />} />
-          <Route path="help-center" element={<HelpCenter />} />
-          <Route path="invite-friends" element={<InviteFriends />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/workouts" element={<Workouts />} />
+          <Route path="/workout/:id" element={<WorkoutDetail />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/store/:id" element={<ProductDetail />} />
+          <Route path="/schedule" element={<Schedule />} />
+          <Route path="/gym-photos" element={<GymPhotos />} />
+          <Route path="/appointments" element={<Appointments />} />
+          
+          {/* Profile related pages */}
+          <Route path="/account" element={<AccountInfo />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/workout-history" element={<WorkoutHistory />} />
+          <Route path="/reminders" element={<Reminders />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/payment" element={<PaymentMethods />} />
+          <Route path="/invite" element={<InviteFriends />} />
+          <Route path="/help" element={<HelpCenter />} />
         </Route>
         
-        {/* Admin routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute roles={['admin']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
-          {/* Admin layout children */}
-          <Route index element={<Navigate to="/admin/users" />} />
+        {/* Admin Routes */}
+        <Route path="/admin" element={<ProtectedRoute isAdminRoute={true}><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<Dashboard />} />
+          {/* Workouts */}
+          <Route path="workouts" element={<WorkoutManagement />} />
+          <Route path="workouts/create" element={<CreateWorkout />} />
+          <Route path="workouts/:id/edit" element={<EditWorkout />} />
+          <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
+          {/* Exercises */}
+          <Route path="exercises" element={<ExerciseManagement />} />
+          <Route path="exercises/library" element={<ExerciseLibrary />} />
+          {/* Products */}
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="products/create" element={<CreateProduct />} />
+          <Route path="products/:id/edit" element={<EditProduct />} />
+          {/* Photos */}
+          <Route path="photos" element={<GymPhotoManagement />} />
+          {/* Scheduling */}
+          <Route path="schedule" element={<ScheduleManagement />} />
+          <Route path="appointments" element={<AppointmentManagement />} />
+          {/* Payment */}
+          <Route path="payment-methods" element={<PaymentMethodManagement />} />
+          {/* Users */}
+          <Route path="users" element={<UserManagement />} />
+          {/* RLS Checker */}
+          <Route path="rls-checker" element={<RLSChecker />} />
         </Route>
         
-        {/* Fallback routes */}
-        <Route path="/404" element={<NotFound />} />
-        <Route path="*" element={<Navigate to="/404" />} />
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
-      
-      {/* PWA Install Prompt - only shown on mobile when conditions are met */}
-      {isMobile && showPrompt && (
-        <PWAInstallPrompt onClose={handleClosePrompt} />
-      )}
     </>
   );
-}
+};
 
 export default App;
