@@ -35,22 +35,20 @@ const Workouts = () => {
   
   // Obter treinos recomendados para o usuário
   const { data: userWorkouts, isLoading: isLoadingUserWorkouts } = useRecommendedWorkoutsForUser(userId);
-  const { data: allWorkouts, isLoading: isLoadingAllWorkouts } = useWorkouts();
   const { data: dayWorkouts, isLoading: isLoadingDayWorkouts } = useWorkoutsByDay(selectedDay);
   const { data: categories, isLoading: isLoadingCategories } = useWorkoutCategories();
   
   // Determine quais treinos exibir com base na disponibilidade de treinos recomendados
   const workouts = selectedDay 
-    ? dayWorkouts 
-    : userWorkouts && userWorkouts.length > 0 
-      ? userWorkouts 
-      : allWorkouts;
+    ? dayWorkouts?.filter(workout => {
+        // Para treinos filtrados por dia, exibir apenas os que foram recomendados para este usuário
+        return userWorkouts?.some(userWorkout => userWorkout.id === workout.id);
+      })
+    : userWorkouts || [];
   
   const isLoadingWorkouts = selectedDay 
     ? isLoadingDayWorkouts 
-    : (userWorkouts && userWorkouts.length > 0) 
-      ? isLoadingUserWorkouts 
-      : isLoadingAllWorkouts;
+    : isLoadingUserWorkouts;
   
   // Combine built-in filters with category filters
   const filterCategories = ['Todos', 'Iniciante', 'Intermediário', 'Avançado', 'Rápido'];
