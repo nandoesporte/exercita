@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { toast } from '@/lib/toast';
 import { ExerciseSelector } from '@/components/admin/ExerciseSelector';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Exercise {
   id: string;
@@ -44,6 +45,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   const [weight, setWeight] = useState<string>('');
   const [dayOfWeek, setDayOfWeek] = useState<string | null>(null);
   const [sectionTitle, setSectionTitle] = useState<string>('');
+  const isMobile = useIsMobile();
 
   const days = [
     { id: 'monday', name: 'Segunda-feira' },
@@ -199,31 +201,70 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
             </div>
           </div>
 
+          {/* Enhanced Mobile Duration Section */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="duration">Duração</Label>
-              <div className="flex gap-2">
+              <Label htmlFor="duration" className="flex flex-wrap items-center gap-1">
+                <span>Duração</span>
+                {isMobile && duration && (
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    {durationUnit === 'minutes' ? 'minutos' : 'segundos'}
+                  </span>
+                )}
+              </Label>
+              <div className={`flex gap-2 ${isMobile ? 'relative' : ''}`}>
                 <Input
                   id="duration"
                   placeholder="Duração"
                   type="number"
+                  inputMode="numeric" 
+                  pattern="[0-9]*"
                   min="0"
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  className="flex-1"
+                  className={`flex-1 ${isMobile && durationUnit === 'minutes' ? 'pr-16' : ''}`}
                 />
-                <Select 
-                  value={durationUnit} 
-                  onValueChange={(value) => setDurationUnit(value as 'seconds' | 'minutes')}
-                >
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="seconds">Segundos</SelectItem>
-                    <SelectItem value="minutes">Minutos</SelectItem>
-                  </SelectContent>
-                </Select>
+                {isMobile ? (
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <div className="flex border rounded-md overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setDurationUnit('seconds')}
+                        className={`px-2 py-1 text-xs transition-colors ${
+                          durationUnit === 'seconds' 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-background hover:bg-muted'
+                        }`}
+                      >
+                        seg
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDurationUnit('minutes')}
+                        className={`px-2 py-1 text-xs transition-colors ${
+                          durationUnit === 'minutes' 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-background hover:bg-muted'
+                        }`}
+                      >
+                        min
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Select 
+                    value={durationUnit} 
+                    onValueChange={(value) => setDurationUnit(value as 'seconds' | 'minutes')}
+                  >
+                    <SelectTrigger className="w-[110px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="seconds">Segundos</SelectItem>
+                      <SelectItem value="minutes">Minutos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -232,6 +273,8 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
                 id="rest"
                 placeholder="Descanso"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min="0"
                 value={rest}
                 onChange={(e) => setRest(e.target.value)}
@@ -245,8 +288,9 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
               id="weight"
               placeholder="Opcional"
               type="number"
-              min="0"
+              inputMode="decimal"
               step="0.5"
+              min="0"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
