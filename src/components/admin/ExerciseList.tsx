@@ -11,6 +11,8 @@ interface ExerciseListProps {
     category?: { name?: string; } | null;
     description?: string;
     image_url?: string;
+    is_title_section?: boolean;
+    section_title?: string | null;
     [key: string]: any; // Allow for additional properties
   }>;
   onEdit?: (id: string) => void;
@@ -61,6 +63,63 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
   return (
     <div className="space-y-3">
       {exercises.map((exercise, index) => {
+        // Handle section title items
+        if (exercise.is_title_section) {
+          return (
+            <div 
+              key={exercise.id}
+              className="border rounded-lg p-4 bg-primary/10"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                    {index + 1}
+                  </div>
+                  <h3 className="font-medium flex items-center gap-1">
+                    <FileText className="h-4 w-4" />
+                    <span className="font-semibold">{exercise.section_title || "Seção"}</span>
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full ml-2">Título</span>
+                  </h3>
+                </div>
+                <div className="flex items-center gap-1">
+                  {onMoveUp && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onMoveUp(exercise.id, index + 1)}
+                      disabled={index === 0}
+                      className="h-8 w-8"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {onMoveDown && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onMoveDown(exercise.id, index + 1)}
+                      disabled={index === exercises.length - 1}
+                      className="h-8 w-8"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {handleDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(exercise.id)}
+                      className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
         // Handle both direct exercise objects and nested exercise objects
         const exerciseData = exercise.exercise || exercise;
         const imageUrl = exerciseData.image_url || exercise.image_url;

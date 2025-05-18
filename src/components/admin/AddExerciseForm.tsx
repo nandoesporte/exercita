@@ -1,311 +1,240 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
 import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
-import { ExerciseSelector } from './ExerciseSelector';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { useIsMobile } from '@/hooks/use-mobile';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from '@/lib/toast';
 
-const formSchema = z.object({
-  exercise_id: z.string().min(1, "Selecione um exercício"),
-  sets: z.coerce.number().min(1, "Mínimo de 1 série").optional(),
-  reps: z.coerce.number().min(0, "Mínimo de 0 repetição").optional(),
-  weight: z.coerce.number().min(0, "Peso não pode ser negativo").optional(),
-  duration: z.coerce.number().min(0, "Duração mínima de 0").optional(),
-  duration_unit: z.enum(['seconds', 'minutes']).default('seconds'),
-  rest: z.coerce.number().min(0, "Descanso não pode ser negativo").optional(),
-  day_of_week: z.string().optional(),
-});
-
-interface AddExerciseFormProps {
-  exercises: any[];
-  onAddExercise: (data: WorkoutExercise) => void;
-  currentExerciseCount: number;
-  isLoading: boolean;
+interface Exercise {
+  id: string;
+  name: string;
+  category_id?: string | null;
+  category?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
-const daysOfWeek = [
-  { value: 'monday', label: 'Segunda' },
-  { value: 'tuesday', label: 'Terça' },
-  { value: 'wednesday', label: 'Quarta' },
-  { value: 'thursday', label: 'Quinta' },
-  { value: 'friday', label: 'Sexta' },
-  { value: 'saturday', label: 'Sábado' },
-  { value: 'sunday', label: 'Domingo' },
-];
+interface AddExerciseFormProps {
+  exercises: Exercise[];
+  onAddExercise: (exerciseData: WorkoutExercise) => void;
+  currentExerciseCount: number;
+  isLoading?: boolean;
+}
 
 const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   exercises,
   onAddExercise,
   currentExerciseCount,
-  isLoading
+  isLoading = false
 }) => {
-  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-  const [selectedExerciseName, setSelectedExerciseName] = useState<string | null>(null);
-  const isMobile = useIsMobile();
+  const [selectedTab, setSelectedTab] = useState<'exercise' | 'title'>('exercise');
+  const [exerciseId, setExerciseId] = useState<string>('');
+  const [sets, setSets] = useState<string>('3');
+  const [reps, setReps] = useState<string>('12');
+  const [duration, setDuration] = useState<string>('');
+  const [rest, setRest] = useState<string>('30');
+  const [weight, setWeight] = useState<string>('');
+  const [dayOfWeek, setDayOfWeek] = useState<string | null>(null);
+  const [sectionTitle, setSectionTitle] = useState<string>('');
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      exercise_id: '',
-      sets: 3,
-      reps: 12,
-      weight: 0,
-      duration: 0,
-      duration_unit: 'seconds',
-      rest: 30,
-      day_of_week: '',
-    },
-  });
+  const days = [
+    { id: 'monday', name: 'Segunda-feira' },
+    { id: 'tuesday', name: 'Terça-feira' },
+    { id: 'wednesday', name: 'Quarta-feira' },
+    { id: 'thursday', name: 'Quinta-feira' },
+    { id: 'friday', name: 'Sexta-feira' },
+    { id: 'saturday', name: 'Sábado' },
+    { id: 'sunday', name: 'Domingo' },
+    { id: '', name: 'Todos os dias' },
+  ];
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    // Convert duration to seconds if it was entered in minutes
-    const duration = data.duration && data.duration_unit === 'minutes' 
-      ? data.duration * 60 
-      : data.duration;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
+    if (selectedTab === 'title') {
+      // Add section title
+      if (!sectionTitle.trim()) {
+        toast.error('Digite um título para a seção');
+        return;
+      }
+
+      onAddExercise({
+        is_title_section: true,
+        section_title: sectionTitle.trim(),
+        order_position: currentExerciseCount + 1,
+        day_of_week: dayOfWeek || undefined,
+      });
+
+      // Reset form
+      setSectionTitle('');
+      toast.success('Título de seção adicionado');
+      return;
+    }
+
+    // Regular exercise validation
+    if (!exerciseId) {
+      toast.error('Selecione um exercício');
+      return;
+    }
+
+    // Add exercise
     onAddExercise({
-      ...data,
-      duration,
+      exercise_id: exerciseId,
+      sets: parseInt(sets, 10) || undefined,
+      reps: reps ? parseInt(reps, 10) : null,
+      duration: duration ? parseInt(duration, 10) : null,
+      rest: rest ? parseInt(rest, 10) : null,
+      weight: weight ? parseFloat(weight) : null,
       order_position: currentExerciseCount + 1,
-    } as WorkoutExercise);
-    
-    form.reset({
-      ...form.getValues(),
-      exercise_id: '',
+      day_of_week: dayOfWeek || undefined,
     });
-    setSelectedExerciseName(null);
-  };
 
-  const handleSelectExercise = (exerciseId: string, exerciseName: string) => {
-    form.setValue('exercise_id', exerciseId);
-    setSelectedExerciseName(exerciseName);
-    setIsSelectorOpen(false);
+    // Reset form
+    setExerciseId('');
+    toast.success('Exercício adicionado');
   };
 
   return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Exercise Selection */}
-          <FormField
-            control={form.control}
-            name="exercise_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Exercício</FormLabel>
-                <FormControl>
-                  <div className="flex gap-2">
-                    <Input
-                      value={selectedExerciseName || ''}
-                      readOnly
-                      placeholder="Selecione um exercício"
-                      className="flex-1"
-                      onClick={() => setIsSelectorOpen(true)}
-                    />
-                    <Button type="button" variant="outline" onClick={() => setIsSelectorOpen(true)}>
-                      Escolher
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as 'exercise' | 'title')}>
+        <TabsList className="grid grid-cols-2 w-full mb-4">
+          <TabsTrigger value="exercise">Exercício</TabsTrigger>
+          <TabsTrigger value="title">Título de Seção</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-          {/* Day of Week */}
-          <FormField
-            control={form.control}
-            name="day_of_week"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Dia da Semana</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um dia da semana" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {daysOfWeek.map((day) => (
-                      <SelectItem key={day.value} value={day.value}>
-                        {day.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Rest of form fields */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Sets */}
-            <FormField
-              control={form.control}
-              name="sets"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Séries</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Reps */}
-            <FormField
-              control={form.control}
-              name="reps"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Repetições</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Weight */}
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Peso (kg)</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" step="0.5" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Duration with unit selection */}
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duração</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="duration_unit"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="seconds" />
-                          </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">
-                            Segundos
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="minutes" />
-                          </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">
-                            Minutos
-                          </FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Rest */}
-            <FormField
-              control={form.control}
-              name="rest"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descanso (segundos)</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+      {selectedTab === 'title' ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="section-title" className="flex items-center gap-1">
+              <FileText className="h-4 w-4" /> Título da Seção
+            </Label>
+            <Input
+              id="section-title"
+              placeholder="Ex: Aquecimento, Parte Superior, etc."
+              value={sectionTitle}
+              onChange={(e) => setSectionTitle(e.target.value)}
             />
           </div>
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              "Adicionar Exercício"
-            )}
-          </Button>
-        </form>
-      </Form>
-
-      {/* Exercise selector - conditional rendering based on device type */}
-      {isMobile ? (
-        <Drawer open={isSelectorOpen} onOpenChange={setIsSelectorOpen}>
-          <DrawerContent className="px-4 pb-6 pt-2">
-            <DrawerHeader>
-              <DrawerTitle>Selecionar Exercício</DrawerTitle>
-            </DrawerHeader>
-            <ExerciseSelector 
-              onSelectExercise={handleSelectExercise} 
-              onClose={() => setIsSelectorOpen(false)}
-            />
-            <DrawerClose />
-          </DrawerContent>
-        </Drawer>
+        </div>
       ) : (
-        <Dialog open={isSelectorOpen} onOpenChange={setIsSelectorOpen}>
-          <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle>Selecionar Exercício</DialogTitle>
-            </DialogHeader>
-            <ExerciseSelector onSelectExercise={handleSelectExercise} />
-          </DialogContent>
-        </Dialog>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="exercise">Exercício</Label>
+            <Select value={exerciseId} onValueChange={setExerciseId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um exercício" />
+              </SelectTrigger>
+              <SelectContent>
+                {exercises.map((exercise) => (
+                  <SelectItem key={exercise.id} value={exercise.id}>
+                    {exercise.name} {exercise.category?.name ? `(${exercise.category.name})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="sets">Séries</Label>
+              <Input
+                id="sets"
+                placeholder="Séries"
+                type="number"
+                min="0"
+                value={sets}
+                onChange={(e) => setSets(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reps">Repetições</Label>
+              <Input
+                id="reps"
+                placeholder="Repetições"
+                type="number"
+                min="0"
+                value={reps}
+                onChange={(e) => setReps(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duração (segundos)</Label>
+              <Input
+                id="duration"
+                placeholder="Duração"
+                type="number"
+                min="0"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rest">Descanso (segundos)</Label>
+              <Input
+                id="rest"
+                placeholder="Descanso"
+                type="number"
+                min="0"
+                value={rest}
+                onChange={(e) => setRest(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="weight">Peso (kg)</Label>
+            <Input
+              id="weight"
+              placeholder="Opcional"
+              type="number"
+              min="0"
+              step="0.5"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+            />
+          </div>
+        </div>
       )}
-    </>
+
+      <div className="space-y-2">
+        <Label htmlFor="day">Dia da Semana (opcional)</Label>
+        <Select value={dayOfWeek || ''} onValueChange={setDayOfWeek}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione um dia (opcional)" />
+          </SelectTrigger>
+          <SelectContent>
+            {days.map((day) => (
+              <SelectItem key={day.id} value={day.id}>
+                {day.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? (
+          <span className="flex items-center">
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Adicionando...
+          </span>
+        ) : (
+          selectedTab === 'title' ? 'Adicionar Título de Seção' : 'Adicionar Exercício'
+        )}
+      </Button>
+    </form>
   );
 };
 
