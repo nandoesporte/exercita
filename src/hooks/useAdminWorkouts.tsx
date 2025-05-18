@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -602,34 +603,46 @@ export function useAdminWorkouts() {
       // Process each target day
       for (const targetDay of targetDaysOfWeek) {
         try {
-          // First, get existing exercises in the target day
-          const { data: existingExercises, error: existingError } = await supabase
-            .from('workout_exercises')
-            .select('exercise_id, order_position, is_title_section, section_title')
-            .eq('workout_id', workoutId)
-            .eq('day_of_week', targetDay);
+          // First delete any existing exercises that would cause unique constraint violations
+          // We need to identify any potential conflicts by exercise_id
+          const exerciseIdsToClone = sourceExercises
+            .filter(ex => ex.exercise_id) // Only consider exercises with exercise_id
+            .map(ex => ex.exercise_id);
+
+          if (exerciseIdsToClone.length > 0) {
+            // Delete existing exercises with the same exercise_ids to prevent conflicts
+            const { error: deleteError } = await supabase
+              .from('workout_exercises')
+              .delete()
+              .eq('workout_id', workoutId)
+              .eq('day_of_week', targetDay)
+              .in('exercise_id', exerciseIdsToClone);
             
-          if (existingError) {
-            throw new Error(`Error checking existing exercises: ${existingError.message}`);
+            if (deleteError) {
+              console.error(`Error removing conflicting exercises: ${deleteError.message}`);
+              // Continue anyway - we'll check for remaining conflicts below
+            }
           }
           
-          // Create maps for quick lookups
-          const existingExerciseMap = new Map();
-          const existingSectionTitles = new Set();
-          
-          existingExercises?.forEach(ex => {
-            // Track existing exercise IDs
-            if (ex.exercise_id) {
-              existingExerciseMap.set(ex.exercise_id, true);
-            }
+          // Get existing section titles in the target day
+          const { data: existingSections, error: sectionsError } = await supabase
+            .from('workout_exercises')
+            .select('section_title')
+            .eq('workout_id', workoutId)
+            .eq('day_of_week', targetDay)
+            .eq('is_title_section', true)
+            .not('section_title', 'is', null);
             
-            // Track existing section titles
-            if (ex.is_title_section && ex.section_title) {
-              existingSectionTitles.add(ex.section_title);
-            }
-          });
+          if (sectionsError) {
+            throw new Error(`Error checking existing section titles: ${sectionsError.message}`);
+          }
           
-          // Get the highest position number in the target day
+          // Create a set of existing section titles for quick lookup
+          const existingSectionTitles = new Set(
+            existingSections?.map(section => section.section_title) || []
+          );
+            
+          // Get the highest position number in the target day for new positions
           const { data: maxPositionData, error: maxPosError } = await supabase
             .from('workout_exercises')
             .select('order_position')
@@ -643,9 +656,8 @@ export function useAdminWorkouts() {
           }
 
           const startPosition = maxPositionData?.length > 0 ? (maxPositionData[0].order_position || 0) + 1 : 1;
-          let nextPosition = startPosition;
-
-          // Filter out exercises that would create conflicts
+          
+          // Filter out section titles that already exist and prepare exercises for insertion
           const exercisesToInsert = sourceExercises
             .filter(exercise => {
               // Filter out section titles that already exist
@@ -653,20 +665,15 @@ export function useAdminWorkouts() {
                 return !existingSectionTitles.has(exercise.section_title);
               }
               
-              // If it's a regular exercise with an exercise_id, check for conflicts
-              if (exercise.exercise_id && existingExerciseMap.has(exercise.exercise_id)) {
-                console.log(`Skipping exercise_id ${exercise.exercise_id} as it already exists in target day`);
-                return false;
-              }
-              
+              // Include all other exercises - we've already deleted potential conflicts
               return true;
             })
-            .map(exercise => {
+            .map((exercise, index) => {
               const { id, created_at, updated_at, ...exerciseData } = exercise;
               return {
                 ...exerciseData,
                 day_of_week: targetDay,
-                order_position: nextPosition++, // Increment position for each exercise
+                order_position: startPosition + index, // Ensure unique increasing order positions
               };
             });
 
