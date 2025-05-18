@@ -59,7 +59,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   const [selectedExerciseName, setSelectedExerciseName] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       exercise_id: '',
