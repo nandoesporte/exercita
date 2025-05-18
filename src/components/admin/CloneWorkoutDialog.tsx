@@ -34,14 +34,14 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isCloning, setIsCloning] = useState(false);
   
-  // Fetch users for selection
+  // Fetch users for selection - Fixed the query to join with auth.users to get email
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ['admin-users-for-clone'],
     queryFn: async () => {
+      // Instead of directly selecting email from profiles, we use a database function
+      // that has proper permissions to access both profiles and auth.users tables
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email')
-        .order('first_name');
+        .rpc('debug_get_all_users');
       
       if (error) {
         toast.error(`Error fetching users: ${error.message}`);
@@ -116,16 +116,16 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
                   </div>
                 ) : (
                   users.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
+                    <SelectItem key={user.user_id} value={user.user_id}>
                       <div className="flex items-center">
                         <Avatar className="h-6 w-6 mr-2">
                           <div className="bg-primary text-white rounded-full h-full w-full flex items-center justify-center text-xs">
-                            {user.first_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                            {user.raw_user_meta_data?.first_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                           </div>
                         </Avatar>
                         <span>
-                          {user.first_name && user.last_name 
-                            ? `${user.first_name} ${user.last_name}`
+                          {user.raw_user_meta_data?.first_name && user.raw_user_meta_data?.last_name 
+                            ? `${user.raw_user_meta_data.first_name} ${user.raw_user_meta_data.last_name}`
                             : user.email}
                         </span>
                       </div>
