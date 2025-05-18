@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, Edit, Weight, Calendar, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowUp, ArrowDown, Trash2, Edit, Weight, Calendar, FileText, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ImageViewerModal from '@/components/ImageViewerModal';
 
 // Create a more flexible type that can handle both AdminExercise and WorkoutExercise
 interface ExerciseListProps {
@@ -32,6 +33,8 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
   onRemove,
   isLoading,
 }) => {
+  const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -59,6 +62,10 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
   };
 
   const handleDelete = onDelete || onRemove;
+  
+  const openImageViewer = (url: string, alt: string) => {
+    setSelectedImage({ url, alt });
+  };
 
   return (
     <div className="space-y-3">
@@ -125,6 +132,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
         const imageUrl = exerciseData.image_url || exercise.image_url;
         const categoryName = exerciseData.category?.name || 
                             (exercise.category && exercise.category.name);
+        const exerciseName = exercise.name || (exercise.exercise && exercise.exercise.name) || "Exercício desconhecido";
         
         return (
           <div 
@@ -136,7 +144,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 <div className="bg-primary/20 text-primary font-medium rounded-full w-6 h-6 flex items-center justify-center">
                   {index + 1}
                 </div>
-                <h3 className="font-medium">{exercise.name || (exercise.exercise && exercise.exercise.name) || "Exercício desconhecido"}</h3>
+                <h3 className="font-medium">{exerciseName}</h3>
               </div>
               <div className="flex items-center gap-1">
                 {onMoveUp && (
@@ -184,14 +192,26 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               </div>
             </div>
             
-            {/* Preview image/gif */}
+            {/* Preview image/gif - Clickable now */}
             {imageUrl && (
-              <div className="mb-3 aspect-video overflow-hidden rounded-md bg-muted">
+              <div className="mb-3 aspect-video overflow-hidden rounded-md bg-muted relative group">
                 <img 
                   src={imageUrl} 
-                  alt={exercise.name || "Exercise preview"} 
-                  className="w-full h-full object-cover"
+                  alt={exerciseName} 
+                  className="w-full h-full object-cover cursor-pointer"
+                  onClick={() => openImageViewer(imageUrl, exerciseName)}
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => openImageViewer(imageUrl, exerciseName)}
+                  >
+                    <ZoomIn className="h-4 w-4 mr-1" />
+                    <span>Ampliar</span>
+                  </Button>
+                </div>
               </div>
             )}
             
@@ -244,6 +264,16 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
           </div>
         );
       })}
+
+      {/* Image Viewer Modal */}
+      {selectedImage && (
+        <ImageViewerModal 
+          imageUrl={selectedImage.url} 
+          altText={selectedImage.alt}
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </div>
   );
 };

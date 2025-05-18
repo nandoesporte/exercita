@@ -1,11 +1,12 @@
-
-import React from 'react';
-import { ArrowLeft, Clock, Dumbbell, Scale } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Clock, Dumbbell, Scale, ZoomIn } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import ImageViewerModal from '@/components/ImageViewerModal';
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +33,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
     return null;
   }
   
+  const [viewImage, setViewImage] = useState<boolean>(false);
   const { exercise, sets, reps, duration, rest, weight } = workoutExercise;
   const isMobile = useIsMobile();
   const { profile } = useProfile();
@@ -146,15 +148,27 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
       </header>
       
       <main className="container pb-6">
-        {/* Hero Image */}
+        {/* Hero Image - Now clickable */}
         <div className="relative h-64 md:h-80">
           <img
             src={exercise.image_url || 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=750&q=80'}
             alt={exercise.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={() => exercise.image_url && setViewImage(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
             <h1 className="text-fitness-orange text-2xl md:text-3xl font-bold">{exercise.name}</h1>
+            {exercise.image_url && (
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="mt-2 w-auto"
+                onClick={() => setViewImage(true)}
+              >
+                <ZoomIn className="h-4 w-4 mr-1" />
+                <span>Ampliar imagem</span>
+              </Button>
+            )}
           </div>
         </div>
         
@@ -271,6 +285,16 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
           </div>
         </div>
       </main>
+      
+      {/* Image Viewer Modal */}
+      {exercise.image_url && (
+        <ImageViewerModal
+          imageUrl={exercise.image_url}
+          altText={exercise.name}
+          isOpen={viewImage}
+          onClose={() => setViewImage(false)}
+        />
+      )}
     </>
   );
 };

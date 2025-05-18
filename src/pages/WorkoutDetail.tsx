@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar, FileText
+  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar, FileText, ZoomIn
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import ImageViewerModal from '@/components/ImageViewerModal';
 
 // Import Shadcn Tabs components
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -57,6 +58,7 @@ const WorkoutDetail = () => {
   const [activeDay, setActiveDay] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const { profile } = useProfile();
+  const [viewingImage, setViewingImage] = useState<{url: string, alt: string} | null>(null);
   
   const { data: workout, isLoading, error } = useWorkout(id);
   
@@ -260,6 +262,10 @@ const WorkoutDetail = () => {
     setSelectedExercise(null);
   }
 
+  const handleOpenImageViewer = (url: string, name: string) => {
+    setViewingImage({ url, alt: name });
+  };
+
   // If an exercise is selected, show its detail view
   if (selectedExercise) {
     const workoutExercise = workout?.workout_exercises?.find(we => we.id === selectedExercise);
@@ -460,33 +466,76 @@ const WorkoutDetail = () => {
                             }
                             
                             // Regular exercise item
+                            const exerciseData = workoutExercise.exercise;
+                            const imageUrl = exerciseData?.image_url;
+                            
                             return (
-                              <button 
+                              <div 
                                 key={workoutExercise.id}
-                                onClick={() => handleExerciseClick(workoutExercise.id)}
-                                className="w-full flex items-center p-3 border rounded-lg transition-colors text-left hover:bg-muted/50 cursor-pointer"
+                                className="border rounded-lg overflow-hidden"
                               >
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 text-fitness-orange font-medium flex items-center justify-center">
-                                  {index + 1}
-                                </div>
-                                <div className="ml-3 flex-grow">
-                                  <h3 className="font-medium">
-                                    {workoutExercise.exercise?.name || "Exercício desconhecido"}
-                                  </h3>
-                                  <div className="text-sm text-muted-foreground">
-                                    {workoutExercise.sets} séries
-                                    {workoutExercise.reps && workoutExercise.reps > 0 
-                                      ? ` • ${workoutExercise.reps} repetições` 
-                                      : workoutExercise.duration && workoutExercise.duration > 0
-                                        ? ` • ${formatDuration(workoutExercise.duration)}`
-                                        : ''
-                                    }
+                                {/* Exercise Header */}
+                                <button 
+                                  onClick={() => handleExerciseClick(workoutExercise.id)}
+                                  className="w-full flex items-center p-3 transition-colors text-left hover:bg-muted/50 cursor-pointer"
+                                >
+                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-fitness-orange/20 text-fitness-orange font-medium flex items-center justify-center">
+                                    {index + 1}
                                   </div>
-                                </div>
-                                <div className="text-fitness-orange">
-                                  <Info size={18} />
-                                </div>
-                              </button>
+                                  <div className="ml-3 flex-grow">
+                                    <h3 className="font-medium">
+                                      {workoutExercise.exercise?.name || "Exercício desconhecido"}
+                                    </h3>
+                                    <div className="text-sm text-muted-foreground">
+                                      {workoutExercise.sets} séries
+                                      {workoutExercise.reps && workoutExercise.reps > 0 
+                                        ? ` • ${workoutExercise.reps} repetições` 
+                                        : workoutExercise.duration && workoutExercise.duration > 0
+                                          ? ` • ${formatDuration(workoutExercise.duration)}`
+                                          : ''
+                                      }
+                                    </div>
+                                  </div>
+                                  <div className="text-fitness-orange">
+                                    <Info size={18} />
+                                  </div>
+                                </button>
+                                
+                                {/* Preview Image (if available) - Now clickable */}
+                                {imageUrl && (
+                                  <div className="relative group">
+                                    <img 
+                                      src={imageUrl}
+                                      alt={workoutExercise.exercise?.name || "Exercise preview"}
+                                      className="w-full h-40 object-cover cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenImageViewer(
+                                          imageUrl, 
+                                          workoutExercise.exercise?.name || "Exercise preview"
+                                        );
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                      <Button 
+                                        variant="secondary" 
+                                        size="sm" 
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleOpenImageViewer(
+                                            imageUrl, 
+                                            workoutExercise.exercise?.name || "Exercise preview"
+                                          );
+                                        }}
+                                      >
+                                        <ZoomIn className="h-4 w-4 mr-1" />
+                                        <span>Ampliar</span>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             );
                           })}
                         </div>
@@ -563,6 +612,16 @@ const WorkoutDetail = () => {
           </Tabs>
         </div>
       </main>
+      
+      {/* Image Viewer Modal */}
+      {viewingImage && (
+        <ImageViewerModal
+          imageUrl={viewingImage.url}
+          altText={viewingImage.alt}
+          isOpen={!!viewingImage}
+          onClose={() => setViewingImage(null)}
+        />
+      )}
     </>
   );
 };
