@@ -572,7 +572,7 @@ export function useAdminWorkouts() {
     }
   });
 
-  // Clone exercises from one day to other days
+  // Updated cloning function with improved error handling
   const cloneExercisesToDays = useMutation({
     mutationFn: async ({
       workoutId,
@@ -583,67 +583,85 @@ export function useAdminWorkouts() {
       sourceDayOfWeek: string,
       targetDaysOfWeek: string[]
     }) => {
-      // Get source exercises
-      const { data: sourceExercises, error: fetchError } = await supabase
-        .from('workout_exercises')
-        .select('*')
-        .eq('workout_id', workoutId)
-        .eq('day_of_week', sourceDayOfWeek)
-        .order('order_position');
+      try {
+        console.log(`Cloning exercises from ${sourceDayOfWeek} to days:`, targetDaysOfWeek);
+        
+        // Get source exercises
+        const { data: sourceExercises, error: fetchError } = await supabase
+          .from('workout_exercises')
+          .select('*')
+          .eq('workout_id', workoutId)
+          .eq('day_of_week', sourceDayOfWeek)
+          .order('order_position');
 
-      if (fetchError) {
-        throw new Error(`Error fetching source exercises: ${fetchError.message}`);
-      }
-
-      if (!sourceExercises || sourceExercises.length === 0) {
-        throw new Error('No exercises found to clone');
-      }
-
-      // Process each target day
-      for (const targetDay of targetDaysOfWeek) {
-        try {
-          // First delete all existing exercises for the target day to avoid conflicts
-          const { error: deleteError } = await supabase
-            .from('workout_exercises')
-            .delete()
-            .eq('workout_id', workoutId)
-            .eq('day_of_week', targetDay);
-          
-          if (deleteError) {
-            throw new Error(`Error removing existing exercises: ${deleteError.message}`);
-          }
-          
-          // Prepare exercises for insertion with the target day
-          const exercisesToInsert = sourceExercises.map((exercise, index) => {
-            // Extract only the fields we need and exclude id and timestamps
-            const { 
-              id, created_at, updated_at, day_of_week, 
-              ...exerciseData 
-            } = exercise;
-            
-            return {
-              ...exerciseData,
-              day_of_week: targetDay,
-              order_position: index + 1, // Maintain the same relative order
-              workout_id: workoutId
-            };
-          });
-
-          // Insert all exercises for this target day
-          if (exercisesToInsert.length > 0) {
-            const { error: insertError } = await supabase
-              .from('workout_exercises')
-              .insert(exercisesToInsert);
-
-            if (insertError) {
-              console.error(`Error details when cloning to ${targetDay}:`, insertError);
-              throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
-            }
-          }
-        } catch (error) {
-          console.error(`Error processing day ${targetDay}:`, error);
-          throw error;
+        if (fetchError) {
+          console.error("Error fetching source exercises:", fetchError);
+          throw new Error(`Error fetching source exercises: ${fetchError.message}`);
         }
+
+        if (!sourceExercises || sourceExercises.length === 0) {
+          console.error("No exercises found to clone");
+          throw new Error('No exercises found to clone');
+        }
+
+        console.log(`Found ${sourceExercises.length} exercises to clone`);
+
+        // Process each target day
+        for (const targetDay of targetDaysOfWeek) {
+          try {
+            console.log(`Processing target day: ${targetDay}`);
+            
+            // First delete all existing exercises for the target day to avoid conflicts
+            const { error: deleteError } = await supabase
+              .from('workout_exercises')
+              .delete()
+              .eq('workout_id', workoutId)
+              .eq('day_of_week', targetDay);
+            
+            if (deleteError) {
+              console.error(`Error removing existing exercises for day ${targetDay}:`, deleteError);
+              throw new Error(`Error removing existing exercises: ${deleteError.message}`);
+            }
+            
+            console.log(`Deleted existing exercises for ${targetDay}, now cloning...`);
+            
+            // Prepare exercises for insertion with the target day
+            const exercisesToInsert = sourceExercises.map(exercise => {
+              // Extract only the fields we need and exclude id and timestamps
+              const { 
+                id, created_at, updated_at, ...exerciseData 
+              } = exercise;
+              
+              return {
+                ...exerciseData,
+                day_of_week: targetDay,
+                workout_id: workoutId
+              };
+            });
+
+            if (exercisesToInsert.length > 0) {
+              // Insert exercises for this target day
+              const { error: insertError } = await supabase
+                .from('workout_exercises')
+                .insert(exercisesToInsert);
+
+              if (insertError) {
+                console.error(`Error cloning exercises to ${targetDay}:`, insertError);
+                throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
+              }
+              
+              console.log(`Successfully cloned ${exercisesToInsert.length} exercises to ${targetDay}`);
+            }
+          } catch (error) {
+            console.error(`Error processing day ${targetDay}:`, error);
+            throw error;
+          }
+        }
+        
+        console.log("Cloning operation completed successfully");
+      } catch (error) {
+        console.error("Error in cloneExercisesToDays:", error);
+        throw error;
       }
     },
     onSuccess: (_, variables) => {
@@ -651,8 +669,10 @@ export function useAdminWorkouts() {
       queryClient.invalidateQueries({
         queryKey: ['workout-exercises', variables.workoutId]
       });
+      toast.success(`Exercícios clonados com sucesso para ${variables.targetDaysOfWeek.length} dia(s)`);
     },
     onError: (error: Error) => {
+      console.error("Clone error:", error);
       toast.error(error.message || 'Falha ao clonar exercícios');
     }
   });
