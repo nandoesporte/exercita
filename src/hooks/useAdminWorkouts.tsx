@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -137,10 +136,11 @@ export function useAdminWorkouts() {
           
           if (daysError) {
             console.error("Error assigning days to workout:", daysError);
-            throw new Error(`Error assigning days to workout: ${daysError.message}`);
+            // We don't throw here to ensure the workout is still created even if days assignment fails
+            toast.error(`Error assigning days to workout: ${daysError.message}`);
+          } else {
+            console.log("Workout days added successfully");
           }
-          
-          console.log("Workout days added successfully");
         }
 
         // If a user_id was provided, create an entry in user_workout_history
@@ -156,10 +156,11 @@ export function useAdminWorkouts() {
           
           if (historyError) {
             console.error("Error assigning workout to user:", historyError);
-            throw new Error(`Error assigning workout to user: ${historyError.message}`);
+            // We don't throw here to ensure the workout is still created even if user assignment fails
+            toast.error(`Error assigning workout to user: ${historyError.message}`);
+          } else {
+            console.log("Workout assigned to user successfully");
           }
-          
-          console.log("Workout assigned to user successfully");
         }
       
         return workout;
@@ -170,6 +171,7 @@ export function useAdminWorkouts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
       toast.success('Workout created successfully');
     },
     onError: (error: Error) => {

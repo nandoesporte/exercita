@@ -24,6 +24,7 @@ const CreateWorkout = () => {
     
     createWorkout(data, {
       onSuccess: () => {
+        toast.success('Treino criado com sucesso!');
         navigate('/admin/workouts');
       },
       onError: (error) => {
