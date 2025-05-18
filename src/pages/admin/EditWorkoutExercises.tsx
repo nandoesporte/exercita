@@ -123,16 +123,17 @@ const EditWorkoutExercises = () => {
         </div>
       ) : (
         <>
-          {/* Day of Week Filter - Dropdown for mobile, Tabs for desktop */}
+          {/* Day of Week Filter - Improved Mobile UI */}
           <div className="mb-8">
             <div className="flex items-center mb-3">
               <Calendar className="mr-2 h-4 w-4" />
               <h2 className="font-medium">Filtrar por dia</h2>
             </div>
             
+            {/* Mobile: Select dropdown, Desktop: Tabs */}
             {isMobile ? (
               <Select defaultValue="all" onValueChange={handleDayChange}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full bg-card text-card-foreground">
                   <SelectValue placeholder="Selecionar dia" />
                 </SelectTrigger>
                 <SelectContent>
@@ -145,9 +146,9 @@ const EditWorkoutExercises = () => {
               </Select>
             ) : (
               <Tabs defaultValue="all" onValueChange={handleDayChange}>
-                <TabsList className="flex overflow-x-auto w-full">
+                <TabsList className="grid grid-cols-4 md:grid-cols-8">
                   {daysOfWeek.map((day) => (
-                    <TabsTrigger key={day.id} value={day.id} className="flex-shrink-0">
+                    <TabsTrigger key={day.id} value={day.id}>
                       {day.label}
                     </TabsTrigger>
                   ))}
@@ -185,4 +186,3 @@ const EditWorkoutExercises = () => {
 };
 
 export default EditWorkoutExercises;
-

@@ -7,6 +7,7 @@ import { Database } from '@/integrations/supabase/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Workout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -68,24 +69,47 @@ const Workouts = () => {
     return matchesFilter && matchesSearch;
   });
 
+  const handleDayChange = (value: string) => {
+    setSelectedDay(value === 'all' ? null : value);
+  };
+
   return (
     <div className="container h-full">
       <section className="mobile-section h-full flex flex-col">
-        {/* Weekly Schedule Tabs */}
-        <Tabs defaultValue="all" onValueChange={(val) => setSelectedDay(val === 'all' ? null : val)} className="mb-6">
+        {/* Weekly Schedule Selection - Responsive Design */}
+        <div className="mb-6">
           <div className="flex items-center mb-2">
             <Calendar className="mr-2 h-4 w-4" />
             <h2 className="font-medium">Programação Semanal</h2>
           </div>
-          <TabsList className="flex overflow-x-auto w-full">
-            <TabsTrigger value="all" className="flex-shrink-0">Todos</TabsTrigger>
-            {weekdays.map((day) => (
-              <TabsTrigger key={day.id} value={day.id} className="flex-shrink-0">
-                {day.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+          
+          {isMobile ? (
+            /* Mobile View: Dropdown for days */
+            <Select defaultValue="all" onValueChange={handleDayChange}>
+              <SelectTrigger className="w-full bg-secondary text-foreground">
+                <SelectValue placeholder="Selecionar dia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os dias</SelectItem>
+                {weekdays.map((day) => (
+                  <SelectItem key={day.id} value={day.id}>{day.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            /* Desktop View: Tabs for days */
+            <Tabs defaultValue="all" onValueChange={handleDayChange} className="w-full">
+              <TabsList className="flex w-full">
+                <TabsTrigger value="all" className="flex-1">Todos</TabsTrigger>
+                {weekdays.map((day) => (
+                  <TabsTrigger key={day.id} value={day.id} className="flex-1">
+                    {day.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          )}
+        </div>
       
         {/* Search */}
         <div className="relative mb-6">
@@ -99,12 +123,12 @@ const Workouts = () => {
           />
         </div>
         
-        {/* Filters */}
+        {/* Category Filters - Scrollable container with better spacing for mobile */}
         <div className="flex overflow-x-auto gap-2 pb-3 mb-6 hide-scrollbar">
           {allFilters.map((category) => (
             <button
               key={category}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium ${
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium flex-shrink-0 ${
                 activeFilter === category
                   ? 'bg-fitness-green text-white'
                   : 'bg-secondary text-foreground'
