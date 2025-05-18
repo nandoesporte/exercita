@@ -70,6 +70,11 @@ const WorkoutDetail = () => {
     return `${seconds} seg`;
   };
   
+  // Add the missing handleBackClick function
+  const handleBackClick = () => {
+    navigate(-1);
+  };
+  
   // Helper function for profile avatar
   const getInitials = () => {
     if (!profile) return 'U';
