@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { toast } from '@/lib/toast';
+import { ExerciseSelector } from '@/components/admin/ExerciseSelector';
 
 interface Exercise {
   id: string;
@@ -33,6 +35,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState<'exercise' | 'title'>('exercise');
   const [exerciseId, setExerciseId] = useState<string>('');
+  const [exerciseName, setExerciseName] = useState<string>('');
   const [sets, setSets] = useState<string>('3');
   const [reps, setReps] = useState<string>('12');
   const [duration, setDuration] = useState<string>('');
@@ -49,7 +52,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
     { id: 'friday', name: 'Sexta-feira' },
     { id: 'saturday', name: 'Sábado' },
     { id: 'sunday', name: 'Domingo' },
-    { id: 'all', name: 'Todos os dias' }, // Changed from empty string to 'all'
+    { id: 'all', name: 'Todos os dias' },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -95,7 +98,13 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
 
     // Reset form
     setExerciseId('');
+    setExerciseName('');
     toast.success('Exercício adicionado');
+  };
+
+  const handleExerciseSelect = (id: string, name: string) => {
+    setExerciseId(id);
+    setExerciseName(name);
   };
 
   return (
@@ -125,18 +134,35 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="exercise">Exercício</Label>
-            <Select value={exerciseId} onValueChange={setExerciseId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um exercício" />
-              </SelectTrigger>
-              <SelectContent>
-                {exercises.map((exercise) => (
-                  <SelectItem key={exercise.id} value={exercise.id}>
-                    {exercise.name} {exercise.category?.name ? `(${exercise.category.name})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                {exerciseId ? (
+                  <div className="border rounded-md p-2 flex items-center justify-between">
+                    <span>{exerciseName}</span>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        setExerciseId('');
+                        setExerciseName('');
+                      }}
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                ) : (
+                  <Select disabled>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um exercício" />
+                    </SelectTrigger>
+                  </Select>
+                )}
+              </div>
+              <ExerciseSelector
+                onSelectExercise={handleExerciseSelect}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
