@@ -5,11 +5,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
-import { Toaster } from '@/components/ui/toaster'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster as SonnerToaster, toast as sonnerToast } from 'sonner'
+import { Toaster } from 'sonner'
 
 // Add type declaration for the global deferredPromptEvent
 declare global {
@@ -46,9 +45,9 @@ const Main = () => {
   // Add listener for online/offline status
   const handleOfflineStatus = () => {
     if (!navigator.onLine) {
-      sonnerToast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
+      console.log('User is offline. Some functionality may be limited.');
     } else {
-      sonnerToast.success('Conexão restabelecida.');
+      console.log('Connection restored.');
     }
   };
 
@@ -61,7 +60,7 @@ const Main = () => {
 
     // Check initial status
     if (!navigator.onLine) {
-      sonnerToast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
+      console.log('User is offline. Some functionality may be limited.');
     }
 
     return () => {
@@ -77,8 +76,7 @@ const Main = () => {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <AuthProvider>
-              <Toaster />
-              <SonnerToaster position="bottom-center" richColors closeButton />
+              <Toaster position="bottom-center" richColors closeButton />
               <App />
             </AuthProvider>
           </TooltipProvider>
