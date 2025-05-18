@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
-import { Menu, ArrowLeft } from 'lucide-react';
+import { Menu, ArrowLeft, Home } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -110,9 +110,23 @@ const AdminLayout = () => {
                 </div>
               </div>
               
-              {/* Current page title (mobile only) */}
-              <div className="md:hidden text-sm font-medium">
-                {getCurrentPageTitle()}
+              {/* Current page title and home button (mobile only) */}
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  asChild
+                  className="hidden sm:flex"
+                >
+                  <Link to="/">
+                    <Home className="h-4 w-4 mr-2" />
+                    Início
+                  </Link>
+                </Button>
+                
+                <div className="md:hidden text-sm font-medium">
+                  {getCurrentPageTitle()}
+                </div>
               </div>
             </div>
           </div>

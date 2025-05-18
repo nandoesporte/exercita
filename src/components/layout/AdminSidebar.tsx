@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   DumbbellIcon, 
@@ -12,11 +12,13 @@ import {
   Shield,
   Library,
   Users,
-  ChevronRight
+  ChevronRight,
+  Home
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 
 interface AdminSidebarProps {
   onNavItemClick?: () => void;
@@ -72,7 +74,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
         { to: "/admin/schedule", icon: Clock, label: "Agenda" },
         { to: "/admin/appointments", icon: CalendarIcon, label: "Consultas" },
         { to: "/admin/payment-methods", icon: CreditCard, label: "Métodos de Pagamento" },
-        { to: "/admin/users", icon: Users, label: "Alunos" }, // Alterando de "Usuários" para "Alunos"
+        { to: "/admin/users", icon: Users, label: "Alunos" },
         { to: "/admin/rls-checker", icon: Shield, label: "Verificador de RLS" }
       ]
     }
@@ -80,6 +82,21 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
   
   return (
     <div className="h-full py-4 px-2 border-r bg-white dark:bg-fitness-darkGray shadow-sm flex flex-col overflow-y-auto">
+      {/* Home button at the top */}
+      <div className="mb-4 px-3">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full justify-start gap-2"
+          asChild
+        >
+          <Link to="/">
+            <Home className="h-4 w-4" />
+            <span>Início</span>
+          </Link>
+        </Button>
+      </div>
+      
       <div className="flex-1 space-y-4">
         {navSections.map((section, index) => (
           <div key={index} className="mb-2">
