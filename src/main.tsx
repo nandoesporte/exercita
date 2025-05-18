@@ -5,11 +5,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import App from './App.tsx'
 import './index.css'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from 'sonner'
 import { registerConnectivityListeners, registerInstallPrompt } from '@/utils/pwaUtils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster as SonnerToaster } from 'sonner'
 
 // Add type declaration for the global deferredPromptEvent
 declare global {
@@ -47,7 +46,6 @@ const Main = () => {
   React.useEffect(() => {
     const onlineCallback = () => {
       if (navigator.onLine) {
-        // Use dynamic import to avoid circular dependencies
         import('sonner').then(({ toast }) => {
           toast.success('Conexão restabelecida.');
         });
@@ -56,7 +54,6 @@ const Main = () => {
     
     const offlineCallback = () => {
       if (!navigator.onLine) {
-        // Use dynamic import to avoid circular dependencies
         import('sonner').then(({ toast }) => {
           toast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
         });
@@ -67,16 +64,13 @@ const Main = () => {
 
     // Check initial status
     if (!navigator.onLine) {
-      // Use dynamic import to avoid circular dependencies
       import('sonner').then(({ toast }) => {
         toast.warning('Você está offline. Algumas funcionalidades podem não estar disponíveis.');
       });
     }
 
     return () => {
-      // Listeners are properly removed
-      window.removeEventListener('online', onlineCallback);
-      window.removeEventListener('offline', offlineCallback);
+      // Listeners are properly removed in the pwaUtils function
     };
   }, []);
 
@@ -86,8 +80,8 @@ const Main = () => {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <AuthProvider>
-              <Toaster />
-              <SonnerToaster position="bottom-center" richColors closeButton />
+              {/* Single Toaster instance for the entire application */}
+              <Toaster position="bottom-center" richColors closeButton />
               <App />
             </AuthProvider>
           </TooltipProvider>
