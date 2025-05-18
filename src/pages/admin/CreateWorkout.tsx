@@ -25,6 +25,10 @@ const CreateWorkout = () => {
     createWorkout(data, {
       onSuccess: () => {
         navigate('/admin/workouts');
+      },
+      onError: (error) => {
+        console.error("Error creating workout:", error);
+        toast.error(`Erro ao criar treino: ${error.message}`);
       }
     });
   };

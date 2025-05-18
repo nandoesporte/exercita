@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -92,57 +93,80 @@ export function useAdminWorkouts() {
 
   const createWorkout = useMutation({
     mutationFn: async (formData: WorkoutFormData) => {
-      // First insert the workout
-      const { data: workout, error: workoutError } = await supabase
-        .from('workouts')
-        .insert({
-          title: formData.title,
-          description: formData.description || null,
-          duration: formData.duration,
-          level: formData.level,
-          category_id: formData.category_id || null,
-          image_url: formData.image_url || null,
-          calories: formData.calories || null,
-        })
-        .select('id')
-        .single();
-      
-      if (workoutError) {
-        throw new Error(`Error creating workout: ${workoutError.message}`);
-      }
-
-      // If days_of_week are provided, create entries in workout_days
-      if (formData.days_of_week && formData.days_of_week.length > 0 && workout) {
-        const workoutDaysEntries = formData.days_of_week.map(day => ({
-          workout_id: workout.id,
-          day_of_week: day
-        }));
-
-        const { error: daysError } = await supabase
-          .from('workout_days')
-          .insert(workoutDaysEntries);
+      try {
+        console.log("Creating workout with data:", formData);
         
-        if (daysError) {
-          throw new Error(`Error assigning days to workout: ${daysError.message}`);
-        }
-      }
-
-      // If a user_id was provided, create an entry in user_workout_history
-      if (formData.user_id && workout) {
-        const { error: historyError } = await supabase
-          .from('user_workout_history')
+        // First insert the workout
+        const { data: workout, error: workoutError } = await supabase
+          .from('workouts')
           .insert({
-            user_id: formData.user_id,
-            workout_id: workout.id,
-            completed_at: null, // Not completed yet
-          });
+            title: formData.title,
+            description: formData.description || null,
+            duration: formData.duration,
+            level: formData.level,
+            category_id: formData.category_id || null,
+            image_url: formData.image_url || null,
+            calories: formData.calories || null,
+            is_recommended: formData.is_recommended || false,
+          })
+          .select('id')
+          .single();
         
-        if (historyError) {
-          throw new Error(`Error assigning workout to user: ${historyError.message}`);
+        if (workoutError) {
+          console.error("Error creating workout:", workoutError);
+          throw new Error(`Error creating workout: ${workoutError.message}`);
         }
-      }
+
+        if (!workout) {
+          throw new Error("Failed to create workout: No data returned");
+        }
+
+        console.log("Workout created successfully:", workout);
+
+        // If days_of_week are provided, create entries in workout_days
+        if (formData.days_of_week && formData.days_of_week.length > 0 && workout) {
+          console.log("Adding workout days:", formData.days_of_week);
+          const workoutDaysEntries = formData.days_of_week.map(day => ({
+            workout_id: workout.id,
+            day_of_week: day
+          }));
+
+          const { error: daysError } = await supabase
+            .from('workout_days')
+            .insert(workoutDaysEntries);
+          
+          if (daysError) {
+            console.error("Error assigning days to workout:", daysError);
+            throw new Error(`Error assigning days to workout: ${daysError.message}`);
+          }
+          
+          console.log("Workout days added successfully");
+        }
+
+        // If a user_id was provided, create an entry in user_workout_history
+        if (formData.user_id && workout) {
+          console.log("Assigning workout to user:", formData.user_id);
+          const { error: historyError } = await supabase
+            .from('user_workout_history')
+            .insert({
+              user_id: formData.user_id,
+              workout_id: workout.id,
+              completed_at: null, // Not completed yet
+            });
+          
+          if (historyError) {
+            console.error("Error assigning workout to user:", historyError);
+            throw new Error(`Error assigning workout to user: ${historyError.message}`);
+          }
+          
+          console.log("Workout assigned to user successfully");
+        }
       
-      return workout;
+        return workout;
+      } catch (error) {
+        console.error("Exception in createWorkout:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
