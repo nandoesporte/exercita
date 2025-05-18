@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -603,93 +602,43 @@ export function useAdminWorkouts() {
       // Process each target day
       for (const targetDay of targetDaysOfWeek) {
         try {
-          // First delete any existing exercises that would cause unique constraint violations
-          // We need to identify any potential conflicts by exercise_id
-          const exerciseIdsToClone = sourceExercises
-            .filter(ex => ex.exercise_id) // Only consider exercises with exercise_id
-            .map(ex => ex.exercise_id);
+          // First delete all existing exercises for the target day to avoid conflicts
+          const { error: deleteError } = await supabase
+            .from('workout_exercises')
+            .delete()
+            .eq('workout_id', workoutId)
+            .eq('day_of_week', targetDay);
+          
+          if (deleteError) {
+            throw new Error(`Error removing existing exercises: ${deleteError.message}`);
+          }
+          
+          // Prepare exercises for insertion with the target day
+          const exercisesToInsert = sourceExercises.map((exercise, index) => {
+            // Extract only the fields we need and exclude id and timestamps
+            const { 
+              id, created_at, updated_at, day_of_week, 
+              ...exerciseData 
+            } = exercise;
+            
+            return {
+              ...exerciseData,
+              day_of_week: targetDay,
+              order_position: index + 1, // Maintain the same relative order
+              workout_id: workoutId
+            };
+          });
 
-          if (exerciseIdsToClone.length > 0) {
-            // Delete existing exercises with the same exercise_ids to prevent conflicts
-            const { error: deleteError } = await supabase
+          // Insert all exercises for this target day
+          if (exercisesToInsert.length > 0) {
+            const { error: insertError } = await supabase
               .from('workout_exercises')
-              .delete()
-              .eq('workout_id', workoutId)
-              .eq('day_of_week', targetDay)
-              .in('exercise_id', exerciseIdsToClone);
-            
-            if (deleteError) {
-              console.error(`Error removing conflicting exercises: ${deleteError.message}`);
-              // Continue anyway - we'll check for remaining conflicts below
+              .insert(exercisesToInsert);
+
+            if (insertError) {
+              console.error(`Error details when cloning to ${targetDay}:`, insertError);
+              throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
             }
-          }
-          
-          // Get existing section titles in the target day
-          const { data: existingSections, error: sectionsError } = await supabase
-            .from('workout_exercises')
-            .select('section_title')
-            .eq('workout_id', workoutId)
-            .eq('day_of_week', targetDay)
-            .eq('is_title_section', true)
-            .not('section_title', 'is', null);
-            
-          if (sectionsError) {
-            throw new Error(`Error checking existing section titles: ${sectionsError.message}`);
-          }
-          
-          // Create a set of existing section titles for quick lookup
-          const existingSectionTitles = new Set(
-            existingSections?.map(section => section.section_title) || []
-          );
-            
-          // Get the highest position number in the target day for new positions
-          const { data: maxPositionData, error: maxPosError } = await supabase
-            .from('workout_exercises')
-            .select('order_position')
-            .eq('workout_id', workoutId)
-            .eq('day_of_week', targetDay)
-            .order('order_position', { ascending: false })
-            .limit(1);
-
-          if (maxPosError) {
-            throw new Error(`Error getting max position: ${maxPosError.message}`);
-          }
-
-          const startPosition = maxPositionData?.length > 0 ? (maxPositionData[0].order_position || 0) + 1 : 1;
-          
-          // Filter out section titles that already exist and prepare exercises for insertion
-          const exercisesToInsert = sourceExercises
-            .filter(exercise => {
-              // Filter out section titles that already exist
-              if (exercise.is_title_section && exercise.section_title) {
-                return !existingSectionTitles.has(exercise.section_title);
-              }
-              
-              // Include all other exercises - we've already deleted potential conflicts
-              return true;
-            })
-            .map((exercise, index) => {
-              const { id, created_at, updated_at, ...exerciseData } = exercise;
-              return {
-                ...exerciseData,
-                day_of_week: targetDay,
-                order_position: startPosition + index, // Ensure unique increasing order positions
-              };
-            });
-
-          if (exercisesToInsert.length === 0) {
-            console.log(`No new exercises to insert for ${targetDay}`);
-            continue;
-          }
-
-          // Insert exercises into target day
-          const { error: insertError } = await supabase
-            .from('workout_exercises')
-            .insert(exercisesToInsert);
-
-          if (insertError) {
-            console.error(`Error details when cloning to ${targetDay}:`, insertError);
-            throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
           }
         } catch (error) {
           console.error(`Error processing day ${targetDay}:`, error);
