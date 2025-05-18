@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -63,7 +62,7 @@ const WorkoutDetail = () => {
   
   // Helper function to format duration
   const formatDuration = (seconds: number | null | undefined) => {
-    if (seconds === null || seconds === undefined) return null;
+    if (!seconds || seconds === 0) return null;
     
     if (seconds >= 60 && seconds % 60 === 0) {
       return `${seconds / 60} min`;
@@ -470,11 +469,11 @@ const WorkoutDetail = () => {
                                       {workoutExercise.exercise?.name || "Exercício desconhecido"}
                                     </h3>
                                     <div className="text-sm text-muted-foreground">
-                                      {workoutExercise.sets} séries • 
-                                      {workoutExercise.reps 
-                                        ? ` ${workoutExercise.reps} repetições` 
-                                        : workoutExercise.duration 
-                                          ? ` ${formatDuration(workoutExercise.duration)}`
+                                      {workoutExercise.sets} séries
+                                      {workoutExercise.reps && workoutExercise.reps > 0 
+                                        ? ` • ${workoutExercise.reps} repetições` 
+                                        : workoutExercise.duration && workoutExercise.duration > 0
+                                          ? ` • ${formatDuration(workoutExercise.duration)}`
                                           : ''
                                       }
                                     </div>

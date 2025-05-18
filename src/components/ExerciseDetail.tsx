@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell, Scale } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
@@ -47,7 +48,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   
   // Helper function to format duration
   const formatDuration = (seconds: number | null | undefined) => {
-    if (seconds === null || seconds === undefined || seconds === 0) return null;
+    if (!seconds || seconds === 0) return null;
     
     // If duration is a multiple of 60, display in minutes
     if (seconds % 60 === 0 && seconds >= 60) {
@@ -65,6 +66,9 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   };
   
   const formattedDuration = formatDuration(duration);
+  const showWeight = weight !== null && weight !== undefined && weight > 0;
+  const showReps = reps !== null && reps !== undefined && reps > 0;
+  const showRest = rest !== null && rest !== undefined && rest > 0;
   
   return (
     <>
@@ -176,7 +180,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 <p className="text-xl font-bold">{sets}</p>
               </div>
               
-              {reps ? (
+              {showReps ? (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Dumbbell size={16} />
@@ -184,28 +188,25 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                   </div>
                   <p className="text-xl font-bold">{reps}</p>
                 </div>
-              ) : (
+              ) : formattedDuration ? (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
                     <span className="text-sm">Duração</span>
                   </div>
-                  {formattedDuration ? (
-                    <p className="text-xl font-bold">
-                      {formattedDuration.value} {formattedDuration.unit}
-                      {formattedDuration.unit === 'min' && (
-                        <span className="text-sm font-normal ml-1 text-muted-foreground">
-                          ({formattedDuration.value * 60} segundos)
-                        </span>
-                      )}
-                    </p>
-                  ) : (
-                    <p className="text-xl font-bold text-muted-foreground">Não especificada</p>
-                  )}
+                  <p className="text-xl font-bold">
+                    {formattedDuration.value} {formattedDuration.unit}
+                    {formattedDuration.unit === 'min' && (
+                      <span className="text-sm font-normal ml-1 text-muted-foreground">
+                        ({formattedDuration.value * 60} segundos)
+                      </span>
+                    )}
+                  </p>
                 </div>
-              )}
+              ) : null}
               
-              {rest !== null && rest !== undefined && (
+              {/* Only show rest if greater than 0 */}
+              {showRest && (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
@@ -230,8 +231,8 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 </div>
               )}
               
-              {/* Weight parameter block */}
-              {weight && weight > 0 && (
+              {/* Weight parameter block - only if weight > 0 */}
+              {showWeight && (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Scale size={16} />

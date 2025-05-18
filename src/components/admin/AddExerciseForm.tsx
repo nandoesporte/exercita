@@ -24,9 +24,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 const formSchema = z.object({
   exercise_id: z.string().min(1, "Selecione um exercício"),
   sets: z.coerce.number().min(1, "Mínimo de 1 série").optional(),
-  reps: z.coerce.number().min(1, "Mínimo de 1 repetição").optional(),
+  reps: z.coerce.number().min(0, "Mínimo de 0 repetição").optional(),
   weight: z.coerce.number().min(0, "Peso não pode ser negativo").optional(),
-  duration: z.coerce.number().min(1, "Duração mínima de 1").optional(),
+  duration: z.coerce.number().min(0, "Duração mínima de 0").optional(),
   duration_unit: z.enum(['seconds', 'minutes']).default('seconds'),
   rest: z.coerce.number().min(0, "Descanso não pode ser negativo").optional(),
   day_of_week: z.string().optional(),
@@ -182,7 +182,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
                 <FormItem>
                   <FormLabel>Repetições</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <Input type="number" min="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,7 +197,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
                 <FormItem>
                   <FormLabel>Peso (kg)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.5" {...field} />
+                    <Input type="number" min="0" step="0.5" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,7 +213,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
                   <FormItem>
                     <FormLabel>Duração</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" min="0" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -263,7 +263,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
                 <FormItem>
                   <FormLabel>Descanso (segundos)</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <Input type="number" min="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
