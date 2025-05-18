@@ -19,13 +19,15 @@ import { ExerciseSelector } from './ExerciseSelector';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   exercise_id: z.string().min(1, "Selecione um exercício"),
   sets: z.coerce.number().min(1, "Mínimo de 1 série").optional(),
   reps: z.coerce.number().min(1, "Mínimo de 1 repetição").optional(),
   weight: z.coerce.number().min(0, "Peso não pode ser negativo").optional(),
-  duration: z.coerce.number().min(1, "Duração mínima de 1 segundo").optional(),
+  duration: z.coerce.number().min(1, "Duração mínima de 1").optional(),
+  duration_unit: z.enum(['seconds', 'minutes']).default('seconds'),
   rest: z.coerce.number().min(0, "Descanso não pode ser negativo").optional(),
   day_of_week: z.string().optional(),
 });
@@ -65,16 +67,24 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       reps: 12,
       weight: 0,
       duration: 0,
+      duration_unit: 'seconds',
       rest: 30,
       day_of_week: '',
     },
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    // Convert duration to seconds if it was entered in minutes
+    const duration = data.duration && data.duration_unit === 'minutes' 
+      ? data.duration * 60 
+      : data.duration;
+
     onAddExercise({
       ...data,
+      duration,
       order_position: currentExerciseCount + 1,
     } as WorkoutExercise);
+    
     form.reset({
       ...form.getValues(),
       exercise_id: '',
@@ -194,20 +204,56 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
               )}
             />
 
-            {/* Duration */}
-            <FormField
-              control={form.control}
-              name="duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duração (segundos)</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Duration with unit selection */}
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duração</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="duration_unit"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="seconds" />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            Segundos
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="minutes" />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            Minutos
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Rest */}
             <FormField
