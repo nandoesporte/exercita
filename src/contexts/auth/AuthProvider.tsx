@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -136,6 +137,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         toast.info('Conta criada! Por favor, faça o login.');
       }
+
+      // Return successful registration data
+      return data;
     } catch (error: any) {
       console.error("Exception during signup:", error);
       toast.error(error.message || 'Ocorreu um erro durante o cadastro');
@@ -169,6 +173,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Ensure profile exists for this user after successful login
       if (data.user) {
+        // If user is missing instance_id, add it now
+        if (!data.user.user_metadata?.instance_id) {
+          console.log("User missing instance_id, updating user metadata...");
+          
+          const updatedMetadata = {
+            ...data.user.user_metadata,
+            instance_id: crypto.randomUUID(),
+          };
+          
+          // Update user metadata
+          const { error: updateError } = await supabase.auth.updateUser({
+            data: updatedMetadata
+          });
+          
+          if (updateError) {
+            console.error("Error updating user instance_id:", updateError);
+          } else {
+            console.log("User instance_id added successfully");
+          }
+        }
+        
         await ensureProfileExists(data.user.id, data.user.user_metadata);
       }
       
