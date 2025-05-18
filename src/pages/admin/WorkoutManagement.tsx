@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Trash2, PenSquare, Dumbbell, Star, UserCheck
+  Plus, Search, Trash2, PenSquare, Dumbbell, Star, UserCheck, Users
 } from 'lucide-react';
 import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { RecommendWorkoutDialog } from '@/components/admin/RecommendWorkoutDialog';
+import { CloneWorkoutDialog } from '@/components/admin/CloneWorkoutDialog';
 
 const WorkoutManagement = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const WorkoutManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [recommendWorkoutId, setRecommendWorkoutId] = useState<string | null>(null);
+  const [cloneWorkoutId, setCloneWorkoutId] = useState<string | null>(null);
   
   const filteredWorkouts = workouts.filter(workout => 
     workout.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -55,6 +57,11 @@ const WorkoutManagement = () => {
 
   const handleOpenRecommendDialog = (id: string) => {
     setRecommendWorkoutId(id);
+  };
+
+  const handleOpenCloneDialog = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setCloneWorkoutId(id);
   };
 
   return (
@@ -108,6 +115,15 @@ const WorkoutManagement = () => {
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => handleOpenCloneDialog(workout.id, e)}
+                          title="Clonar para usuário"
+                        >
+                          <Users className="h-4 w-4" />
+                          <span className="sr-only">Clonar para Usuário</span>
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -181,6 +197,14 @@ const WorkoutManagement = () => {
         <RecommendWorkoutDialog
           workoutId={recommendWorkoutId}
           onClose={() => setRecommendWorkoutId(null)}
+        />
+      )}
+
+      {cloneWorkoutId && (
+        <CloneWorkoutDialog
+          workoutId={cloneWorkoutId}
+          workoutTitle={filteredWorkouts.find(w => w.id === cloneWorkoutId)?.title}
+          onClose={() => setCloneWorkoutId(null)}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Copy } from 'lucide-react';
+import { ArrowLeft, Calendar, Copy, Users } from 'lucide-react';
 import { useAdminWorkouts, WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { useWorkout } from '@/hooks/useWorkouts';
 import ExerciseList from '@/components/admin/ExerciseList';
@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from '@/lib/toast';
+import { toast } from 'sonner';
+import { CloneWorkoutDialog } from '@/components/admin/CloneWorkoutDialog';
 
 // Define the days of week options
 const daysOfWeek = [
@@ -47,6 +48,7 @@ const EditWorkoutExercises = () => {
   const isMobile = useIsMobile();
   const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
   const [targetDays, setTargetDays] = useState<string[]>([]);
+  const [isCloneUserDialogOpen, setIsCloneUserDialogOpen] = useState(false);
   
   const { 
     exercises,
@@ -141,6 +143,10 @@ const EditWorkoutExercises = () => {
     }
   };
 
+  const handleOpenCloneUserDialog = () => {
+    setIsCloneUserDialogOpen(true);
+  };
+
   const isLoading = isWorkoutLoading || areExercisesLoading || areWorkoutExercisesLoading;
   const isActionLoading = isAddingExercise || isRemovingExercise || isUpdatingExerciseOrder || isCloningExercises;
 
@@ -151,17 +157,32 @@ const EditWorkoutExercises = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={handleBackClick}
-          className="p-2 hover:bg-muted rounded-full"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-2xl font-bold">
-          Editar Exercícios do Treino
-          {workout && <span className="ml-2 text-muted-foreground">- {workout.title}</span>}
-        </h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleBackClick}
+            className="p-2 hover:bg-muted rounded-full"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-2xl font-bold">
+            Editar Exercícios do Treino
+            {workout && <span className="ml-2 text-muted-foreground">- {workout.title}</span>}
+          </h1>
+        </div>
+        
+        {/* Clone to User button at top right */}
+        {id && (
+          <Button 
+            onClick={handleOpenCloneUserDialog} 
+            variant="outline"
+            className="flex items-center gap-1"
+          >
+            <Users className="h-4 w-4 mr-1" />
+            <span className="hidden md:inline">Clonar para Usuário</span>
+            <span className="md:hidden">Clonar</span>
+          </Button>
+        )}
       </div>
       
       {isLoading ? (
@@ -301,6 +322,15 @@ const EditWorkoutExercises = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Clone to User Dialog */}
+          {isCloneUserDialogOpen && id && (
+            <CloneWorkoutDialog 
+              workoutId={id}
+              workoutTitle={workout?.title}
+              onClose={() => setIsCloneUserDialogOpen(false)}
+            />
+          )}
         </>
       )}
     </div>

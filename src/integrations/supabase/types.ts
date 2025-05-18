@@ -544,6 +544,54 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_clone_history: {
+        Row: {
+          cloned_by_user_id: string | null
+          cloned_workout_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          source_workout_id: string
+          status: string
+          target_user_id: string
+        }
+        Insert: {
+          cloned_by_user_id?: string | null
+          cloned_workout_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          source_workout_id: string
+          status?: string
+          target_user_id: string
+        }
+        Update: {
+          cloned_by_user_id?: string | null
+          cloned_workout_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          source_workout_id?: string
+          status?: string
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_clone_history_cloned_workout_id_fkey"
+            columns: ["cloned_workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_clone_history_source_workout_id_fkey"
+            columns: ["source_workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_days: {
         Row: {
           created_at: string | null
@@ -737,6 +785,10 @@ export type Database = {
       admin_delete_user: {
         Args: { user_id: string }
         Returns: undefined
+      }
+      clone_workout_for_user: {
+        Args: { source_workout_id: string; target_user_id: string }
+        Returns: string
       }
       debug_get_all_users: {
         Args: Record<PropertyKey, never>
