@@ -29,11 +29,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Define form schema with Zod
+// Define form schema com Zod
 const formSchema = z.object({
-  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  title: z.string().min(2, { message: "O título deve ter pelo menos 2 caracteres." }),
   description: z.string().optional(),
-  duration: z.coerce.number().min(1, { message: "Duration must be at least 1 minute." }),
+  duration: z.coerce.number().min(1, { message: "A duração deve ser de pelo menos 1 minuto." }),
   level: z.enum(['beginner', 'intermediate', 'advanced', 'all_levels']),
   category_id: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
@@ -44,13 +44,13 @@ const formSchema = z.object({
 });
 
 const weekdays = [
-  { id: 'monday', label: 'Monday' },
-  { id: 'tuesday', label: 'Tuesday' },
-  { id: 'wednesday', label: 'Wednesday' },
-  { id: 'thursday', label: 'Thursday' },
-  { id: 'friday', label: 'Friday' },
-  { id: 'saturday', label: 'Saturday' },
-  { id: 'sunday', label: 'Sunday' },
+  { id: 'monday', label: 'Segunda-feira' },
+  { id: 'tuesday', label: 'Terça-feira' },
+  { id: 'wednesday', label: 'Quarta-feira' },
+  { id: 'thursday', label: 'Quinta-feira' },
+  { id: 'friday', label: 'Sexta-feira' },
+  { id: 'saturday', label: 'Sábado' },
+  { id: 'sunday', label: 'Domingo' },
 ];
 
 interface WorkoutFormProps {
@@ -86,12 +86,12 @@ const WorkoutForm = ({
     },
   });
 
-  // Update form values when defaultValues changes (useful for editing)
+  // Atualiza os valores do formulário quando defaultValues muda (útil para edição)
   useEffect(() => {
     if (defaultValues) {
       Object.entries(defaultValues).forEach(([key, value]) => {
-        if (key === 'user_id' && !value) return; // Skip user_id if null
-        // @ts-ignore - dynamic form field setting
+        if (key === 'user_id' && !value) return; // Ignora user_id se for nulo
+        // @ts-ignore - configuração dinâmica de campo de formulário
         form.setValue(key, value);
       });
     }
@@ -109,9 +109,9 @@ const WorkoutForm = ({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Título</FormLabel>
               <FormControl>
-                <Input placeholder="Enter workout title" {...field} />
+                <Input placeholder="Digite o título do treino" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -123,10 +123,10 @@ const WorkoutForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Descrição</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Enter workout description" 
+                  placeholder="Digite a descrição do treino" 
                   {...field} 
                   value={field.value || ""}
                 />
@@ -142,7 +142,7 @@ const WorkoutForm = ({
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Duration (minutes)</FormLabel>
+                <FormLabel>Duração (minutos)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -161,7 +161,7 @@ const WorkoutForm = ({
             name="calories"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Calories (optional)</FormLabel>
+                <FormLabel>Calorias (opcional)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -186,7 +186,7 @@ const WorkoutForm = ({
             name="level"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Difficulty Level</FormLabel>
+                <FormLabel>Nível de Dificuldade</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
@@ -194,14 +194,14 @@ const WorkoutForm = ({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
+                      <SelectValue placeholder="Selecione o nível" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                    <SelectItem value="all_levels">All Levels</SelectItem>
+                    <SelectItem value="beginner">Iniciante</SelectItem>
+                    <SelectItem value="intermediate">Intermediário</SelectItem>
+                    <SelectItem value="advanced">Avançado</SelectItem>
+                    <SelectItem value="all_levels">Todos os Níveis</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -214,14 +214,14 @@ const WorkoutForm = ({
             name="category_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>Categoria</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   value={field.value || undefined}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Selecione a categoria" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -244,9 +244,9 @@ const WorkoutForm = ({
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">Featured Workout</FormLabel>
+                <FormLabel className="text-base">Treino Destacado</FormLabel>
                 <FormDescription>
-                  Mark this workout as recommended for all users
+                  Marque este treino como recomendado para todos os usuários
                 </FormDescription>
               </div>
               <FormControl>
@@ -264,16 +264,16 @@ const WorkoutForm = ({
           name="image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL (optional)</FormLabel>
+              <FormLabel>URL da Imagem (opcional)</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="https://example.com/image.jpg" 
+                  placeholder="https://example.com/imagem.jpg" 
                   {...field}
                   value={field.value || ""}
                 />
               </FormControl>
               <FormDescription>
-                Enter a URL for the workout image
+                Digite uma URL para a imagem do treino
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -286,9 +286,9 @@ const WorkoutForm = ({
           render={() => (
             <FormItem>
               <div className="mb-4">
-                <FormLabel className="text-base">Days of the Week</FormLabel>
+                <FormLabel className="text-base">Dias da Semana</FormLabel>
                 <FormDescription>
-                  Select on which days this workout should be performed
+                  Selecione em quais dias este treino deve ser realizado
                 </FormDescription>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -337,14 +337,14 @@ const WorkoutForm = ({
             name="user_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Assign to User (optional)</FormLabel>
+                <FormLabel>Atribuir ao Aluno (opcional)</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   value={field.value || undefined}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select user" />
+                      <SelectValue placeholder="Selecione o aluno" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -356,7 +356,7 @@ const WorkoutForm = ({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  If selected, this workout will be assigned to the user
+                  Se selecionado, este treino será atribuído ao aluno
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -368,10 +368,10 @@ const WorkoutForm = ({
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {isEditing ? 'Saving...' : 'Creating...'}
+              {isEditing ? 'Salvando...' : 'Criando...'}
             </>
           ) : (
-            isEditing ? 'Save Changes' : 'Create Workout'
+            isEditing ? 'Salvar Alterações' : 'Criar Treino'
           )}
         </Button>
       </form>

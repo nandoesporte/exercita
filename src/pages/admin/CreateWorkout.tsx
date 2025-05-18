@@ -28,7 +28,7 @@ const CreateWorkout = () => {
         navigate('/admin/workouts');
       },
       onError: (error) => {
-        console.error("Error creating workout:", error);
+        console.error("Erro ao criar treino:", error);
         toast.error(`Erro ao criar treino: ${error.message}`);
       }
     });
