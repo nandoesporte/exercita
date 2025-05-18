@@ -15,13 +15,14 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/auth';
 
-// Define form schema for user creation
+// Define form schema for user creation exatamente como na página de login
 const formSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
-  firstName: z.string().min(1, 'Nome é obrigatório'),
-  lastName: z.string().min(1, 'Sobrenome é obrigatório'),
+  firstName: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
+  lastName: z.string().min(2, 'Sobrenome deve ter no mínimo 2 caracteres'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -31,7 +32,9 @@ const Dashboard = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
+  const { signUp } = useAuth(); // Importando a função signUp do hook useAuth
 
   // Fetch statistics including real appointment data
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -206,8 +209,31 @@ const Dashboard = () => {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    createUserMutation.mutate(values);
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true);
+    
+    try {
+      // Usando exatamente a mesma função de cadastro da página de login
+      const metadata = {
+        first_name: values.firstName,
+        last_name: values.lastName
+      };
+      
+      await signUp(values.email, values.password, metadata);
+      toast.success('Conta criada com sucesso!');
+      
+      // Atualiza a lista de usuários
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
+      
+      // Fecha o modal e reseta o formulário
+      setIsCreateUserOpen(false);
+      form.reset();
+    } catch (error: any) {
+      console.error("Erro durante cadastro:", error);
+      toast.error(error.message || "Erro ao criar conta");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Create stats array based on real data
@@ -524,9 +550,9 @@ const Dashboard = () => {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={createUserMutation.isPending}
+                  disabled={isLoading}
                 >
-                  {createUserMutation.isPending && (
+                  {isLoading && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
                   Salvar

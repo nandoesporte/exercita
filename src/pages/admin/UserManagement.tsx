@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,13 +31,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/auth';
 
-// Define o schema para validação do formulário
+// Define o schema para validação do formulário exatamente como na página de login
 const formSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
-  firstName: z.string().min(1, 'Nome é obrigatório'),
-  lastName: z.string().min(1, 'Sobrenome é obrigatório'),
+  firstName: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
+  lastName: z.string().min(2, 'Sobrenome deve ter no mínimo 2 caracteres'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -46,8 +48,10 @@ const UserManagement = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
   
-  const { data: usersData, isLoading, error } = useQuery({
+  const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       console.log("Fetching users for user management page...");
@@ -91,59 +95,6 @@ const UserManagement = () => {
     },
   });
 
-  // Create user mutation - With improved success messaging and detailed logging
-  const createUserMutation = useMutation({
-    mutationFn: async (userData: FormValues) => {
-      console.log("Creating user with:", userData.email, "and metadata:", {
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-      });
-      
-      try {
-        // Using the updated admin_create_user RPC function
-        const { data, error } = await supabase.rpc('admin_create_user', {
-          user_email: userData.email,
-          user_password: userData.password,
-          user_metadata: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-          }
-        });
-        
-        if (error) {
-          console.error("Erro detalhado ao criar usuário:", error);
-          throw new Error(error.message);
-        }
-        
-        if (!data) {
-          throw new Error("Não foi possível criar o usuário. Nenhum dado retornado.");
-        }
-        
-        console.log("Usuário criado com sucesso:", data);
-        return data;
-      } catch (err: any) {
-        console.error("Exceção ao criar usuário:", err);
-        throw new Error(err.message || "Erro desconhecido ao criar usuário");
-      }
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      setIsCreateUserOpen(false);
-      
-      // Extract the user's email from the returned data for a more personalized success message
-      const email = data?.email || '';
-      const fullName = `${data?.user_metadata?.first_name || ''} ${data?.user_metadata?.last_name || ''}`.trim();
-      const userInfo = fullName ? `${fullName} (${email})` : email;
-      
-      toast.success(`Usuário ${userInfo} criado com sucesso! Este usuário já está com email confirmado e pode fazer login imediatamente.`);
-      form.reset();
-    },
-    onError: (error: Error) => {
-      console.error("User creation failed:", error);
-      toast.error(`Erro ao criar usuário: ${error.message}`);
-    },
-  });
-
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -182,8 +133,31 @@ const UserManagement = () => {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    createUserMutation.mutate(values);
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true);
+    
+    try {
+      // Usando exatamente a mesma função de cadastro da página de login
+      const metadata = {
+        first_name: values.firstName,
+        last_name: values.lastName
+      };
+      
+      await signUp(values.email, values.password, metadata);
+      toast.success('Conta criada com sucesso!');
+      
+      // Atualiza a lista de usuários
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      
+      // Fecha o modal e reseta o formulário
+      setIsCreateUserOpen(false);
+      form.reset();
+    } catch (error: any) {
+      console.error("Erro durante cadastro:", error);
+      toast.error(error.message || "Erro ao criar conta");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const isMobile = useIsMobile();
@@ -373,9 +347,9 @@ const UserManagement = () => {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={createUserMutation.isPending}
+                    disabled={isLoading}
                   >
-                    {createUserMutation.isPending && (
+                    {isLoading && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
                     Salvar
@@ -404,7 +378,7 @@ const UserManagement = () => {
               columns[4], // Ações
             ] : columns}
             data={usersData || []}
-            isLoading={isLoading}
+            isLoading={isLoadingUsers}
           />
         </CardContent>
       </Card>
