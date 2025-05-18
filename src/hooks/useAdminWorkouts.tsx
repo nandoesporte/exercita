@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -606,7 +605,7 @@ export function useAdminWorkouts() {
           // First, check if we have any exercises that would create a conflict
           const { data: existingExercises, error: existingError } = await supabase
             .from('workout_exercises')
-            .select('exercise_id, order_position')
+            .select('exercise_id, order_position, is_title_section, section_title')
             .eq('workout_id', workoutId)
             .eq('day_of_week', targetDay);
             
