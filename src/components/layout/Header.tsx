@@ -37,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({
   
   // Check if we're on a workout detail page to hide the header
   const isWorkoutDetailPage = location.pathname.startsWith('/workout/');
+  const isHomePage = location.pathname === '/';
   
   // Don't render anything on workout detail pages
   if (isWorkoutDetailPage) {
@@ -203,21 +204,23 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           )}
           
-          {/* Profile Icon */}
-          <Link 
-            to="/profile" 
-            className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
-          >
-            <Avatar className="h-8 w-8 border-2 border-fitness-green">
-              <AvatarImage 
-                src={profile?.avatar_url || ''} 
-                alt={`${profile?.first_name || 'Usuário'}'s profile`} 
-              />
-              <AvatarFallback className="bg-fitness-dark text-white">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          {/* Profile Icon - hidden on home page */}
+          {!isHomePage && (
+            <Link 
+              to="/profile" 
+              className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+            >
+              <Avatar className="h-8 w-8 border-2 border-fitness-green">
+                <AvatarImage 
+                  src={profile?.avatar_url || ''} 
+                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+                />
+                <AvatarFallback className="bg-fitness-dark text-white">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
         </div>
       </div>
     </header>

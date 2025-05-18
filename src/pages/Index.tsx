@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -17,6 +18,7 @@ import { WorkoutCard } from '@/components/ui/workout-card';
 import { useStore } from '@/hooks/useStore';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
@@ -43,10 +45,35 @@ const Index = () => {
   // Determine target muscles based on the workout
   const targetMuscles = recommendedWorkout?.category?.name || "Corpo completo";
   
+  // Function to get user initials for the avatar fallback
+  const getInitials = () => {
+    if (!profile) return 'U';
+    
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
+  
   return (
     <div className="home-page">
+      {/* Profile Avatar Section */}
+      <section className="flex justify-center mb-4 pt-6">
+        <Link to="/profile">
+          <Avatar className="h-24 w-24 border-4 border-fitness-green cursor-pointer hover:border-fitness-orange transition-all duration-300">
+            <AvatarImage 
+              src={profile?.avatar_url || ''} 
+              alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+            />
+            <AvatarFallback className="bg-fitness-dark text-white text-3xl">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+      </section>
+      
       {/* Seção de Boas-vindas */}
-      <section className="text-center mb-8 pt-4">
+      <section className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-fitness-orange mb-2">
           {greeting}, {profile?.first_name || 'Atleta'}!
         </h1>
