@@ -4,11 +4,13 @@ import { Search } from 'lucide-react';
 import { useStore } from '@/hooks/useStore';
 import { ProductCard } from '@/components/ui/product-card';
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Store = () => {
   const { products, isLoadingProducts, categories, featuredProducts } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // Filtragem de produtos
   const filteredProducts = products.filter(product => {
@@ -24,7 +26,7 @@ const Store = () => {
       {featuredProducts.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold mb-4 text-fitness-green">Produtos em Destaque</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {featuredProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -78,13 +80,13 @@ const Store = () => {
         <h2 className="text-2xl font-bold mb-6">Nossos Produtos</h2>
         
         {isLoadingProducts ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="h-[400px] rounded-lg bg-fitness-darkGray/20 animate-pulse"></div>
             ))}
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}

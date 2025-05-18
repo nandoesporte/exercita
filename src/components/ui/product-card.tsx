@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Product } from '@/types/store';
 import { formatCurrency } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,8 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
+  const isMobile = useIsMobile();
+  
   const handleBuyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!product.sale_url) {
       e.preventDefault();
@@ -24,7 +27,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
   return (
     <div className={cn("bg-card border border-border rounded-xl overflow-hidden flex flex-col", className)}>
       {/* Product Image */}
-      <Link to={`/store/${product.id}`} className="relative block h-48 overflow-hidden">
+      <Link to={`/store/${product.id}`} className="relative block h-36 md:h-48 overflow-hidden">
         <img 
           src={product.image_url || '/placeholder.svg'}
           alt={product.name}
@@ -32,42 +35,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
         />
         {/* Badge for active status */}
         {product.is_active && (
-          <span className="absolute top-3 right-3 bg-fitness-green/90 text-white text-xs px-2 py-1 rounded-full">
+          <span className="absolute top-2 right-2 md:top-3 md:right-3 bg-fitness-green/90 text-white text-xs px-2 py-1 rounded-full">
             Em Estoque
           </span>
         )}
       </Link>
 
       {/* Product Content */}
-      <div className="flex flex-col flex-grow p-4 space-y-3">
+      <div className="flex flex-col flex-grow p-2 md:p-4 space-y-1 md:space-y-3">
         <Link to={`/store/${product.id}`}>
-          <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+          <h3 className="font-semibold text-sm md:text-lg line-clamp-1">{product.name}</h3>
         </Link>
         
         {/* Category if available */}
         {product.categories && (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground hidden md:block">
             {product.categories.name}
           </div>
         )}
         
         {/* Description */}
-        <p className="text-muted-foreground text-sm line-clamp-2 flex-grow">
+        <p className="text-muted-foreground text-xs md:text-sm line-clamp-2 md:line-clamp-2 flex-grow">
           {product.description}
         </p>
         
         {/* Price and Action */}
-        <div className="flex items-center justify-between pt-3 mt-auto">
-          <span className="font-bold text-lg">
+        <div className="flex items-center justify-between pt-1 md:pt-3 mt-auto">
+          <span className="font-bold text-sm md:text-lg">
             {formatCurrency(product.price)}
           </span>
           
-          <div className="flex gap-2">
+          <div className="flex gap-1 md:gap-2">
             <Button 
               asChild
-              size="sm" 
+              size={isMobile ? "sm" : "default"}
               variant="default"
-              className="bg-fitness-green hover:bg-fitness-green/90 shadow-sm hover:shadow-md transition-all rounded-lg"
+              className="bg-fitness-green hover:bg-fitness-green/90 shadow-sm hover:shadow-md transition-all rounded-lg text-xs md:text-sm px-2 md:px-4"
               disabled={!product.sale_url}
             >
               <a 
@@ -78,7 +81,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className }) 
                 onClick={handleBuyClick}
               >
                 Comprar
-                <ExternalLink size={14} />
+                <ExternalLink size={isMobile ? 12 : 14} />
               </a>
             </Button>
           </div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -17,6 +16,7 @@ import {
 import { WorkoutCard } from '@/components/ui/workout-card';
 import { useStore } from '@/hooks/useStore';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
@@ -307,19 +307,19 @@ const Index = () => {
         >
           <CarouselContent className="py-2">
             {isLoadingFeaturedProducts ? (
-              // Placeholders de carregamento
-              [...Array(3)].map((_, index) => (
-                <CarouselItem key={`loading-${index}`} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="h-[280px] rounded-xl bg-fitness-darkGray/40 animate-pulse"></div>
+              // Placeholders de carregamento - dois por linha no mobile
+              [...Array(4)].map((_, index) => (
+                <CarouselItem key={`loading-${index}`} className="basis-1/2 md:basis-1/2 lg:basis-1/3">
+                  <div className="h-[240px] md:h-[280px] rounded-xl bg-fitness-darkGray/40 animate-pulse"></div>
                 </CarouselItem>
               ))
             ) : featuredProducts && featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
-                <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={product.id} className="basis-1/2 md:basis-1/2 lg:basis-1/3">
                   <Link to={`/store/${product.id}`} className="block">
-                    <div className="bg-white bg-opacity-5 rounded-xl overflow-hidden h-[280px] relative group hover:shadow-lg transition-all duration-300">
+                    <div className="bg-white bg-opacity-5 rounded-xl overflow-hidden h-[240px] md:h-[280px] relative group hover:shadow-lg transition-all duration-300">
                       {/* Imagem do produto */}
-                      <div className="h-[180px] overflow-hidden">
+                      <div className="h-[140px] md:h-[180px] overflow-hidden">
                         <img 
                           src={product.image_url || "https://via.placeholder.com/300x180?text=Produto"} 
                           alt={product.name}
@@ -328,16 +328,16 @@ const Index = () => {
                       </div>
                       
                       {/* Informações do produto */}
-                      <div className="p-4 relative">
-                        <h3 className="font-bold text-lg text-white truncate">{product.name}</h3>
-                        <p className="text-gray-300 text-sm line-clamp-2 h-[40px]">{product.description}</p>
+                      <div className="p-2 md:p-4 relative">
+                        <h3 className="font-bold text-sm md:text-lg text-white truncate">{product.name}</h3>
+                        <p className="text-gray-300 text-xs md:text-sm line-clamp-1 md:line-clamp-2 h-[20px] md:h-[40px]">{product.description}</p>
                         
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-fitness-green font-bold">
+                        <div className="flex items-center justify-between mt-1 md:mt-2">
+                          <span className="text-fitness-green font-bold text-sm md:text-base">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
                           </span>
-                          <span className="bg-fitness-darkGray/30 p-1.5 rounded-full">
-                            <ShoppingBag size={18} className="text-fitness-orange" />
+                          <span className="bg-fitness-darkGray/30 p-1 md:p-1.5 rounded-full">
+                            <ShoppingBag size={16} className="text-fitness-orange" />
                           </span>
                         </div>
                       </div>
