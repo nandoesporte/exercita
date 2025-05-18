@@ -48,7 +48,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
 
   // Helper to format duration in a readable way
   const formatDuration = (seconds: number | null | undefined) => {
-    if (!seconds) return null;
+    if (seconds === null || seconds === undefined) return null;
     
     if (seconds >= 60 && seconds % 60 === 0) {
       return `${seconds / 60} min`;
@@ -162,9 +162,13 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                   <span className="text-muted-foreground">Duração:</span> {formatDuration(exercise.duration)}
                 </div>
               )}
-              {exercise.rest && (
+              {exercise.rest !== undefined && exercise.rest !== null && (
                 <div>
-                  <span className="text-muted-foreground">Descanso:</span> {exercise.rest}s
+                  <span className="text-muted-foreground">Descanso:</span> {
+                    exercise.rest >= 60 && exercise.rest % 60 === 0
+                      ? `${exercise.rest / 60} min`
+                      : `${exercise.rest} seg`
+                  }
                 </div>
               )}
               {exercise.weight && (

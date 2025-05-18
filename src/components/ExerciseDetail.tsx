@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell, Scale } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
@@ -47,7 +48,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   
   // Helper function to format duration
   const formatDuration = (seconds: number | null) => {
-    if (seconds === null) return null;
+    if (seconds === null || seconds === undefined) return null;
     
     // If duration is a multiple of 60, display in minutes
     if (seconds % 60 === 0 && seconds >= 60) {
@@ -184,30 +185,53 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                   </div>
                   <p className="text-xl font-bold">{reps}</p>
                 </div>
-              ) : (
+              ) : formattedDuration ? (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
                     <span className="text-sm">Duração</span>
                   </div>
                   <p className="text-xl font-bold">
-                    {formattedDuration ? `${formattedDuration.value} ${formattedDuration.unit}` : "0 seg"}
-                    {formattedDuration && formattedDuration.unit === 'min' && (
+                    {formattedDuration.value} {formattedDuration.unit}
+                    {formattedDuration.unit === 'min' && (
                       <span className="text-sm font-normal ml-1 text-muted-foreground">
                         ({formattedDuration.value * 60} segundos)
                       </span>
                     )}
                   </p>
                 </div>
+              ) : (
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Clock size={16} />
+                    <span className="text-sm">Duração</span>
+                  </div>
+                  <p className="text-xl font-bold">0 seg</p>
+                </div>
               )}
               
-              {rest && (
+              {rest !== null && rest !== undefined && (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Clock size={16} />
                     <span className="text-sm">Descanso</span>
                   </div>
-                  <p className="text-xl font-bold">{rest} seg</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-xl font-bold">
+                          {rest >= 60 && rest % 60 === 0 
+                            ? `${rest / 60} min` 
+                            : `${rest} seg`}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {rest >= 60 
+                          ? `${rest} segundos` 
+                          : ''}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               )}
               

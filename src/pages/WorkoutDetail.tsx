@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -62,7 +63,7 @@ const WorkoutDetail = () => {
   
   // Helper function to format duration
   const formatDuration = (seconds: number | null | undefined) => {
-    if (!seconds) return null;
+    if (seconds === null || seconds === undefined) return null;
     
     if (seconds >= 60 && seconds % 60 === 0) {
       return `${seconds / 60} min`;
@@ -70,7 +71,7 @@ const WorkoutDetail = () => {
     return `${seconds} seg`;
   };
   
-  // Add the missing handleBackClick function
+  // Add the handleBackClick function
   const handleBackClick = () => {
     navigate(-1);
   };
