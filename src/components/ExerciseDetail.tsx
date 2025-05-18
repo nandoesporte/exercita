@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Clock, Dumbbell, Scale } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
@@ -191,24 +190,14 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Clock size={16} />
                     <span className="text-sm">Duração</span>
                   </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <p className="text-xl font-bold">
-                          {formattedDuration ? `${formattedDuration.value} ${formattedDuration.unit}` : "0 seg"}
-                        </p>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {formattedDuration && formattedDuration.unit === 'min' 
-                            ? `${formattedDuration.value * 60} segundos` 
-                            : formattedDuration 
-                              ? `${formattedDuration.value} segundos`
-                              : "0 segundos"}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <p className="text-xl font-bold">
+                    {formattedDuration ? `${formattedDuration.value} ${formattedDuration.unit}` : "0 seg"}
+                    {formattedDuration && formattedDuration.unit === 'min' && (
+                      <span className="text-sm font-normal ml-1 text-muted-foreground">
+                        ({formattedDuration.value * 60} segundos)
+                      </span>
+                    )}
+                  </p>
                 </div>
               )}
               
@@ -222,8 +211,8 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                 </div>
               )}
               
-              {/* New weight parameter block */}
-              {weight && (
+              {/* Weight parameter block */}
+              {weight && weight > 0 && (
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Scale size={16} />

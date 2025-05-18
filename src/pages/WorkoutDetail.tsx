@@ -60,10 +60,16 @@ const WorkoutDetail = () => {
   
   const { data: workout, isLoading, error } = useWorkout(id);
   
-  const handleBackClick = () => {
-    navigate(-1);
+  // Helper function to format duration
+  const formatDuration = (seconds: number | null | undefined) => {
+    if (!seconds) return null;
+    
+    if (seconds >= 60 && seconds % 60 === 0) {
+      return `${seconds / 60} min`;
+    }
+    return `${seconds} seg`;
   };
-
+  
   // Helper function for profile avatar
   const getInitials = () => {
     if (!profile) return 'U';
@@ -462,7 +468,7 @@ const WorkoutDetail = () => {
                                       {workoutExercise.reps 
                                         ? ` ${workoutExercise.reps} repetições` 
                                         : workoutExercise.duration 
-                                          ? ` ${workoutExercise.duration} seg`
+                                          ? ` ${formatDuration(workoutExercise.duration)}`
                                           : ''
                                       }
                                     </div>
