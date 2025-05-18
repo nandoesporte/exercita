@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
 import AdminLayout from '@/components/layout/AdminLayout';
