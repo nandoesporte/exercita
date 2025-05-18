@@ -232,8 +232,14 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 </div>
               )}
               {exercise.reps && (
-                <div>
+                <div className="flex items-center gap-1">
                   <span className="text-muted-foreground">Repetições:</span> {exercise.reps}
+                  {exercise.weight && exercise.weight > 0 && (
+                    <span className="flex items-center gap-0.5 bg-fitness-darkGray/20 px-1.5 rounded-full text-xs">
+                      <Weight className="h-3 w-3" />
+                      {exercise.weight}kg
+                    </span>
+                  )}
                 </div>
               )}
               {exercise.duration !== undefined && exercise.duration !== null && exercise.duration > 0 && (
@@ -251,8 +257,12 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 </div>
               )}
               {exercise.weight && (
-                <div>
-                  <span className="text-muted-foreground">Peso:</span> {exercise.weight}kg
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Peso:</span> 
+                  <span className="flex items-center gap-1">
+                    <Weight className="h-4 w-4" />
+                    {exercise.weight}kg
+                  </span>
                 </div>
               )}
               {exercise.day_of_week && (

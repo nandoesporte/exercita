@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar, FileText, ZoomIn
+  Clock, Dumbbell, BarChart, Info, Check, HeartPulse, Calendar, FileText, ZoomIn, Weight
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
@@ -468,6 +468,7 @@ const WorkoutDetail = () => {
                             // Regular exercise item
                             const exerciseData = workoutExercise.exercise;
                             const imageUrl = exerciseData?.image_url;
+                            const hasWeight = workoutExercise.weight && workoutExercise.weight > 0;
                             
                             return (
                               <div 
@@ -486,14 +487,24 @@ const WorkoutDetail = () => {
                                     <h3 className="font-medium">
                                       {workoutExercise.exercise?.name || "Exercício desconhecido"}
                                     </h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {workoutExercise.sets} séries
-                                      {workoutExercise.reps && workoutExercise.reps > 0 
-                                        ? ` • ${workoutExercise.reps} repetições` 
-                                        : workoutExercise.duration && workoutExercise.duration > 0
-                                          ? ` • ${formatDuration(workoutExercise.duration)}`
-                                          : ''
-                                      }
+                                    <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-1">
+                                      <span>{workoutExercise.sets} séries</span>
+                                      <span>•</span>
+                                      {workoutExercise.reps && workoutExercise.reps > 0 ? (
+                                        <div className="flex items-center gap-1">
+                                          <span>{workoutExercise.reps} repetições</span>
+                                          {hasWeight && (
+                                            <span className="flex items-center gap-0.5 bg-fitness-darkGray/20 px-1.5 py-0.5 rounded-full text-xs">
+                                              <Weight className="h-3 w-3" />
+                                              {workoutExercise.weight}kg
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        workoutExercise.duration && workoutExercise.duration > 0 && (
+                                          <span>{formatDuration(workoutExercise.duration)}</span>
+                                        )
+                                      )}
                                     </div>
                                   </div>
                                   <div className="text-fitness-orange">

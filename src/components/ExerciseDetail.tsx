@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ArrowLeft, Clock, Dumbbell, Scale, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Clock, Dumbbell, Scale, ZoomIn, Weight } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -200,7 +201,15 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Dumbbell size={16} />
                     <span className="text-sm">Repetições</span>
                   </div>
-                  <p className="text-xl font-bold">{reps}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xl font-bold">{reps}</p>
+                    {showWeight && (
+                      <span className="flex items-center gap-1 bg-fitness-darkGray/20 px-2 py-0.5 rounded-full text-sm">
+                        <Weight className="h-3 w-3" />
+                        {weight}kg
+                      </span>
+                    )}
+                  </div>
                 </div>
               ) : formattedDuration ? (
                 <div className="p-4 border rounded-lg">
@@ -247,12 +256,14 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
               
               {/* Weight parameter block - only if weight > 0 */}
               {showWeight && (
-                <div className="p-4 border rounded-lg">
+                <div className="p-4 border rounded-lg bg-fitness-darkGray/5">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Scale size={16} />
+                    <Weight size={16} className="text-fitness-orange" />
                     <span className="text-sm">Carga</span>
                   </div>
-                  <p className="text-xl font-bold">{weight} kg</p>
+                  <p className="text-xl font-bold flex items-center">
+                    {weight} <span className="ml-1">kg</span>
+                  </p>
                 </div>
               )}
             </div>
