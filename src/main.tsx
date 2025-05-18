@@ -97,16 +97,12 @@ const Main = () => {
   );
 };
 
-// Prevent multiple rendering by checking if root already exists
-const rootElement = document.getElementById("root")!;
-let root: any;
+// Get the root element and create a root for it
+const rootElement = document.getElementById("root");
 
-if (rootElement._reactRootContainer) {
-  console.log("Root already exists, using existing root");
-  root = rootElement._reactRootContainer;
-} else {
-  console.log("Creating new root");
-  root = createRoot(rootElement);
+if (!rootElement) {
+  throw new Error("Root element not found");
 }
 
-root.render(<Main />);
+// Create the root and render the app
+createRoot(rootElement).render(<Main />);
