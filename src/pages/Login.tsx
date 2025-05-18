@@ -82,10 +82,28 @@ const Login = () => {
     
     try {
       console.log("Attempting login with:", values.email);
-      const result = await signIn(values.email, values.password);
+      
+      // Try a more direct login approach with better error handling
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+      
+      if (error) {
+        console.error("Login error details:", error);
+        
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Credenciais inválidas. Por favor, verifique seu email e senha.");
+        } else {
+          toast.error(error.message || "Erro ao fazer login");
+        }
+        return;
+      }
+      
+      console.log("Login successful:", data);
       
       // Check if user has instance_id
-      const currentUser = result?.user;
+      const currentUser = data.user;
       if (currentUser && !currentUser.user_metadata?.instance_id) {
         console.log("User missing instance_id, updating profile...");
         
@@ -106,7 +124,10 @@ const Login = () => {
         }
       }
       
-      // The redirect will be handled by the useEffect above
+      // Success message
+      toast.success("Login realizado com sucesso!");
+      
+      // The redirect will be handled by the useEffect above that watches for user changes
     } catch (error: any) {
       console.error("Login error details:", error);
       toast.error(error.message || "Erro ao fazer login");

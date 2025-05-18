@@ -10,7 +10,7 @@ type AuthContextType = {
   loading: boolean;
   isAdmin: boolean;
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<any>; // Updated return type
+  signIn: (email: string, password: string) => Promise<any>;
   adminLogin: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -137,14 +137,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to sign up with:", email, "and metadata:", metadata);
       
+      // Ensure instance_id is included in metadata
+      const metadataWithInstanceId = {
+        ...metadata,
+        instance_id: crypto.randomUUID(),
+      };
+      
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            ...metadata,
-            instance_id: crypto.randomUUID(), // Generate a UUID for instance_id
-          },
+          data: metadataWithInstanceId,
           emailRedirectTo: window.location.origin,
         },
       });
@@ -170,49 +173,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("Tentando fazer login com:", email);
+      console.log("Attempting login with:", email);
       
-      // Log more detailed information about the login attempt
-      console.log("Detalhes da tentativa de login:", { 
-        email, 
-        passwordLength: password.length,
-        timestamp: new Date().toISOString()
-      });
+      // For debugging purposes
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log("Current session before login attempt:", sessionData?.session ? "Active" : "None");
       
-      // Use a single login attempt with better error handling
-      const { error, data } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
-        console.error("Detalhes do erro de login:", {
+        console.error("Login error details:", {
           message: error.message,
           status: error.status,
-          name: error.name,
           code: error.code
         });
-        
-        // Check if the error is due to invalid credentials
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Credenciais inválidas. Por favor, verifique seu email e senha.');
-        }
-        
         throw error;
       }
       
-      console.log("Login bem-sucedido:", { 
+      console.log("Login successful:", { 
         user: data.user?.email,
         hasSession: !!data.session,
-        sessionExpires: data.session?.expires_at,
         userData: data.user?.user_metadata
       });
       
-      toast.success('Login realizado com sucesso!');
       return data;
     } catch (error: any) {
-      console.error("Erro no processo de login:", error);
-      toast.error(error.message || 'Erro ao fazer login. Tente novamente.');
+      console.error("Error during login:", error);
       throw error;
     }
   };
