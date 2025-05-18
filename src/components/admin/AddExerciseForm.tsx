@@ -39,6 +39,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   const [sets, setSets] = useState<string>('3');
   const [reps, setReps] = useState<string>('12');
   const [duration, setDuration] = useState<string>('');
+  const [durationUnit, setDurationUnit] = useState<'seconds' | 'minutes'>('seconds');
   const [rest, setRest] = useState<string>('30');
   const [weight, setWeight] = useState<string>('');
   const [dayOfWeek, setDayOfWeek] = useState<string | null>(null);
@@ -84,12 +85,20 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       return;
     }
 
+    // Convert duration to seconds if it's in minutes
+    let durationInSeconds = null;
+    if (duration) {
+      durationInSeconds = durationUnit === 'minutes' 
+        ? parseInt(duration, 10) * 60 
+        : parseInt(duration, 10);
+    }
+
     // Add exercise
     onAddExercise({
       exercise_id: exerciseId,
       sets: parseInt(sets, 10) || undefined,
       reps: reps ? parseInt(reps, 10) : null,
-      duration: duration ? parseInt(duration, 10) : null,
+      duration: durationInSeconds,
       rest: rest ? parseInt(rest, 10) : null,
       weight: weight ? parseFloat(weight) : null,
       order_position: currentExerciseCount + 1,
@@ -192,15 +201,30 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="duration">Duração (segundos)</Label>
-              <Input
-                id="duration"
-                placeholder="Duração"
-                type="number"
-                min="0"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              />
+              <Label htmlFor="duration">Duração</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="duration"
+                  placeholder="Duração"
+                  type="number"
+                  min="0"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  className="flex-1"
+                />
+                <Select 
+                  value={durationUnit} 
+                  onValueChange={(value) => setDurationUnit(value as 'seconds' | 'minutes')}
+                >
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="seconds">Segundos</SelectItem>
+                    <SelectItem value="minutes">Minutos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="rest">Descanso (segundos)</Label>
