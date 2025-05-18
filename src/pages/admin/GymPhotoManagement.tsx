@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -81,6 +80,7 @@ const GymPhotoManagement = () => {
         </Alert>
 
         <Tabs defaultValue="pending" className="w-full">
+          
           <TabsList>
             <TabsTrigger value="pending">
               Pendentes <Badge className="ml-2 bg-amber-500">{pendingPhotos.length}</Badge>
@@ -164,6 +164,7 @@ const GymPhotoManagement = () => {
           </TabsContent>
 
           <TabsContent value="approved" className="mt-6">
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {approvedPhotos.length > 0 ? (
                 approvedPhotos.map((photo) => (
