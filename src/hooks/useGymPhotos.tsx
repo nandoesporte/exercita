@@ -5,7 +5,7 @@ import { useAdminGymPhotos } from './gym-photos/useAdminGymPhotos';
 import { GymPhoto, PhotoAnalysis } from './gym-photos/useGymPhotosBase';
 
 // Re-export types
-export { GymPhoto, PhotoAnalysis };
+export type { GymPhoto, PhotoAnalysis };
 
 // Composite hook that combines all functionality for backward compatibility
 export function useGymPhotos() {
