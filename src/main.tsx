@@ -2,7 +2,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from '@/hooks/useAuth'
+import { AuthProvider } from '@/contexts/auth'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from 'sonner'

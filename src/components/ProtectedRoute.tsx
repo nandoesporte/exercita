@@ -1,6 +1,6 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/auth';
 import { useEffect, useState } from 'react';
 import { checkAuthSession } from '@/integrations/supabase/client';
 

@@ -1,21 +1,11 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast';
-
-type AuthContextType = {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  isAdmin: boolean;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<any>;
-  adminLogin: (password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from './AuthContext';
+import { checkAdminStatus, ensureProfileExists } from './profileUtils';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -27,81 +17,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   console.log("AuthProvider initializing");
 
-  // Check admin status safely with timeout to avoid deadlocks
-  const checkAdminStatus = useCallback(async (userId: string) => {
-    try {
-      console.log(`Checking admin status for user: ${userId}`);
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', userId)
-        .single();
-      
-      if (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-        return false;
-      }
-      
-      console.log("Admin status check result:", data);
-      const adminStatus = data?.is_admin || false;
-      setIsAdmin(adminStatus);
-      
-      if (adminStatus) {
-        console.log("User has admin privileges!");
-      } else {
-        console.log("User does not have admin privileges");
-      }
-      
-      return adminStatus;
-    } catch (error) {
-      console.error('Exception checking admin status:', error);
-      setIsAdmin(false);
-      return false;
-    }
-  }, []);
-
-  // Check if profile exists and create if needed
-  const ensureProfileExists = useCallback(async (userId: string, metadata?: any) => {
-    try {
-      // First check if profile exists
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Error checking profile existence:', checkError);
-        return;
-      }
-
-      // If profile doesn't exist, create it
-      if (!existingProfile) {
-        console.log("Profile doesn't exist, creating now for user:", userId);
-        
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            first_name: metadata?.first_name || '',
-            last_name: metadata?.last_name || '',
-            avatar_url: metadata?.avatar_url || '',
-            instance_id: metadata?.instance_id || crypto.randomUUID()
-          });
-
-        if (insertError) {
-          console.error('Error creating profile:', insertError);
-        } else {
-          console.log("Profile created successfully");
-        }
-      } else {
-        console.log("Profile already exists for user:", userId);
-      }
-    } catch (error) {
-      console.error('Exception in ensureProfileExists:', error);
-    }
+  // Monitor and update admin status
+  const updateAdminStatus = useCallback(async (userId: string) => {
+    const adminStatus = await checkAdminStatus(userId);
+    setIsAdmin(adminStatus);
+    return adminStatus;
   }, []);
 
   useEffect(() => {
@@ -127,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (currentSession?.user) {
           setTimeout(() => {
             if (mounted) {
-              checkAdminStatus(currentSession.user.id);
+              updateAdminStatus(currentSession.user.id);
               
               // Ensure profile exists for this user
               const metadata = currentSession.user.user_metadata;
@@ -159,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (currentSession?.user) {
           console.log("Initial session found, checking admin status");
-          await checkAdminStatus(currentSession.user.id);
+          await updateAdminStatus(currentSession.user.id);
           
           // Ensure profile exists for this user during initial session check
           const metadata = currentSession.user.user_metadata;
@@ -181,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription?.unsubscribe();
     };
-  }, [checkAdminStatus, ensureProfileExists]);
+  }, [updateAdminStatus]);
 
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
@@ -343,11 +263,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

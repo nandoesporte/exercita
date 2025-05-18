@@ -1,7 +1,6 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/auth";
 
 // Import layouts
 import UserLayout from "@/components/layout/UserLayout";
