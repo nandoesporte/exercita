@@ -136,32 +136,33 @@ export function useAdminWorkouts() {
           
           if (daysError) {
             console.error("Error assigning days to workout:", daysError);
-            // We don't throw here to ensure the workout is still created even if days assignment fails
             toast.error(`Error assigning days to workout: ${daysError.message}`);
           } else {
             console.log("Workout days added successfully");
           }
         }
 
-        // If a user_id was provided, create an entry in user_workout_history
+        // Se um user_id foi fornecido, esse treino deve ser APENAS para esse usuário
         if (formData.user_id && workout) {
-          console.log("Assigning workout to user:", formData.user_id);
+          console.log(`Assigning workout exclusively to user: ${formData.user_id}`);
+          
+          // Adicionar ao histórico de treino do usuário
           const { error: historyError } = await supabase
             .from('user_workout_history')
             .insert({
               user_id: formData.user_id,
               workout_id: workout.id,
-              completed_at: null, // Not completed yet
+              completed_at: null, // Não concluído ainda
             });
           
           if (historyError) {
-            console.error("Error assigning workout to user:", historyError);
-            toast.error(`Error assigning workout to user: ${historyError.message}`);
+            console.error("Error assigning workout to user history:", historyError);
+            toast.error(`Error assigning workout to user history: ${historyError.message}`);
           } else {
-            console.log("Workout assigned to user successfully");
+            console.log("Workout added to user history successfully");
           }
 
-          // Também adicione este treino como uma recomendação específica para este usuário
+          // Adicionar como recomendação específica para este usuário
           const { error: recommendationError } = await supabase
             .from('workout_recommendations')
             .insert({
@@ -173,7 +174,24 @@ export function useAdminWorkouts() {
             console.error("Error creating workout recommendation:", recommendationError);
             toast.error(`Error creating workout recommendation: ${recommendationError.message}`);
           } else {
-            console.log("Workout recommendation added successfully");
+            console.log(`Workout recommendation added successfully for user ${formData.user_id}`);
+          }
+        } else if (formData.is_recommended && workout) {
+          // Se o treino é marcado como recomendado mas não foi atribuído a um usuário específico,
+          // adicione-o como uma recomendação global (user_id = null)
+          console.log("Adding workout as a global recommendation");
+          const { error: globalRecError } = await supabase
+            .from('workout_recommendations')
+            .insert({
+              user_id: null, // Recomendação global
+              workout_id: workout.id
+            });
+          
+          if (globalRecError) {
+            console.error("Error creating global workout recommendation:", globalRecError);
+            toast.error(`Error creating global workout recommendation: ${globalRecError.message}`);
+          } else {
+            console.log("Global workout recommendation added successfully");
           }
         }
       

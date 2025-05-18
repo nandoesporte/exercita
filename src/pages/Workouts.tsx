@@ -1,8 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Calendar } from 'lucide-react';
 import { WorkoutCard } from '@/components/ui/workout-card';
-import { useWorkouts, useWorkoutCategories, useWorkoutsByDay, useRecommendedWorkoutsForUser } from '@/hooks/useWorkouts';
+import { useWorkoutCategories, useWorkoutsByDay, useRecommendedWorkoutsForUser } from '@/hooks/useWorkouts';
 import { Database } from '@/integrations/supabase/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -38,13 +37,21 @@ const Workouts = () => {
   const { data: dayWorkouts, isLoading: isLoadingDayWorkouts } = useWorkoutsByDay(selectedDay);
   const { data: categories, isLoading: isLoadingCategories } = useWorkoutCategories();
   
-  // Determine quais treinos exibir com base na disponibilidade de treinos recomendados
+  // Log para debug
+  useEffect(() => {
+    console.log(`UserId atual: ${userId}`);
+    console.log('Treinos recomendados:', userWorkouts);
+  }, [userId, userWorkouts]);
+  
+  // Determine quais treinos exibir com base no dia selecionado
   const workouts = selectedDay 
-    ? dayWorkouts?.filter(workout => {
+    ? (dayWorkouts?.filter(workout => {
         // Para treinos filtrados por dia, exibir apenas os que foram recomendados para este usuário
         return userWorkouts?.some(userWorkout => userWorkout.id === workout.id);
-      })
+      }) || [])
     : userWorkouts || [];
+    
+  console.log('Treinos filtrados sendo exibidos:', workouts);
   
   const isLoadingWorkouts = selectedDay 
     ? isLoadingDayWorkouts 

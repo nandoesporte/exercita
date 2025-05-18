@@ -293,26 +293,14 @@ export function useWorkoutCategories() {
   });
 }
 
-// Nova função para obter treinos recomendados para um usuário específico
+// Função modificada para obter apenas treinos específicos para um usuário
 export function useRecommendedWorkoutsForUser(userId: string | undefined) {
   return useQuery({
     queryKey: ['recommended-workouts-for-user', userId],
     queryFn: async () => {
       if (!userId) return [];
       
-      // Primeiro, busque os treinos diretamente atribuídos ao usuário
-      const { data: userWorkoutsHistory, error: historyError } = await supabase
-        .from('user_workout_history')
-        .select('workout_id')
-        .eq('user_id', userId);
-      
-      if (historyError) {
-        console.error("Erro ao buscar histórico de treinos do usuário:", historyError);
-      }
-      
-      const userWorkoutIds = (userWorkoutsHistory || []).map(item => item.workout_id);
-      
-      // Segundo, busque recomendações personalizadas para este usuário
+      // Busque apenas recomendações específicas para este usuário (não globais)
       const { data: userRecommendations, error: recError } = await supabase
         .from('workout_recommendations')
         .select('workout_id')
@@ -320,30 +308,18 @@ export function useRecommendedWorkoutsForUser(userId: string | undefined) {
       
       if (recError) {
         console.error("Erro ao buscar recomendações de treinos:", recError);
+        return [];
       }
       
-      const recommendationIds = (userRecommendations || []).map(item => item.workout_id);
-      
-      // Terceiro, busque recomendações globais (para todos os usuários - user_id is null)
-      const { data: globalRecommendations, error: globalError } = await supabase
-        .from('workout_recommendations')
-        .select('workout_id')
-        .is('user_id', null);
-      
-      if (globalError) {
-        console.error("Erro ao buscar recomendações globais:", globalError);
+      if (!userRecommendations || userRecommendations.length === 0) {
+        console.log(`Nenhum treino recomendado encontrado para o usuário ${userId}`);
+        return [];
       }
       
-      const globalRecommendationIds = (globalRecommendations || []).map(item => item.workout_id);
+      const recommendationIds = userRecommendations.map(item => item.workout_id);
+      console.log(`Treinos recomendados para usuário ${userId}:`, recommendationIds);
       
-      // Combine todos os IDs de treinos, removendo duplicatas
-      const allWorkoutIds = [...new Set([
-        ...userWorkoutIds,
-        ...recommendationIds,
-        ...globalRecommendationIds
-      ])];
-      
-      if (allWorkoutIds.length === 0) {
+      if (recommendationIds.length === 0) {
         return [];
       }
       
@@ -374,7 +350,7 @@ export function useRecommendedWorkoutsForUser(userId: string | undefined) {
             )
           )
         `)
-        .in('id', allWorkoutIds)
+        .in('id', recommendationIds)
         .order('created_at', { ascending: false });
       
       if (workoutsError) {
