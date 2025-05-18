@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/lib/toast-wrapper';
 import { Loader2, Clipboard, CheckCircle, CreditCard, QrCode } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PixKey {
   id?: string;
@@ -50,6 +50,7 @@ const PaymentMethodManagement = () => {
   const [monthlyFeeAmount, setMonthlyFeeAmount] = useState(0);
   const [savingSettings, setSavingSettings] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     fetchPixKeys();
@@ -127,15 +128,26 @@ const PaymentMethodManagement = () => {
         is_primary: pixKeys.length === 0, // First key is primary
       };
 
-      const { data, error } = await supabase.from('pix_keys').insert(newKey);
-      
-      if (error) {
-        console.error('Error saving PIX key:', error);
-        throw error;
+      // Usar a função segura para contornar a política RLS
+      if (isAdmin && user) {
+        const { data, error } = await supabase.rpc('admin_add_pix_key', {
+          key_type_val: keyType,
+          key_value_val: keyValue,
+          recipient_name_val: recipientName,
+          is_primary_val: pixKeys.length === 0
+        });
+        
+        if (error) {
+          console.error('Error saving PIX key:', error);
+          throw error;
+        }
+        
+        console.log("PIX key saved successfully:", data);
+        toast("Chave PIX adicionada com sucesso!");
+      } else {
+        toast("Você não tem permissão para adicionar chaves PIX.");
+        return;
       }
-      
-      console.log("PIX key saved successfully:", data);
-      toast("Chave PIX adicionada com sucesso!");
       
       // Reset form and refresh keys
       setKeyType('cpf');
@@ -154,22 +166,15 @@ const PaymentMethodManagement = () => {
     try {
       console.log("Setting primary PIX key:", id);
       
-      // First, set all keys to not primary
-      const { error: updateAllError } = await supabase
-        .from('pix_keys')
-        .update({ is_primary: false })
-        .neq('id', 'dummy');
-      
-      if (updateAllError) {
-        console.error('Error resetting primary keys:', updateAllError);
-        throw updateAllError;
+      if (!isAdmin || !user) {
+        toast("Você não tem permissão para definir a chave principal.");
+        return;
       }
       
-      // Then set the selected key as primary
-      const { error } = await supabase
-        .from('pix_keys')
-        .update({ is_primary: true })
-        .eq('id', id);
+      // Usar a função segura para contornar a política RLS
+      const { error } = await supabase.rpc('admin_set_primary_pix_key', {
+        key_id_val: id
+      });
       
       if (error) {
         console.error('Error setting primary key:', error);
@@ -189,10 +194,15 @@ const PaymentMethodManagement = () => {
     try {
       console.log("Deleting PIX key:", id);
       
-      const { error } = await supabase
-        .from('pix_keys')
-        .delete()
-        .eq('id', id);
+      if (!isAdmin || !user) {
+        toast("Você não tem permissão para remover chaves PIX.");
+        return;
+      }
+      
+      // Usar a função segura para contornar a política RLS
+      const { error } = await supabase.rpc('admin_delete_pix_key', {
+        key_id_val: id
+      });
         
       if (error) {
         console.error('Error deleting PIX key:', error);
@@ -212,36 +222,19 @@ const PaymentMethodManagement = () => {
     setSavingSettings(true);
     
     try {
-      const settings: PaymentSettings = {
-        accept_card_payments: acceptCardPayments,
-        accept_pix_payments: acceptPixPayments,
-        accept_monthly_fee: acceptMonthlyFee,
-        monthly_fee_amount: monthlyFeeAmount,
-      };
-      
-      // Check if settings exist
-      const { data } = await supabase
-        .from('payment_settings')
-        .select('id');
-      
-      let error;
-      
-      if (data && data.length > 0) {
-        // Update
-        const result = await supabase
-          .from('payment_settings')
-          .update(settings)
-          .eq('id', data[0].id);
-          
-        error = result.error;
-      } else {
-        // Insert
-        const result = await supabase
-          .from('payment_settings')
-          .insert(settings);
-          
-        error = result.error;
+      if (!isAdmin || !user) {
+        toast("Você não tem permissão para salvar configurações de pagamento.");
+        setSavingSettings(false);
+        return;
       }
+      
+      // Usar a função segura para contornar a política RLS
+      const { error } = await supabase.rpc('admin_save_payment_settings', {
+        accept_card_payments_val: acceptCardPayments,
+        accept_pix_payments_val: acceptPixPayments,
+        accept_monthly_fee_val: acceptMonthlyFee,
+        monthly_fee_amount_val: monthlyFeeAmount
+      });
       
       if (error) throw error;
       
