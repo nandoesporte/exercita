@@ -58,12 +58,18 @@ const PaymentMethodManagement = () => {
 
   const fetchPixKeys = async () => {
     try {
+      console.log("Fetching PIX keys...");
       const { data, error } = await supabase
         .from('pix_keys')
         .select('*')
         .order('is_primary', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching PIX keys:", error);
+        throw error;
+      }
+      
+      console.log("PIX keys fetched:", data);
       
       // Transform the data to ensure key_type is the correct union type
       const formattedData = data?.map((item: PixKeyFromDB) => ({
@@ -112,6 +118,8 @@ const PaymentMethodManagement = () => {
     setSavingPixKey(true);
     
     try {
+      console.log("Saving PIX key with:", { keyType, keyValue, recipientName });
+      
       const newKey: PixKey = {
         key_type: keyType,
         key_value: keyValue,
@@ -119,10 +127,14 @@ const PaymentMethodManagement = () => {
         is_primary: pixKeys.length === 0, // First key is primary
       };
 
-      const { error } = await supabase.from('pix_keys').insert(newKey);
+      const { data, error } = await supabase.from('pix_keys').insert(newKey);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error saving PIX key:', error);
+        throw error;
+      }
       
+      console.log("PIX key saved successfully:", data);
       toast("Chave PIX adicionada com sucesso!");
       
       // Reset form and refresh keys
@@ -130,9 +142,9 @@ const PaymentMethodManagement = () => {
       setKeyValue('');
       setRecipientName('');
       fetchPixKeys();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving pix key:', error);
-      toast("Erro ao salvar chave PIX.");
+      toast(`Erro ao salvar chave PIX: ${error.message || 'Falha desconhecida'}`);
     } finally {
       setSavingPixKey(false);
     }
@@ -140,11 +152,18 @@ const PaymentMethodManagement = () => {
 
   const handleSetPrimaryPixKey = async (id: string) => {
     try {
+      console.log("Setting primary PIX key:", id);
+      
       // First, set all keys to not primary
-      await supabase
+      const { error: updateAllError } = await supabase
         .from('pix_keys')
         .update({ is_primary: false })
         .neq('id', 'dummy');
+      
+      if (updateAllError) {
+        console.error('Error resetting primary keys:', updateAllError);
+        throw updateAllError;
+      }
       
       // Then set the selected key as primary
       const { error } = await supabase
@@ -152,30 +171,40 @@ const PaymentMethodManagement = () => {
         .update({ is_primary: true })
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error setting primary key:', error);
+        throw error;
+      }
       
+      console.log("Primary PIX key updated successfully");
       toast("Chave principal atualizada!");
       fetchPixKeys();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error setting primary key:', error);
-      toast("Erro ao definir chave principal.");
+      toast(`Erro ao definir chave principal: ${error.message || 'Falha desconhecida'}`);
     }
   };
 
   const handleDeletePixKey = async (id: string) => {
     try {
+      console.log("Deleting PIX key:", id);
+      
       const { error } = await supabase
         .from('pix_keys')
         .delete()
         .eq('id', id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting PIX key:', error);
+        throw error;
+      }
       
+      console.log("PIX key deleted successfully");
       toast("Chave PIX removida com sucesso!");
       fetchPixKeys();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting pix key:', error);
-      toast("Erro ao remover chave PIX.");
+      toast(`Erro ao remover chave PIX: ${error.message || 'Falha desconhecida'}`);
     }
   };
 

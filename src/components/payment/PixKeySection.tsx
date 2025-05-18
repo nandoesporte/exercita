@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
 import { Edit, Key, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/lib/toast-wrapper';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PixKeySectionProps {
   savedPixKey: string;
@@ -20,17 +23,71 @@ const PixKeySection = ({
   const [pixKey, setPixKey] = useState('');
   const [pixKeyType, setPixKeyType] = useState('cpf');
   const [isEditingPix, setIsEditingPix] = useState(false);
+  const { user } = useAuth();
 
-  const handleSavePix = () => {
+  const handleSavePix = async () => {
     if (!pixKey) {
       toast('Digite uma chave PIX válida');
       return;
     }
     
-    setSavedPixKey(pixKey);
-    setSavedPixKeyType(pixKeyType);
-    setIsEditingPix(false);
-    toast('Chave PIX salva com sucesso');
+    try {
+      console.log("Saving user PIX key:", { pixKeyType, pixKey });
+      
+      // If this is a user setting their personal PIX key
+      if (user) {
+        // First check if user already has a PIX key
+        const { data: existingKey, error: fetchError } = await supabase
+          .from('user_pix_keys')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error("Error checking existing PIX key:", fetchError);
+          throw fetchError;
+        }
+          
+        // Update or insert PIX key
+        if (existingKey) {
+          const { error: updateError } = await supabase
+            .from('user_pix_keys')
+            .update({ 
+              key_type: pixKeyType,
+              key_value: pixKey 
+            })
+            .eq('user_id', user.id);
+            
+          if (updateError) {
+            console.error("Error updating PIX key:", updateError);
+            throw updateError;
+          }
+        } else {
+          const { error: insertError } = await supabase
+            .from('user_pix_keys')
+            .insert({
+              user_id: user.id,
+              key_type: pixKeyType,
+              key_value: pixKey
+            });
+            
+          if (insertError) {
+            console.error("Error inserting PIX key:", insertError);
+            throw insertError;
+          }
+        }
+      }
+      
+      // Update local state regardless
+      setSavedPixKey(pixKey);
+      setSavedPixKeyType(pixKeyType);
+      setIsEditingPix(false);
+      toast('Chave PIX salva com sucesso');
+      
+    } catch (error: any) {
+      console.error("Error saving PIX key:", error);
+      toast(`Erro ao salvar chave PIX: ${error.message || 'Falha desconhecida'}`);
+    }
   };
 
   return (
