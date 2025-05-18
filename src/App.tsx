@@ -1,5 +1,4 @@
 
-import { Toaster } from "sonner";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,7 +64,6 @@ const App = () => {
   
   return (
     <>
-      <Toaster />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />

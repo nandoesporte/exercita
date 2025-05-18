@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -62,6 +63,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Check if profile exists and create if needed
+  const ensureProfileExists = useCallback(async (userId: string, metadata?: any) => {
+    try {
+      // First check if profile exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking profile existence:', checkError);
+        return;
+      }
+
+      // If profile doesn't exist, create it
+      if (!existingProfile) {
+        console.log("Profile doesn't exist, creating now for user:", userId);
+        
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            first_name: metadata?.first_name || '',
+            last_name: metadata?.last_name || '',
+            avatar_url: metadata?.avatar_url || '',
+            instance_id: metadata?.instance_id || crypto.randomUUID()
+          });
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+        } else {
+          console.log("Profile created successfully");
+        }
+      } else {
+        console.log("Profile already exists for user:", userId);
+      }
+    } catch (error) {
+      console.error('Exception in ensureProfileExists:', error);
+    }
+  }, []);
+
   useEffect(() => {
     console.log("AuthProvider useEffect running");
     let mounted = true;
@@ -86,6 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             if (mounted) {
               checkAdminStatus(currentSession.user.id);
+              
+              // Ensure profile exists for this user
+              const metadata = currentSession.user.user_metadata;
+              ensureProfileExists(currentSession.user.id, metadata);
             }
           }, 0);
         } else {
@@ -114,6 +161,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (currentSession?.user) {
           console.log("Initial session found, checking admin status");
           await checkAdminStatus(currentSession.user.id);
+          
+          // Ensure profile exists for this user during initial session check
+          const metadata = currentSession.user.user_metadata;
+          await ensureProfileExists(currentSession.user.id, metadata);
         }
       } catch (error) {
         console.error("Error checking session:", error);
@@ -131,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription?.unsubscribe();
     };
-  }, [checkAdminStatus]);
+  }, [checkAdminStatus, ensureProfileExists]);
 
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
@@ -161,6 +212,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (data?.user) {
         toast.success('Conta criada! Verifique seu email para confirmar.');
+        
+        // Create profile for the new user immediately after signup
+        await ensureProfileExists(data.user.id, metadataWithInstanceId);
       } else {
         toast.info('Conta criada! Por favor, faça o login.');
       }
@@ -174,10 +228,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log("Attempting login with:", email);
-      
-      // For debugging purposes
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log("Current session before login attempt:", sessionData?.session ? "Active" : "None");
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -198,6 +248,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasSession: !!data.session,
         userData: data.user?.user_metadata
       });
+      
+      // Ensure profile exists for this user after successful login
+      if (data.user) {
+        await ensureProfileExists(data.user.id, data.user.user_metadata);
+      }
       
       return data;
     } catch (error: any) {
