@@ -2,14 +2,20 @@
 import { useState, useRef } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Trash2, Image } from 'lucide-react';
+import { Camera, Upload, Trash2, Image, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const GymPhotos = () => {
   const { user } = useAuth();
-  const { photos, isLoading, uploading, uploadPhoto, deletePhoto } = useGymPhotos();
+  const { 
+    photos, 
+    isLoading, 
+    uploading, 
+    uploadPhoto, 
+    deletePhoto 
+  } = useGymPhotos();
   const [description, setDescription] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
@@ -97,6 +103,35 @@ const GymPhotos = () => {
         </div>
       </div>
 
+      <div className="bg-fitness-darkGray/40 p-6 rounded-xl">
+        <div className="flex items-center gap-3 mb-4">
+          <Info size={20} className="text-fitness-green" />
+          <h2 className="text-xl font-bold text-white">Como funciona a análise de fotos</h2>
+        </div>
+        
+        <div className="space-y-4 text-gray-200">
+          <div className="flex gap-3 items-start">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-fitness-dark flex items-center justify-center text-fitness-green font-bold">1</div>
+            <p>Envie fotos da sua academia para que possamos analisar o ambiente e equipamentos disponíveis</p>
+          </div>
+          
+          <div className="flex gap-3 items-start">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-fitness-dark flex items-center justify-center text-fitness-green font-bold">2</div>
+            <p>Nossa IA analisa as imagens para identificar os equipamentos disponíveis</p>
+          </div>
+          
+          <div className="flex gap-3 items-start">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-fitness-dark flex items-center justify-center text-fitness-green font-bold">3</div>
+            <p>O personal trainer avalia as imagens e cria um plano de treino personalizado para você</p>
+          </div>
+          
+          <div className="flex gap-3 items-start">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-fitness-dark flex items-center justify-center text-fitness-green font-bold">4</div>
+            <p>Você recebe um plano de treino baseado nos equipamentos disponíveis e nos seus objetivos</p>
+          </div>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-orange"></div>
@@ -121,6 +156,11 @@ const GymPhotos = () => {
                       {photo.approved && (
                         <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 text-xs rounded">
                           Aprovada
+                        </div>
+                      )}
+                      {photo.processed_by_ai && (
+                        <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs rounded">
+                          Analisada pela IA
                         </div>
                       )}
                     </div>
