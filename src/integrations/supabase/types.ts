@@ -56,50 +56,6 @@ export type Database = {
           },
         ]
       }
-      equipment_based_workouts: {
-        Row: {
-          available_time: number | null
-          created_at: string
-          equipment_list: Json | null
-          fitness_goal: string | null
-          fitness_level: string | null
-          id: string
-          photo_analysis_id: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          available_time?: number | null
-          created_at?: string
-          equipment_list?: Json | null
-          fitness_goal?: string | null
-          fitness_level?: string | null
-          id?: string
-          photo_analysis_id?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          available_time?: number | null
-          created_at?: string
-          equipment_list?: Json | null
-          fitness_goal?: string | null
-          fitness_level?: string | null
-          id?: string
-          photo_analysis_id?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "equipment_based_workouts_photo_analysis_id_fkey"
-            columns: ["photo_analysis_id"]
-            isOneToOne: false
-            referencedRelation: "gym_photo_analysis"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       exercises: {
         Row: {
           category_id: string | null
@@ -137,35 +93,6 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "workout_categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      gym_photo_analysis: {
-        Row: {
-          analysis_date: string
-          equipment_detected: Json | null
-          id: string
-          photo_id: string
-        }
-        Insert: {
-          analysis_date?: string
-          equipment_detected?: Json | null
-          id?: string
-          photo_id: string
-        }
-        Update: {
-          analysis_date?: string
-          equipment_detected?: Json | null
-          id?: string
-          photo_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "gym_photo_analysis_photo_id_fkey"
-            columns: ["photo_id"]
-            isOneToOne: false
-            referencedRelation: "user_gym_photos"
             referencedColumns: ["id"]
           },
         ]
@@ -437,7 +364,6 @@ export type Database = {
           description: string | null
           id: string
           photo_url: string
-          processed_by_ai: boolean | null
           updated_at: string | null
           user_id: string
         }
@@ -447,7 +373,6 @@ export type Database = {
           description?: string | null
           id?: string
           photo_url: string
-          processed_by_ai?: boolean | null
           updated_at?: string | null
           user_id: string
         }
@@ -457,7 +382,6 @@ export type Database = {
           description?: string | null
           id?: string
           photo_url?: string
-          processed_by_ai?: boolean | null
           updated_at?: string | null
           user_id?: string
         }

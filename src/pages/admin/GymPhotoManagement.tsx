@@ -1,327 +1,318 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGymPhotos } from '@/hooks/useGymPhotos';
-import AdminLayout from '@/components/layout/AdminLayout';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
+import { Check, X, Eye, User, GalleryHorizontal, Search } from 'lucide-react';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, XCircle, Loader2, Info } from 'lucide-react';
-import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
 const GymPhotoManagement = () => {
-  const { 
-    allPhotos, 
-    isLoadingAll, 
-    updateApprovalStatus,
-    analyzePhotoWithAI,
-    analyzing 
-  } = useGymPhotos();
+  const { allPhotos, isLoadingAll, updateApprovalStatus } = useGymPhotos();
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  // Filter photos based on tab and search query
+  const filteredPhotos = useMemo(() => {
+    let photos = allPhotos;
+    
+    // Filter by tab
+    if (activeTab === 'pending') {
+      photos = allPhotos.filter(photo => !photo.approved);
+    } else if (activeTab === 'approved') {
+      photos = allPhotos.filter(photo => photo.approved);
+    }
+    
+    // Filter by search query (user name)
+    if (searchQuery.trim()) {
+      photos = photos.filter(photo => {
+        const firstName = photo.profiles?.first_name || '';
+        const lastName = photo.profiles?.last_name || '';
+        const fullName = `${firstName} ${lastName}`.toLowerCase();
+        return fullName.includes(searchQuery.toLowerCase());
+      });
+    }
+    
+    return photos;
+  }, [allPhotos, activeTab, searchQuery]);
 
-  // Filter photos by status
-  const pendingPhotos = allPhotos.filter(photo => photo.approved === null || photo.approved === false);
-  const approvedPhotos = allPhotos.filter(photo => photo.approved === true);
-
-  const handleApprove = (photoId) => {
+  const pendingPhotos = allPhotos.filter(photo => !photo.approved);
+  const approvedPhotos = allPhotos.filter(photo => photo.approved);
+  
+  const handleApprove = (photoId: string) => {
     updateApprovalStatus({ photoId, approved: true });
-    toast.success('Foto aprovada com sucesso');
   };
-
-  const handleReject = (photoId) => {
-    updateApprovalStatus({ photoId, approved: false });
-    toast.error('Foto rejeitada');
+  
+  const handleReject = (photoId: string) => {
+    if (confirm('Deseja rejeitar esta foto?')) {
+      updateApprovalStatus({ photoId, approved: false });
+    }
   };
-
-  const handleAnalyzeWithAI = async (photoId) => {
-    await analyzePhotoWithAI(photoId);
-    toast.success('Foto analisada com sucesso pela IA');
-  };
-
-  const viewPhotoDetails = (photo) => {
-    setSelectedPhoto(photo);
-    setDialogOpen(true);
-  };
-
+  
   if (isLoadingAll) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Carregando fotos...</span>
-        </div>
-      </AdminLayout>
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-orange"></div>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-10">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Gerenciamento de Fotos de Academia</h1>
-        </div>
-
-        <Alert className="mb-6 bg-blue-50">
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            Analise as fotos dos usuários para detectar equipamentos e gerar treinos personalizados.
-          </AlertDescription>
-        </Alert>
-
-        <Tabs defaultValue="pending" className="w-full">
-          
-          <TabsList>
-            <TabsTrigger value="pending">
-              Pendentes <Badge className="ml-2 bg-amber-500">{pendingPhotos.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="approved">
-              Aprovadas <Badge className="ml-2 bg-green-500">{approvedPhotos.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pendingPhotos.length > 0 ? (
-                pendingPhotos.map((photo) => (
-                  <Card key={photo.id} className="overflow-hidden">
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Foto #{photo.id.substring(0, 8)}</CardTitle>
-                      <CardDescription>
-                        Enviada por: {photo.profiles?.first_name || 'Usuário'} {photo.profiles?.last_name || ''}
-                      </CardDescription>
-                    </CardHeader>
-                    <div className="relative h-64 overflow-hidden">
-                      <img
-                        src={photo.photo_url}
-                        alt="Gym photo"
-                        className="w-full h-full object-cover cursor-pointer"
-                        onClick={() => viewPhotoDetails(photo)}
-                      />
-                    </div>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-gray-500">
-                        Enviada em: {new Date(photo.created_at).toLocaleDateString()}
-                      </p>
-                      {photo.description && (
-                        <p className="mt-2 text-sm">{photo.description}</p>
-                      )}
-                      <div className="mt-2">
-                        <Badge variant={photo.processed_by_ai ? "success" : "outline"} className="mr-2">
-                          {photo.processed_by_ai ? 'Analisada pela IA' : 'Não analisada'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-4 flex justify-between gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleApprove(photo.id)}
-                        className="flex-1"
-                      >
-                        <CheckCircle className="mr-1 h-4 w-4" /> Aprovar
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleReject(photo.id)}
-                        className="flex-1"
-                      >
-                        <XCircle className="mr-1 h-4 w-4" /> Rejeitar
-                      </Button>
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        onClick={() => handleAnalyzeWithAI(photo.id)}
-                        disabled={analyzing || photo.processed_by_ai}
-                        className="flex-1"
-                      >
-                        {analyzing ? (
-                          <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Analisando</>
-                        ) : (
-                          <><Info className="mr-1 h-4 w-4" /> Analisar IA</>
-                        )}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-10">
-                  <p className="text-gray-500">Não há fotos pendentes</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="approved" className="mt-6">
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {approvedPhotos.length > 0 ? (
-                approvedPhotos.map((photo) => (
-                  <Card key={photo.id} className="overflow-hidden">
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Foto #{photo.id.substring(0, 8)}</CardTitle>
-                      <CardDescription>
-                        Enviada por: {photo.profiles?.first_name || 'Usuário'} {photo.profiles?.last_name || ''}
-                      </CardDescription>
-                    </CardHeader>
-                    <div className="relative h-64 overflow-hidden">
-                      <img
-                        src={photo.photo_url}
-                        alt="Gym photo"
-                        className="w-full h-full object-cover cursor-pointer"
-                        onClick={() => viewPhotoDetails(photo)}
-                      />
-                    </div>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-gray-500">
-                        Enviada em: {new Date(photo.created_at).toLocaleDateString()}
-                      </p>
-                      {photo.description && (
-                        <p className="mt-2 text-sm">{photo.description}</p>
-                      )}
-                      <div className="mt-2">
-                        <Badge variant={photo.processed_by_ai ? "success" : "outline"} className="mr-2">
-                          {photo.processed_by_ai ? 'Analisada pela IA' : 'Não analisada'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-4">
-                      {!photo.processed_by_ai && (
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          onClick={() => handleAnalyzeWithAI(photo.id)}
-                          disabled={analyzing}
-                          className="w-full"
-                        >
-                          {analyzing ? (
-                            <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Analisando</>
-                          ) : (
-                            <><Info className="mr-1 h-4 w-4" /> Analisar com IA</>
-                          )}
-                        </Button>
-                      )}
-                      {photo.processed_by_ai && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => viewPhotoDetails(photo)}
-                          className="w-full"
-                        >
-                          <Info className="mr-1 h-4 w-4" /> Ver Análise
-                        </Button>
-                      )}
-                    </CardFooter>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-10">
-                  <p className="text-gray-500">Não há fotos aprovadas</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* Photo Detail Dialog */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            {selectedPhoto && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>Detalhes da Foto</DialogTitle>
-                </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <img
-                      src={selectedPhoto.photo_url}
-                      alt="Gym photo"
-                      className="w-full h-auto rounded-md"
-                    />
-                    <div className="mt-4">
-                      <h3 className="font-medium">Informações:</h3>
-                      <p className="text-sm mt-1">Usuário: {selectedPhoto.profiles?.first_name || 'Usuário'} {selectedPhoto.profiles?.last_name || ''}</p>
-                      <p className="text-sm mt-1">Enviada em: {new Date(selectedPhoto.created_at).toLocaleDateString()}</p>
-                      <p className="text-sm mt-1">Status: {selectedPhoto.approved ? 'Aprovada' : selectedPhoto.approved === false ? 'Rejeitada' : 'Pendente'}</p>
-                      <p className="text-sm mt-1">Descrição: {selectedPhoto.description || '-'}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-2">Análise da IA:</h3>
-                    {selectedPhoto.processed_by_ai ? (
-                      <div className="bg-gray-50 p-4 rounded-md">
-                        <p className="text-sm">Análise concluída! Veja os detalhes abaixo:</p>
-                        
-                        <div className="mt-4">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => analyzePhotoWithAI(selectedPhoto.id)}
-                            disabled={analyzing}
-                            className="mt-2"
-                          >
-                            Re-analisar com IA
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 p-4 rounded-md">
-                        <p className="text-sm">Esta foto ainda não foi analisada pela IA.</p>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          onClick={() => handleAnalyzeWithAI(selectedPhoto.id)}
-                          disabled={analyzing}
-                          className="mt-4"
-                        >
-                          {analyzing ? (
-                            <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Analisando</>
-                          ) : (
-                            <><Info className="mr-1 h-4 w-4" /> Analisar com IA</>
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                    
-                    <div className="mt-6">
-                      <h3 className="font-medium mb-2">Ações:</h3>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant={selectedPhoto.approved ? "default" : "outline"} 
-                          size="sm" 
-                          onClick={() => handleApprove(selectedPhoto.id)}
-                        >
-                          <CheckCircle className="mr-1 h-4 w-4" /> Aprovar
-                        </Button>
-                        <Button 
-                          variant={selectedPhoto.approved === false ? "default" : "outline"} 
-                          size="sm" 
-                          onClick={() => handleReject(selectedPhoto.id)}
-                        >
-                          <XCircle className="mr-1 h-4 w-4" /> Rejeitar
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
+    <div className="container p-4 max-w-7xl mx-auto">
+      <div className="flex items-center gap-3 mb-2">
+        <GalleryHorizontal className="h-7 w-7 text-fitness-green" />
+        <h1 className="text-3xl font-bold text-[#000000] tracking-tight">
+          Gerenciamento de Fotos
+        </h1>
       </div>
-    </AdminLayout>
+      
+      <p className="text-lg text-[#000000e6] dark:text-gray-300 mb-6 max-w-3xl leading-relaxed">
+        Aprove ou rejeite fotos enviadas pelos usuários para análise do ambiente da academia.
+        Todas as fotos são identificadas com o nome do usuário que as enviou.
+      </p>
+      
+      {/* Search bar */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+          <Input
+            className="pl-10 bg-white dark:bg-fitness-darkGray border-gray-200 dark:border-gray-700 text-[#222222] dark:text-white"
+            placeholder="Filtrar por usuário..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      <Tabs
+        defaultValue="all"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsTrigger value="all" className="text-base font-medium">
+            Todas ({allPhotos.length})
+          </TabsTrigger>
+          <TabsTrigger value="pending" className="text-base font-medium">
+            Pendentes ({pendingPhotos.length})
+          </TabsTrigger>
+          <TabsTrigger value="approved" className="text-base font-medium">
+            Aprovadas ({approvedPhotos.length})
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all">
+          <PhotoGrid
+            photos={filteredPhotos}
+            handleApprove={handleApprove}
+            handleReject={handleReject}
+            setSelectedPhoto={setSelectedPhoto}
+            selectedPhoto={selectedPhoto}
+            searchQuery={searchQuery}
+          />
+        </TabsContent>
+        
+        <TabsContent value="pending">
+          <PhotoGrid
+            photos={filteredPhotos}
+            handleApprove={handleApprove}
+            handleReject={handleReject}
+            setSelectedPhoto={setSelectedPhoto}
+            selectedPhoto={selectedPhoto}
+            searchQuery={searchQuery}
+          />
+        </TabsContent>
+        
+        <TabsContent value="approved">
+          <PhotoGrid
+            photos={filteredPhotos}
+            handleApprove={handleApprove}
+            handleReject={handleReject}
+            setSelectedPhoto={setSelectedPhoto}
+            selectedPhoto={selectedPhoto}
+            searchQuery={searchQuery}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+interface PhotoGridProps {
+  photos: any[];
+  handleApprove: (id: string) => void;
+  handleReject: (id: string) => void;
+  setSelectedPhoto: (url: string | null) => void;
+  selectedPhoto: string | null;
+  searchQuery: string;
+}
+
+const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, selectedPhoto, searchQuery }: PhotoGridProps) => {
+  if (photos.length === 0) {
+    return (
+      <div className="text-center py-16 bg-fitness-darkGray/40 rounded-lg">
+        {searchQuery ? (
+          <p className="text-xl text-[#222222] dark:text-gray-300 font-medium">Nenhuma foto encontrada para este usuário</p>
+        ) : (
+          <p className="text-xl text-[#222222] dark:text-gray-300 font-medium">Nenhuma foto encontrada nesta categoria</p>
+        )}
+      </div>
+    );
+  }
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {photos.map((photo: any) => (
+        <div key={photo.id} className="bg-fitness-darkGray rounded-lg overflow-hidden shadow-lg border border-gray-700/50">
+          <Dialog>
+            <DialogTrigger asChild>
+              <div 
+                className="relative h-60 w-full cursor-pointer"
+                onClick={() => setSelectedPhoto(photo.photo_url)}
+              >
+                <img
+                  src={photo.photo_url}
+                  alt="Foto da Academia"
+                  className="h-full w-full object-cover"
+                />
+                
+                {/* User badge overlay */}
+                <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-3">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6 ring-2 ring-white/20">
+                      <AvatarFallback className="bg-fitness-green text-[10px]">
+                        {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-white text-sm font-medium">
+                      {photo.profiles?.first_name} {photo.profiles?.last_name}
+                    </span>
+                  </div>
+                </div>
+                
+                {photo.approved && (
+                  <div className="absolute bottom-3 right-3 bg-green-600 text-white px-3 py-1 text-xs font-semibold rounded-full">
+                    Aprovada
+                  </div>
+                )}
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl bg-fitness-darkGray border-gray-700">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  <GalleryHorizontal className="h-5 w-5" /> Foto da Academia
+                </DialogTitle>
+              </DialogHeader>
+              <div className="mt-4">
+                <img
+                  src={selectedPhoto || ''}
+                  alt="Foto da academia em tamanho completo"
+                  className="w-full object-contain max-h-[70vh] rounded-md border border-gray-700/50"
+                />
+                <div className="mt-6 p-4 bg-fitness-dark/50 rounded-lg border border-gray-700/30">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-fitness-green">
+                        {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-white text-lg font-semibold">
+                        {photo.profiles?.first_name} {photo.profiles?.last_name}
+                      </h3>
+                      <p className="text-[#aaadb0] text-sm">
+                        Enviado em {format(new Date(photo.created_at), 'dd/MM/yyyy HH:mm')}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {photo.description && (
+                    <div className="mt-3 border-t border-gray-700/30 pt-3">
+                      <p className="text-white text-base leading-relaxed">
+                        <span className="font-medium text-[#aaadb0]">Descrição:</span> {photo.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex justify-end gap-3 mt-6">
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleReject(photo.id)}
+                    className="gap-2 px-4 py-2 text-base"
+                  >
+                    <X size={20} /> Rejeitar
+                  </Button>
+                  <Button
+                    variant="default"
+                    className="bg-green-600 hover:bg-green-700 gap-2 px-4 py-2 text-base"
+                    onClick={() => handleApprove(photo.id)}
+                  >
+                    <Check size={20} /> Aprovar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="bg-fitness-green text-xs">
+                    {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-white text-base font-medium line-clamp-1">
+                  {photo.profiles?.first_name} {photo.profiles?.last_name}
+                </span>
+              </div>
+              <span className="text-[#aaadb0] text-xs">
+                {format(new Date(photo.created_at), 'dd/MM/yyyy')}
+              </span>
+            </div>
+            
+            {photo.description && (
+              <p className="text-[#aaadb0] text-sm mt-2 mb-3 line-clamp-2">{photo.description}</p>
+            )}
+            
+            <div className="flex justify-end gap-1 mt-2 border-t border-gray-700/30 pt-3">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8"
+                    onClick={() => setSelectedPhoto(photo.photo_url)}
+                  >
+                    <Eye size={16} className="mr-1" /> Ver
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-8 text-red-500 hover:text-red-400 hover:bg-red-950/30"
+                onClick={() => handleReject(photo.id)}
+              >
+                <X size={16} className="mr-1" /> Rejeitar
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm" 
+                className="h-8 text-green-500 hover:text-green-400 hover:bg-green-950/30"
+                onClick={() => handleApprove(photo.id)}
+              >
+                <Check size={16} className="mr-1" /> Aprovar
+              </Button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 
