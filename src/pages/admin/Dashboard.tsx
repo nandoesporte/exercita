@@ -255,7 +255,7 @@ const Dashboard = () => {
           </Button>
           <Button onClick={() => setIsCreateUserOpen(true)} size={isMobile ? "sm" : "default"}>
             <UserPlus className="h-4 w-4 mr-2" />
-            {!isMobile && "Novo Usuário"}
+            Novo Aluno
           </Button>
         </div>
       </div>
@@ -439,6 +439,103 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Dialog para cadastro de novo aluno */}
+      <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar novo aluno</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="email@exemplo.com" 
+                        type="email"
+                        autoComplete="email"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password"
+                        placeholder="******" 
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sobrenome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Sobrenome" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateUserOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createUserMutation.isPending}
+                >
+                  {createUserMutation.isPending && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -302,12 +302,12 @@ const UserManagement = () => {
           <DialogTrigger asChild>
             <Button size={isMobile ? "sm" : "default"}>
               <UserPlus className="h-4 w-4 mr-2" />
-              {!isMobile && "Novo Usuário"}
+              Novo Aluno
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Adicionar novo usuário</DialogTitle>
+              <DialogTitle>Adicionar novo aluno</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

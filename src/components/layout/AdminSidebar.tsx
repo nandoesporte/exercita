@@ -72,7 +72,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
         { to: "/admin/schedule", icon: Clock, label: "Agenda" },
         { to: "/admin/appointments", icon: CalendarIcon, label: "Consultas" },
         { to: "/admin/payment-methods", icon: CreditCard, label: "Métodos de Pagamento" },
-        { to: "/admin/users", icon: Users, label: "Usuários" },
+        { to: "/admin/users", icon: Users, label: "Alunos" }, // Alterando de "Usuários" para "Alunos"
         { to: "/admin/rls-checker", icon: Shield, label: "Verificador de RLS" }
       ]
     }
