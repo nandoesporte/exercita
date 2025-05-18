@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings, Calendar } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { 
@@ -16,12 +16,17 @@ import {
 } from "@/components/ui/carousel";
 import { WorkoutCard } from '@/components/ui/workout-card';
 import { useStore } from '@/hooks/useStore';
+import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const { profile } = useProfile();
   const { data: workouts, isLoading } = useWorkouts();
+  const { data: workoutHistory } = useWorkoutHistory();
   const { featuredProducts, isLoadingFeaturedProducts } = useStore();
+  
+  // Verificar se o usuário já tem algum treino atribuído a ele
+  const hasAssignedWorkout = workoutHistory && workoutHistory.length > 0;
   
   // Obter o treino recomendado com base no nível de condicionamento físico do usuário ou no primeiro treino em destaque
   const recommendedWorkout = workouts?.find(workout => 
@@ -46,7 +51,9 @@ const Index = () => {
           {greeting}, {profile?.first_name || 'Atleta'}!
         </h1>
         <p className="text-xl text-gray-200">
-          Seus planos personalizados estão prontos
+          {hasAssignedWorkout 
+            ? 'Seus planos personalizados estão prontos' 
+            : 'Agende uma consultoria para começar'}
         </p>
         
         {/* Admin button - only visible for admin users on mobile */}
@@ -66,89 +73,127 @@ const Index = () => {
         )}
       </section>
       
-      {/* Card Principal de Treino */}
+      {/* Card Principal de Treino ou Botão Agendar Consultoria */}
       <section className="mb-8">
-        <Card className="bg-fitness-darkGray border-none text-white">
-          <CardContent className="p-6 space-y-6">
-            {/* Seletor de Academia */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold">Academia</h2>
-              </div>
-              
-              <div className="flex items-center">
-                <span className="bg-fitness-orange text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
-                  <Activity size={16} className="mr-1" /> PREMIUM
-                </span>
-              </div>
-            </div>
-            
-            {/* Detalhes do Treino */}
-            <div>
-              <h3 className="text-xl font-bold">
-                {recommendedWorkout?.title || 'Treino Personalizado'}
-              </h3>
-              <div className="flex justify-between mt-1">
-                <Link to="/workouts" className="text-sm text-gray-300 hover:text-fitness-orange">
-                  Ver mais <span>&gt;</span>
-                </Link>
-              </div>
-              
-              {/* Não exibir os parâmetros dias, duração e condição - escondido conforme solicitado */}
-              
-              {/* Áreas Alvo */}
-              <div className="mt-4">
-                <div className="bg-fitness-dark p-4 rounded-md">
-                  <div className="mb-2">
-                    <span className="font-bold">Alvo</span>
-                    <span className="ml-2 text-gray-300">{targetMuscles}</span>
-                  </div>
-                  
-                  {/* Estatísticas do Treino - usando dados reais */}
-                  <div className="flex justify-between mt-4">
-                    <div className="text-center">
-                      <div className="flex justify-center mb-2">
-                        <Dumbbell size={28} className="text-gray-300" />
-                      </div>
-                      <div className="text-lg font-bold">
-                        {recommendedWorkout?.workout_exercises?.length || 0} exercícios
-                      </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="flex justify-center mb-2">
-                        <Clock size={28} className="text-gray-300" />
-                      </div>
-                      <div className="text-lg font-bold">
-                        {recommendedWorkout?.duration || 0} min
-                      </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="flex justify-center mb-2">
-                        <Activity size={28} className="text-gray-300" />
-                      </div>
-                      <div className="text-lg font-bold">
-                        {recommendedWorkout?.calories || 0} kcal
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Botão Iniciar Treino */}
-                  <Button 
-                    className="w-full mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
-                    asChild
-                    disabled={isLoading || !recommendedWorkout}
-                  >
-                    <Link to={`/workout/${recommendedWorkout?.id || ''}`}>
-                      {isLoading ? 'Carregando...' : 'Iniciar Treino'}
-                    </Link>
-                  </Button>
+        {hasAssignedWorkout ? (
+          // Card com treino recomendado - exibido quando o usuário tem treino atribuído
+          <Card className="bg-fitness-darkGray border-none text-white">
+            <CardContent className="p-6 space-y-6">
+              {/* Seletor de Academia */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold">Academia</h2>
+                </div>
+                
+                <div className="flex items-center">
+                  <span className="bg-fitness-orange text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
+                    <Activity size={16} className="mr-1" /> PREMIUM
+                  </span>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              
+              {/* Detalhes do Treino */}
+              <div>
+                <h3 className="text-xl font-bold">
+                  {recommendedWorkout?.title || 'Treino Personalizado'}
+                </h3>
+                <div className="flex justify-between mt-1">
+                  <Link to="/workouts" className="text-sm text-gray-300 hover:text-fitness-orange">
+                    Ver mais <span>&gt;</span>
+                  </Link>
+                </div>
+                
+                {/* Áreas Alvo */}
+                <div className="mt-4">
+                  <div className="bg-fitness-dark p-4 rounded-md">
+                    <div className="mb-2">
+                      <span className="font-bold">Alvo</span>
+                      <span className="ml-2 text-gray-300">{targetMuscles}</span>
+                    </div>
+                    
+                    {/* Estatísticas do Treino - usando dados reais */}
+                    <div className="flex justify-between mt-4">
+                      <div className="text-center">
+                        <div className="flex justify-center mb-2">
+                          <Dumbbell size={28} className="text-gray-300" />
+                        </div>
+                        <div className="text-lg font-bold">
+                          {recommendedWorkout?.workout_exercises?.length || 0} exercícios
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="flex justify-center mb-2">
+                          <Clock size={28} className="text-gray-300" />
+                        </div>
+                        <div className="text-lg font-bold">
+                          {recommendedWorkout?.duration || 0} min
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="flex justify-center mb-2">
+                          <Activity size={28} className="text-gray-300" />
+                        </div>
+                        <div className="text-lg font-bold">
+                          {recommendedWorkout?.calories || 0} kcal
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Botão Iniciar Treino */}
+                    <Button 
+                      className="w-full mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
+                      asChild
+                      disabled={isLoading || !recommendedWorkout}
+                    >
+                      <Link to={`/workout/${recommendedWorkout?.id || ''}`}>
+                        {isLoading ? 'Carregando...' : 'Iniciar Treino'}
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          // Card para agendar consultoria - exibido quando não há treinos atribuídos
+          <Card className="bg-fitness-darkGray border-none text-white">
+            <CardContent className="p-6 space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Primeira Consultoria</h2>
+                
+                <div className="flex items-center">
+                  <span className="bg-fitness-orange text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
+                    <Activity size={16} className="mr-1" /> GRATUITO
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-fitness-dark p-6 rounded-md text-center">
+                <div className="mb-6">
+                  <div className="mx-auto bg-fitness-darkGray/50 w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                    <Calendar size={36} className="text-fitness-orange" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Você ainda não tem um treino personalizado</h3>
+                  <p className="text-gray-300">
+                    Agende uma consultoria com nossos especialistas e receba um plano de treino personalizado para suas necessidades.
+                  </p>
+                </div>
+                
+                <Button 
+                  className="w-full mt-4 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
+                  asChild
+                >
+                  <Link to="/schedule">
+                    <Calendar className="mr-2 h-5 w-5" />
+                    Agendar Consultoria
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </section>
       
       {/* Seção de Treinos Recomendados */}
@@ -243,7 +288,7 @@ const Index = () => {
         </Card>
       </section>
       
-      {/* Produtos em Destaque - Movido para baixo do display "Minha Academia" */}
+      {/* Produtos em Destaque */}
       <section>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Produtos em Destaque</h2>
