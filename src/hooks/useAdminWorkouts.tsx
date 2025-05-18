@@ -571,6 +571,81 @@ export function useAdminWorkouts() {
       toast.error(error.message || 'Falha ao atualizar posição do exercício');
     }
   });
+
+  // Clone exercises from one day to other days
+  const cloneExercisesToDays = useMutation({
+    mutationFn: async ({
+      workoutId,
+      sourceDayOfWeek,
+      targetDaysOfWeek
+    }: {
+      workoutId: string,
+      sourceDayOfWeek: string,
+      targetDaysOfWeek: string[]
+    }) => {
+      // Get source exercises
+      const { data: sourceExercises, error: fetchError } = await supabase
+        .from('workout_exercises')
+        .select('*')
+        .eq('workout_id', workoutId)
+        .eq('day_of_week', sourceDayOfWeek)
+        .order('order_position');
+
+      if (fetchError) {
+        throw new Error(`Error fetching source exercises: ${fetchError.message}`);
+      }
+
+      if (!sourceExercises || sourceExercises.length === 0) {
+        throw new Error('No exercises found to clone');
+      }
+
+      // Process each target day
+      for (const targetDay of targetDaysOfWeek) {
+        // Get current max position in target day
+        const { data: maxPositionData, error: maxPosError } = await supabase
+          .from('workout_exercises')
+          .select('order_position')
+          .eq('workout_id', workoutId)
+          .eq('day_of_week', targetDay)
+          .order('order_position', { ascending: false })
+          .limit(1);
+
+        if (maxPosError) {
+          throw new Error(`Error getting max position: ${maxPosError.message}`);
+        }
+
+        const startPosition = maxPositionData?.length > 0 ? (maxPositionData[0].order_position || 0) + 1 : 1;
+
+        // Prepare exercises for the target day
+        const exercisesToInsert = sourceExercises.map((exercise, index) => {
+          const { id, created_at, updated_at, ...exerciseData } = exercise;
+          return {
+            ...exerciseData,
+            day_of_week: targetDay,
+            order_position: startPosition + index,
+          };
+        });
+
+        // Insert exercises into target day
+        const { error: insertError } = await supabase
+          .from('workout_exercises')
+          .insert(exercisesToInsert);
+
+        if (insertError) {
+          throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
+        }
+      }
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate queries for all affected days
+      queryClient.invalidateQueries({
+        queryKey: ['workout-exercises', variables.workoutId]
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Falha ao clonar exercícios');
+    }
+  });
   
   return {
     workouts: workoutsQuery.data || [],
@@ -600,6 +675,8 @@ export function useAdminWorkouts() {
     removeExerciseFromWorkout: removeExerciseFromWorkout.mutate,
     isRemovingExercise: removeExerciseFromWorkout.isPending,
     updateExerciseOrder: updateExerciseOrder.mutate,
-    isUpdatingExerciseOrder: updateExerciseOrder.isPending
+    isUpdatingExerciseOrder: updateExerciseOrder.isPending,
+    cloneExercisesToDays: cloneExercisesToDays.mutate,
+    isCloningExercises: cloneExercisesToDays.isPending
   };
 }

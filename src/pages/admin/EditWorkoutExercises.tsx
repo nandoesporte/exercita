@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, Copy } from 'lucide-react';
 import { useAdminWorkouts, WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { useWorkout } from '@/hooks/useWorkouts';
 import ExerciseList from '@/components/admin/ExerciseList';
@@ -15,6 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from '@/lib/toast';
 
 // Define the days of week options
 const daysOfWeek = [
@@ -34,6 +45,8 @@ const EditWorkoutExercises = () => {
   const { data: workout, isLoading: isWorkoutLoading } = useWorkout(id);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
+  const [targetDays, setTargetDays] = useState<string[]>([]);
   
   const { 
     exercises,
@@ -44,7 +57,9 @@ const EditWorkoutExercises = () => {
     removeExerciseFromWorkout,
     isRemovingExercise,
     updateExerciseOrder,
-    isUpdatingExerciseOrder
+    isUpdatingExerciseOrder,
+    cloneExercisesToDays,
+    isCloningExercises,
   } = useAdminWorkouts();
 
   const { 
@@ -98,8 +113,41 @@ const EditWorkoutExercises = () => {
     setSelectedDayOfWeek(day === 'all' ? null : day);
   };
 
+  const handleOpenCloneDialog = () => {
+    if (!selectedDayOfWeek) {
+      toast.error("Selecione um dia específico para clonar os exercícios");
+      return;
+    }
+    
+    setTargetDays([]);
+    setIsCloneDialogOpen(true);
+  };
+
+  const handleCloneExercises = async () => {
+    if (!id || !selectedDayOfWeek || targetDays.length === 0) return;
+    
+    try {
+      await cloneExercisesToDays({
+        workoutId: id,
+        sourceDayOfWeek: selectedDayOfWeek,
+        targetDaysOfWeek: targetDays
+      });
+      
+      setIsCloneDialogOpen(false);
+      toast.success(`Exercícios clonados com sucesso para ${targetDays.length} dia(s)`);
+    } catch (error) {
+      console.error("Error cloning exercises:", error);
+      toast.error("Erro ao clonar exercícios");
+    }
+  };
+
   const isLoading = isWorkoutLoading || areExercisesLoading || areWorkoutExercisesLoading;
-  const isActionLoading = isAddingExercise || isRemovingExercise || isUpdatingExerciseOrder;
+  const isActionLoading = isAddingExercise || isRemovingExercise || isUpdatingExerciseOrder || isCloningExercises;
+
+  // Filter out the current day and "all" option for cloning targets
+  const availableTargetDays = daysOfWeek.filter(day => 
+    day.id !== 'all' && day.id !== selectedDayOfWeek
+  );
 
   return (
     <div className="space-y-6 pb-16">
@@ -123,11 +171,25 @@ const EditWorkoutExercises = () => {
         </div>
       ) : (
         <>
-          {/* Day of Week Filter - Improved Mobile UI */}
+          {/* Day of Week Filter with Clone Button */}
           <div className="mb-8">
-            <div className="flex items-center mb-3">
-              <Calendar className="mr-2 h-4 w-4" />
-              <h2 className="font-medium">Filtrar por dia</h2>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <Calendar className="mr-2 h-4 w-4" />
+                <h2 className="font-medium">Filtrar por dia</h2>
+              </div>
+              {selectedDayOfWeek && selectedDayOfWeek !== 'all' && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleOpenCloneDialog}
+                  disabled={!selectedDayOfWeek || selectedDayOfWeek === 'all'}
+                  className="flex items-center gap-1"
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  <span>Clonar para outros dias</span>
+                </Button>
+              )}
             </div>
             
             {/* Mobile: Select dropdown, Desktop: Tabs */}
@@ -179,6 +241,66 @@ const EditWorkoutExercises = () => {
               />
             </div>
           </div>
+
+          {/* Clone Dialog */}
+          <Dialog open={isCloneDialogOpen} onOpenChange={setIsCloneDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Clonar exercícios para outros dias</DialogTitle>
+                <DialogDescription>
+                  Selecione os dias para onde deseja clonar os exercícios de {daysOfWeek.find(day => day.id === selectedDayOfWeek)?.label || selectedDayOfWeek}.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid grid-cols-1 gap-4 py-4">
+                <div className="space-y-3">
+                  {availableTargetDays.map((day) => (
+                    <div key={day.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`day-${day.id}`}
+                        checked={targetDays.includes(day.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setTargetDays([...targetDays, day.id]);
+                          } else {
+                            setTargetDays(targetDays.filter(d => d !== day.id));
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={`day-${day.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {day.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsCloneDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleCloneExercises} 
+                  disabled={targetDays.length === 0 || isCloningExercises}
+                >
+                  {isCloningExercises ? (
+                    <>
+                      <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
+                      Clonando...
+                    </>
+                  ) : (
+                    'Clonar Exercícios'
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>
