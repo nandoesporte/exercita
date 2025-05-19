@@ -20,10 +20,11 @@ import { DataTable } from "@/components/ui/data-table";
 
 const CategoryManagement = () => {
   const navigate = useNavigate();
-  const { categories, isLoadingCategories, deleteCategory } = useAdminStore();
+  const { categories, isLoadingCategories, deleteCategory, isDeletingCategory } = useAdminStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const handleCreateNew = () => {
     setEditingCategory(null);
@@ -42,13 +43,16 @@ const CategoryManagement = () => {
   const handleConfirmDelete = async () => {
     if (deleteId) {
       try {
+        setIsDeleting(true);
         await deleteCategory(deleteId);
         toast('Categoria excluída com sucesso');
       } catch (error) {
         console.error('Error deleting category:', error);
-        toast('Erro ao excluir categoria');
+        toast('Erro ao excluir categoria. Certifique-se de que não existem exercícios ou produtos usando esta categoria.');
+      } finally {
+        setIsDeleting(false);
+        setDeleteId(null);
       }
-      setDeleteId(null);
     }
   };
   
@@ -132,7 +136,7 @@ const CategoryManagement = () => {
             <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita. A categoria será permanentemente excluída.
-              Produtos associados a esta categoria ficarão sem categoria.
+              Produtos e exercícios associados a esta categoria ficarão sem categoria.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -140,8 +144,9 @@ const CategoryManagement = () => {
             <AlertDialogAction 
               onClick={handleConfirmDelete}
               className="bg-destructive hover:bg-destructive/90"
+              disabled={isDeleting || isDeletingCategory}
             >
-              Excluir
+              {isDeleting || isDeletingCategory ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

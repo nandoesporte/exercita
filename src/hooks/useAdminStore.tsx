@@ -160,25 +160,46 @@ export const useAdminStore = () => {
   // Delete a category
   const { mutateAsync: deleteCategory, isPending: isDeletingCategory } = useMutation({
     mutationFn: async (id: string) => {
-      // First update any products using this category to set category_id to null
-      await supabase
-        .from('products')
-        .update({ category_id: null })
-        .eq('category_id', id);
-      
-      // Then delete the category
-      const { error } = await supabase
-        .from('workout_categories')
-        .delete()
-        .eq('id', id);
+      try {
+        // First update any products using this category to set category_id to null
+        const { error: productsError } = await supabase
+          .from('products')
+          .update({ category_id: null })
+          .eq('category_id', id);
+          
+        if (productsError) {
+          console.error('Error updating products:', productsError);
+          throw productsError;
+        }
+        
+        // Then update any exercises using this category to set category_id to null
+        const { error: exercisesError } = await supabase
+          .from('exercises')
+          .update({ category_id: null })
+          .eq('category_id', id);
+          
+        if (exercisesError) {
+          console.error('Error updating exercises:', exercisesError);
+          throw exercisesError;
+        }
+        
+        // Finally, delete the category
+        const { error } = await supabase
+          .from('workout_categories')
+          .delete()
+          .eq('id', id);
 
-      if (error) {
-        console.error('Error deleting category:', error);
+        if (error) {
+          console.error('Error deleting category:', error);
+          throw error;
+        }
+
+        return id;
+      } catch (error) {
+        console.error('Error in delete operation:', error);
         toast('Erro ao excluir categoria');
         throw error;
       }
-
-      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
