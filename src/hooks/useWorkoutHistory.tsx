@@ -34,76 +34,88 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
     throw new Error("Usuário não autenticado");
   }
   
-  const { data, error } = await supabase
-    .from("user_workout_history")
-    .select(`
-      id,
-      user_id,
-      workout_id,
-      workout:workouts (
+  try {
+    const { data, error } = await supabase
+      .from("user_workout_history")
+      .select(`
         id,
-        title,
-        level,
-        duration,
-        calories,
-        image_url,
-        category_id,
-        category:workout_categories (
+        user_id,
+        workout_id,
+        workout:workouts (
           id,
-          name,
-          color
-        )
-      ),
-      completed_at,
-      duration,
-      calories_burned,
-      rating,
-      notes
-    `)
-    .eq("user_id", user.user.id)
-    .order("completed_at", { ascending: false });
-  
-  if (error) {
-    console.error("Erro ao buscar histórico de treinos:", error);
-    throw new Error("Falha ao carregar histórico de treinos");
-  }
-  
-  // Transform the data to match the expected format
-  // Supabase returns workout and category as arrays due to the nested select
-  // We need to convert them to single objects to match our type definition
-  const formattedData = data?.map(item => {
-    // Extract the workout from the array
-    const workoutData = Array.isArray(item.workout) && item.workout.length > 0 
-      ? item.workout[0] 
-      : { 
-          id: item.workout_id, 
-          title: 'Unknown Workout', 
-          level: 'beginner', 
-          duration: 0, 
-          calories: 0, 
-          image_url: null, 
-          category_id: null,
-          // Add the category property to avoid TypeScript errors
-          category: null
-        };
+          title,
+          level,
+          duration,
+          calories,
+          image_url,
+          category_id,
+          category:workout_categories (
+            id,
+            name,
+            color
+          )
+        ),
+        completed_at,
+        duration,
+        calories_burned,
+        rating,
+        notes
+      `)
+      .eq("user_id", user.user.id)
+      .order("completed_at", { ascending: false });
     
-    // Extract the category if it exists and if the workout has a category property
-    let categoryData = null;
-    if ('category' in workoutData && Array.isArray(workoutData.category) && workoutData.category.length > 0) {
-      categoryData = workoutData.category[0];
+    if (error) {
+      console.error("Erro ao buscar histórico de treinos:", error);
+      throw new Error("Falha ao carregar histórico de treinos");
     }
     
-    // Return a properly formatted item
-    return {
-      ...item,
-      workout: {
-        ...workoutData,
-        category: categoryData
+    // Transform the data to match the expected format
+    // Supabase returns workout and category as arrays due to the nested select
+    // We need to convert them to single objects to match our type definition
+    const formattedData = data?.map(item => {
+      // Make sure the workout data exists
+      if (!item.workout || (Array.isArray(item.workout) && item.workout.length === 0)) {
+        console.warn("Workout data missing for history item:", item);
       }
-    };
-  }) || [];
-  
-  return formattedData as WorkoutHistoryItem[];
+      
+      // Extract the workout from the array
+      const workoutData = Array.isArray(item.workout) && item.workout.length > 0 
+        ? item.workout[0] 
+        : { 
+            id: item.workout_id, 
+            title: 'Treino não encontrado', 
+            level: 'beginner', 
+            duration: 0, 
+            calories: 0, 
+            image_url: null, 
+            category_id: null,
+            // Add the category property to avoid TypeScript errors
+            category: null
+          };
+      
+      // Extract the category if it exists and if the workout has a category property
+      let categoryData = null;
+      if ('category' in workoutData && Array.isArray(workoutData.category) && workoutData.category.length > 0) {
+        categoryData = workoutData.category[0];
+      } else if ('category' in workoutData && workoutData.category && !Array.isArray(workoutData.category)) {
+        categoryData = workoutData.category;
+      }
+      
+      // Return a properly formatted item
+      return {
+        ...item,
+        workout: {
+          ...workoutData,
+          category: categoryData
+        }
+      };
+    }) || [];
+    
+    return formattedData as WorkoutHistoryItem[];
+  } catch (err) {
+    console.error("Exception in workout history fetch:", err);
+    throw new Error("Falha ao processar histórico de treinos");
+  }
 };
 
 export const useWorkoutHistory = () => {
@@ -113,5 +125,8 @@ export const useWorkoutHistory = () => {
     queryKey: ["workoutHistory"],
     queryFn: fetchWorkoutHistory,
     refetchOnWindowFocus: false,
+    retry: 2,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
+

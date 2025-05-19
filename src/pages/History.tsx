@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { History as HistoryIcon, Calendar, Clock, Dumbbell, Star, Flame, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useWorkoutHistory, WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/lib/toast-wrapper';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
@@ -16,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Link } from 'react-router-dom';
 
 interface GroupedWorkouts {
   [monthYear: string]: WorkoutHistoryItem[];
@@ -36,23 +38,40 @@ const History = () => {
   }
 
   if (error) {
+    console.error("Workout history error:", error);
     return (
       <div className="container p-4 text-center">
         <p className="text-red-500">Erro ao carregar histórico. Tente novamente mais tarde.</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => refetch()}
+        >
+          Tentar novamente
+        </Button>
       </div>
     );
   }
 
   // Group workouts by month
   const groupedByMonth: GroupedWorkouts = workoutHistory?.reduce((acc: GroupedWorkouts, workout) => {
-    const date = new Date(workout.completed_at);
-    const monthYear = format(date, 'MMMM yyyy', { locale: ptBR });
-    
-    if (!acc[monthYear]) {
-      acc[monthYear] = [];
+    if (!workout.completed_at) {
+      console.warn("Workout missing completed_at:", workout);
+      return acc;
     }
     
-    acc[monthYear].push(workout);
+    try {
+      const date = new Date(workout.completed_at);
+      const monthYear = format(date, 'MMMM yyyy', { locale: ptBR });
+      
+      if (!acc[monthYear]) {
+        acc[monthYear] = [];
+      }
+      
+      acc[monthYear].push(workout);
+    } catch (err) {
+      console.error("Error formatting date for workout:", workout, err);
+    }
     return acc;
   }, {}) || {};
 
@@ -70,12 +89,12 @@ const History = () => {
         throw error;
       }
       
-      toast('Treino excluído com sucesso');
+      toast.success('Treino excluído com sucesso');
       
       refetch();
     } catch (error) {
       console.error('Erro ao excluir treino:', error);
-      toast('Erro ao excluir registro de treino');
+      toast.error('Erro ao excluir registro de treino');
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);
@@ -101,6 +120,12 @@ const History = () => {
         Quando você concluir treinos, eles aparecerão aqui com detalhes como duração, 
         calorias queimadas e sua avaliação.
       </p>
+      <Link
+        to="/workouts"
+        className="mt-4 inline-block px-4 py-2 bg-fitness-orange hover:bg-fitness-orange/90 text-white rounded-md transition"
+      >
+        Explorar Treinos
+      </Link>
     </div>
   );
 
@@ -125,7 +150,7 @@ const History = () => {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium">
-                      {format(new Date(workout.completed_at), 'dd/MM/yyyy')}
+                      {workout.completed_at ? format(new Date(workout.completed_at), 'dd/MM/yyyy') : 'Data desconhecida'}
                     </p>
                     
                     <div className="flex items-center gap-2">
@@ -151,20 +176,20 @@ const History = () => {
                     </div>
                   </div>
                   
-                  <h3 className="font-semibold text-lg">{workout.workout.title}</h3>
+                  <h3 className="font-semibold text-lg">{workout.workout?.title || 'Treino sem título'}</h3>
                   
                   <div className="grid grid-cols-3 gap-2 mt-3">
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Clock size={14} className="text-fitness-orange" />
-                      <span>{workout.duration || workout.workout.duration} min</span>
+                      <span>{workout.duration || (workout.workout && workout.workout.duration) || 0} min</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Dumbbell size={14} className="text-fitness-orange" />
-                      <span>{formatWorkoutLevel(workout.workout.level)}</span>
+                      <span>{workout.workout && workout.workout.level ? formatWorkoutLevel(workout.workout.level) : 'Nível desconhecido'}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Flame size={14} className="text-fitness-orange" />
-                      <span>{workout.calories_burned || workout.workout.calories} kcal</span>
+                      <span>{workout.calories_burned || (workout.workout && workout.workout.calories) || 0} kcal</span>
                     </div>
                   </div>
                   
@@ -174,7 +199,7 @@ const History = () => {
                     </div>
                   )}
                   
-                  {workout.workout.category && (
+                  {workout.workout?.category && (
                     <div className="mt-3 flex">
                       <span 
                         className="text-xs px-2 py-1 rounded-full" 
@@ -220,3 +245,4 @@ const History = () => {
 };
 
 export default History;
+
