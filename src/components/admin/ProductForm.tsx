@@ -179,7 +179,7 @@ const ProductForm = ({
                   </Button>
                 </FormLabel>
                 <Select
-                  value={field.value || ""}
+                  value={field.value || undefined}
                   onValueChange={(value) => field.onChange(value || null)}
                 >
                   <FormControl>
@@ -188,7 +188,7 @@ const ProductForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhuma categoria</SelectItem>
+                    <SelectItem value="null">Nenhuma categoria</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.color ? (
