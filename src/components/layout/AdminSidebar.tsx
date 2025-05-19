@@ -1,134 +1,165 @@
-
-import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  DumbbellIcon, 
-  Gift, 
-  ImageIcon, 
-  Clock, 
-  CalendarIcon, 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/auth";
+import {
+  LineChart,
+  Dumbbell,
+  ListVideo,
+  ShoppingBag,
+  Calendar,
+  CalendarRange,
   CreditCard,
-  Shield,
-  Library,
   Users,
-  ChevronRight,
-  Home
-} from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from '@/components/ui/button';
+  ShieldCheck,
+  Camera,
+  List,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-interface AdminSidebarProps {
-  onNavItemClick?: () => void;
-}
+const AdminSidebar = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [isExpanded, setIsExpanded] = useState(true);
 
-type NavItemProps = {
-  to: string;
-  icon: React.ElementType;
-  label: string;
-  onClick?: () => void;
-}
-
-const NavItem = ({ to, icon: Icon, label, onClick }: NavItemProps) => {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => 
-        `flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-fitness-green
-        ${isActive ? 'bg-fitness-green/10 text-fitness-green' : 'text-gray-500 dark:text-gray-400'}`
-      }
-      onClick={onClick}
-    >
-      <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4" />
-        <span>{label}</span>
-      </div>
-      <ChevronRight className="h-4 w-4 ml-auto opacity-50" />
-    </NavLink>
-  );
-};
-
-const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
-  const isMobile = useIsMobile();
-  const handleClick = () => {
-    if (onNavItemClick) onNavItemClick();
+  const toggleSidebar = () => {
+    setIsExpanded(!isExpanded);
   };
-  
-  const navSections = [
+
+  const items = [
     {
-      title: "App",
-      items: [
-        { to: "/admin", icon: LayoutDashboard, label: "Dashboard" }
-      ]
+      title: 'Dashboard',
+      icon: <LineChart className="mr-2 h-4 w-4" />,
+      to: '/admin'
     },
     {
-      title: "Funcionalidades",
-      items: [
-        { to: "/admin/workouts", icon: DumbbellIcon, label: "Treinos" },
-        { to: "/admin/exercises", icon: DumbbellIcon, label: "Exercícios" },
-        { to: "/admin/exercises/library", icon: Library, label: "Biblioteca de Exercícios" },
-        { to: "/admin/products", icon: Gift, label: "Produtos" },
-        { to: "/admin/photos", icon: ImageIcon, label: "Fotos da Academia" },
-        { to: "/admin/schedule", icon: Clock, label: "Agenda" },
-        { to: "/admin/appointments", icon: CalendarIcon, label: "Consultas" },
-        { to: "/admin/payment-methods", icon: CreditCard, label: "Métodos de Pagamento" },
-        { to: "/admin/users", icon: Users, label: "Alunos" },
-        { to: "/admin/rls-checker", icon: Shield, label: "Verificador de RLS" }
-      ]
+      title: 'Gerenciamento de Treinos',
+      icon: <Dumbbell className="mr-2 h-4 w-4" />,
+      to: '/admin/workouts'
+    },
+    {
+      title: 'Biblioteca de Exercícios',
+      icon: <ListVideo className="mr-2 h-4 w-4" />,
+      to: '/admin/exercises'
+    },
+    {
+      title: 'Produtos',
+      icon: <ShoppingBag className="mr-2 h-4 w-4" />,
+      to: '/admin/products'
+    },
+    {
+      title: 'Categorias',
+      icon: <List className="mr-2 h-4 w-4" />,
+      to: '/admin/categories'
+    },
+    {
+      title: 'Fotos da Academia',
+      icon: <Camera className="mr-2 h-4 w-4" />,
+      to: '/admin/photos'
+    },
+    {
+      title: 'Horários',
+      icon: <Calendar className="mr-2 h-4 w-4" />,
+      to: '/admin/schedule'
+    },
+    {
+      title: 'Agendamentos',
+      icon: <CalendarRange className="mr-2 h-4 w-4" />,
+      to: '/admin/appointments'
+    },
+    {
+      title: 'Métodos de Pagamento',
+      icon: <CreditCard className="mr-2 h-4 w-4" />,
+      to: '/admin/payment-methods'
+    },
+    {
+      title: 'Gerenciamento de Usuários',
+      icon: <Users className="mr-2 h-4 w-4" />,
+      to: '/admin/users'
+    },
+    {
+      title: 'RLS Checker',
+      icon: <ShieldCheck className="mr-2 h-4 w-4" />,
+      to: '/admin/rls-checker'
     }
   ];
-  
+
   return (
-    <div className="h-full py-4 px-2 border-r bg-white dark:bg-fitness-darkGray shadow-sm flex flex-col overflow-y-auto">
-      {/* Home button at the top */}
-      <div className="mb-4 px-3">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full justify-start gap-2"
-          asChild
+    <div
+      className={`flex flex-col h-full bg-gray-50 border-r border-r-gray-200 dark:bg-gray-900 dark:border-r-gray-700 ${
+        isExpanded ? "w-64" : "w-20"
+      } transition-width duration-300 ease-in-out`}
+    >
+      <div className="flex items-center justify-center py-4">
+        <span
+          className={`text-lg font-bold transition-opacity duration-300 ${
+            isExpanded ? "opacity-100" : "opacity-0"
+          }`}
         >
-          <Link to="/">
-            <Home className="h-4 w-4" />
-            <span>Início</span>
-          </Link>
-        </Button>
+          Admin Panel
+        </span>
       </div>
-      
-      <div className="flex-1 space-y-4">
-        {navSections.map((section, index) => (
-          <div key={index} className="mb-2">
-            <h2 className="text-sm font-semibold tracking-tight px-3 py-1">{section.title}</h2>
-            <Separator className="my-2" />
-            <nav className="space-y-1">
-              {section.items.map((item, itemIndex) => (
-                <NavItem 
-                  key={itemIndex} 
-                  to={item.to} 
-                  icon={item.icon} 
-                  label={item.label} 
-                  onClick={handleClick}
-                />
-              ))}
-            </nav>
-          </div>
+      <nav className="flex-grow px-2">
+        {items.map((item) => (
+          <Button
+            key={item.title}
+            variant="ghost"
+            className={`flex items-center w-full justify-start py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
+              isExpanded ? "pl-4" : "justify-center"
+            }`}
+            onClick={() => navigate(item.to)}
+          >
+            {item.icon}
+            <span
+              className={`transition-opacity duration-300 ${
+                isExpanded ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {item.title}
+            </span>
+          </Button>
         ))}
-      </div>
-      
-      {/* Admin Info */}
-      <div className="mt-auto">
-        <Separator className="my-4" />
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800">
-          <div className="w-8 h-8 rounded-full bg-fitness-green/20 flex items-center justify-center">
-            <Users className="h-4 w-4 text-fitness-green" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">Academia Fitness</span>
-            <span className="text-xs text-muted-foreground">Admin Panel</span>
-          </div>
-        </div>
+      </nav>
+      <div className="p-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center space-x-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback>
+                  {user?.email?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span
+                className={`font-semibold transition-opacity duration-300 ${
+                  isExpanded ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                {user?.email}
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/account")}>
+              Informações da Conta
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
+              Configurações
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => logout()}>Sair</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

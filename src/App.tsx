@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/auth";
@@ -38,6 +39,7 @@ import EditWorkout from "@/pages/admin/EditWorkout";
 import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
 import ExerciseManagement from "@/pages/admin/ExerciseManagement";
 import ProductManagement from "@/pages/admin/ProductManagement";
+import CategoryManagement from "@/pages/admin/CategoryManagement";
 import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
 import ScheduleManagement from "@/pages/admin/ScheduleManagement";
@@ -110,6 +112,8 @@ const App = () => {
           <Route path="products" element={<ProductManagement />} />
           <Route path="products/create" element={<CreateProduct />} />
           <Route path="products/:id/edit" element={<EditProduct />} />
+          {/* Categories */}
+          <Route path="categories" element={<CategoryManagement />} />
           {/* Photos */}
           <Route path="photos" element={<GymPhotoManagement />} />
           {/* Scheduling */}

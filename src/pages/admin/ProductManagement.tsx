@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { ProductFilters } from '@/components/admin/ProductFilters';
 import { ProductActions } from '@/components/admin/ProductActions';
 import { ProductTable } from '@/components/admin/ProductTable';
+import { Button } from '@/components/ui/button';
+import { ListPlus } from 'lucide-react';
 
 const ProductManagement = () => {
   const navigate = useNavigate();
@@ -46,10 +48,25 @@ const ProductManagement = () => {
     }
   };
 
+  const handleNavigateToCategories = () => {
+    navigate('/admin/categories');
+  };
+
   return (
     <div className="space-y-6">
-      <ProductActions onCreateNew={handleCreateNew} />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <ProductActions onCreateNew={handleCreateNew} />
+        <Button
+          variant="outline"
+          onClick={handleNavigateToCategories}
+          className="w-full md:w-auto"
+        >
+          <ListPlus className="mr-2 h-4 w-4" /> Gerenciar Categorias
+        </Button>
+      </div>
+      
       <ProductFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      
       <ProductTable 
         products={filteredProducts}
         isLoading={isLoadingProducts}

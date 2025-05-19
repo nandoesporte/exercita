@@ -24,6 +24,9 @@ import {
 import { ProductFormData } from "@/types/store";
 import { ProductCategory } from "@/types/store";
 import { useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { ListPlus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   name: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
@@ -53,6 +56,8 @@ const ProductForm = ({
 }: ProductFormProps) => {
   console.log('ProductForm rendering with defaultValues:', defaultValues);
   console.log('Categories available:', categories);
+  
+  const navigate = useNavigate();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
@@ -78,6 +83,10 @@ const ProductForm = ({
   const handleSubmit = (values: ProductFormData) => {
     console.log("Form submitting with values:", values);
     onSubmit(values);
+  };
+  
+  const handleNavigateToCategories = () => {
+    navigate("/admin/categories");
   };
 
   return (
@@ -156,7 +165,19 @@ const ProductForm = ({
             name="category_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Categoria</FormLabel>
+                <FormLabel className="flex items-center justify-between">
+                  <span>Categoria</span>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleNavigateToCategories}
+                    className="h-8 px-2 text-xs"
+                  >
+                    <ListPlus className="mr-1 h-4 w-4" />
+                    Gerenciar Categorias
+                  </Button>
+                </FormLabel>
                 <Select
                   value={field.value || ""}
                   onValueChange={(value) => field.onChange(value || null)}
@@ -167,9 +188,20 @@ const ProductForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="">Nenhuma categoria</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {category.name}
+                        {category.color ? (
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: category.color }}
+                            />
+                            {category.name}
+                          </div>
+                        ) : (
+                          category.name
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>

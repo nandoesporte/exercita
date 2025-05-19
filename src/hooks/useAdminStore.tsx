@@ -108,6 +108,84 @@ export const useAdminStore = () => {
     },
   });
 
+  // Create a category
+  const { mutateAsync: createCategory, isPending: isCreatingCategory } = useMutation({
+    mutationFn: async (categoryData: Omit<ProductCategory, 'id'>) => {
+      const { data, error } = await supabase
+        .from('workout_categories')
+        .insert([categoryData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating category:', error);
+        toast('Erro ao criar categoria');
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
+    }
+  });
+
+  // Update a category
+  const { mutateAsync: updateCategory, isPending: isUpdatingCategory } = useMutation({
+    mutationFn: async (category: ProductCategory) => {
+      const { data, error } = await supabase
+        .from('workout_categories')
+        .update({
+          name: category.name,
+          color: category.color,
+          icon: category.icon
+        })
+        .eq('id', category.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating category:', error);
+        toast('Erro ao atualizar categoria');
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
+    }
+  });
+
+  // Delete a category
+  const { mutateAsync: deleteCategory, isPending: isDeletingCategory } = useMutation({
+    mutationFn: async (id: string) => {
+      // First update any products using this category to set category_id to null
+      await supabase
+        .from('products')
+        .update({ category_id: null })
+        .eq('category_id', id);
+      
+      // Then delete the category
+      const { error } = await supabase
+        .from('workout_categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting category:', error);
+        toast('Erro ao excluir categoria');
+        throw error;
+      }
+
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+    }
+  });
+
   // Create a product
   const { mutateAsync: createProduct, isPending: isCreating } = useMutation({
     mutationFn: async (product: ProductFormData) => {
@@ -306,6 +384,12 @@ export const useAdminStore = () => {
     fetchProduct,
     categories,
     isLoadingCategories,
+    createCategory,
+    isCreatingCategory,
+    updateCategory,
+    isUpdatingCategory,
+    deleteCategory,
+    isDeletingCategory,
     createProduct,
     isCreating,
     updateProduct,
