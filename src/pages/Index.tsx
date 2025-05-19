@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings, Calendar } from 'lucide-react';
+import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings, Calendar, MessageCircle } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useRecommendedWorkoutsForUser } from '@/hooks/useWorkouts';
 import { 
@@ -270,6 +269,73 @@ const Index = () => {
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
         </Carousel>
+      </section>
+      
+      {/* Nova Seção: Consultoria Online */}
+      <section className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Consultoria Online</h2>
+          <Link to="/schedule" className="text-fitness-orange text-sm">Ver detalhes</Link>
+        </div>
+        
+        <Card className="bg-gradient-to-r from-fitness-dark to-fitness-darkGray border-none text-white overflow-hidden">
+          <CardContent className="p-0">
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              <div className="p-6 flex flex-col justify-center space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageCircle className="h-5 w-5 text-fitness-green" />
+                  <h3 className="text-xl font-bold">Agende uma Consultoria Online</h3>
+                </div>
+                
+                <p className="text-gray-300">
+                  Receba orientação personalizada para seus treinos, nutrição e objetivos fitness diretamente de um personal trainer especializado.
+                </p>
+                
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <div className="mt-1 bg-fitness-orange/20 p-1 rounded-full">
+                      <Activity className="h-4 w-4 text-fitness-orange" />
+                    </div>
+                    <span className="text-sm text-gray-300">Avaliação detalhada do seu perfil e objetivos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="mt-1 bg-fitness-orange/20 p-1 rounded-full">
+                      <Calendar className="h-4 w-4 text-fitness-orange" />
+                    </div>
+                    <span className="text-sm text-gray-300">Escolha o dia e horário que melhor se adapta à sua agenda</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="mt-1 bg-fitness-orange/20 p-1 rounded-full">
+                      <Dumbbell className="h-4 w-4 text-fitness-orange" />
+                    </div>
+                    <span className="text-sm text-gray-300">Receba um plano de treino personalizado</span>
+                  </li>
+                </ul>
+                
+                <Button 
+                  asChild 
+                  className="mt-4 bg-fitness-orange hover:bg-fitness-orange/90 text-white font-medium"
+                >
+                  <Link to="/schedule" className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Agendar Consultoria
+                  </Link>
+                </Button>
+              </div>
+              
+              <div className="bg-fitness-darkGray/50 hidden md:block">
+                <div className="h-full w-full relative">
+                  <img 
+                    src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=800&auto=format&fit=crop" 
+                    alt="Consultoria online" 
+                    className="w-full h-full object-cover opacity-70"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-fitness-dark/80 to-transparent"></div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </section>
       
       {/* Minha Academia Seção */}
