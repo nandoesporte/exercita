@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -10,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import PaymentTabs from '@/components/profile/PaymentTabs';
 
 const Profile = () => {
@@ -57,22 +56,14 @@ const Profile = () => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Formato inválido",
-        description: "Por favor selecione uma imagem válida (JPEG, PNG, or GIF)",
-        variant: "destructive"
-      });
+      toast.error("Formato inválido. Por favor selecione uma imagem válida (JPEG, PNG, or GIF)");
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast({
-        title: "Arquivo muito grande", 
-        description: "A imagem deve ter menos de 5MB",
-        variant: "destructive"
-      });
+      toast.error("Arquivo muito grande. A imagem deve ter menos de 5MB");
       return;
     }
     
