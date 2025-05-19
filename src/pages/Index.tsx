@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -50,6 +49,9 @@ const Index = () => {
   // Determine target muscles based on the workout
   const targetMuscles = recommendedWorkout?.category?.name || "Corpo completo";
   
+  // Add timestamp to force avatar refresh
+  const avatarTimestamp = Date.now();
+  
   // Function to get user initials for the avatar fallback
   const getInitials = () => {
     if (!profile) return 'U';
@@ -67,8 +69,13 @@ const Index = () => {
         <Link to="/profile">
           <Avatar className="h-24 w-24 border-4 border-fitness-green cursor-pointer hover:border-fitness-orange transition-all duration-300">
             <AvatarImage 
-              src={profile?.avatar_url || ''} 
+              src={profile?.avatar_url ? `${profile.avatar_url}?t=${avatarTimestamp}` : undefined} 
               alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+              onError={(e) => {
+                console.error('Error loading profile image on index page:', e);
+                // Fallback to initials on error
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
             />
             <AvatarFallback className="bg-fitness-dark text-white text-3xl">
               {getInitials()}

@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -17,6 +18,8 @@ const Profile = () => {
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
+  // Add timestamp for cache-busting
+  const [imageTimestamp, setImageTimestamp] = useState(Date.now());
   
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -28,7 +31,7 @@ const Profile = () => {
       ? `${profile.first_name} ${profile.last_name}` 
       : user?.email || 'User',
     email: user?.email || '',
-    avatar: profile?.avatar_url || 'https://randomuser.me/api/portraits/men/32.jpg',
+    avatar: profile?.avatar_url ? `${profile.avatar_url}?t=${imageTimestamp}` : undefined,
     memberSince: user?.created_at 
       ? formatDate(new Date(user.created_at)) 
       : 'Unknown',
@@ -40,26 +43,33 @@ const Profile = () => {
     fileInputRef.current?.click();
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast('Please select a valid image file (JPEG, PNG, or GIF)');
+      toast('Por favor selecione uma imagem válida (JPEG, PNG, or GIF)');
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast('Image size should be less than 5MB');
+      toast('A imagem deve ter menos de 5MB');
       return;
     }
     
-    // Upload the image
-    uploadProfileImage(file);
+    try {
+      // Upload the image
+      await uploadProfileImage(file);
+      
+      // Update timestamp to force re-render of avatar with new image
+      setImageTimestamp(Date.now());
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+    }
   };
   
   if (isLoading) {
@@ -84,7 +94,16 @@ const Profile = () => {
               className="h-20 w-20 cursor-pointer border-2 border-fitness-orange"
               onClick={handleImageClick}
             >
-              <AvatarImage src={userData.avatar} alt={userData.name} className="object-cover" />
+              <AvatarImage 
+                src={userData.avatar} 
+                alt={userData.name} 
+                className="object-cover" 
+                onError={(e) => {
+                  console.error('Error loading profile image:', e);
+                  // Fallback to initials on error
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
               <AvatarFallback className="bg-fitness-darkGray text-xl">
                 {userData.name.substring(0, 1)}
               </AvatarFallback>

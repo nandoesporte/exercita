@@ -137,7 +137,7 @@ export function useProfile() {
     }
   });
   
-  // Function for profile image upload
+  // Function for profile image upload - Fixed to ensure persistence
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
       if (!user) {
@@ -145,13 +145,30 @@ export function useProfile() {
         throw new Error('Usuário precisa estar logado');
       }
       
-      // Generate unique file path with user ID as prefix
+      // Create a more specific file path with user ID and timestamp to prevent overwriting
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
+      const timestamp = new Date().getTime();
+      const filePath = `${user.id}/profile_${timestamp}.${fileExt}`;
       
       console.log('Fazendo upload da imagem do perfil:', filePath);
       
-      // Upload file to storage
+      // Make sure the storage bucket exists (this won't hurt if it does)
+      try {
+        const { error: bucketCheckError } = await supabase.storage
+          .getBucket('profile_images');
+          
+        if (bucketCheckError && bucketCheckError.message.includes('does not exist')) {
+          console.log('Creating profile_images bucket');
+          await supabase.storage.createBucket('profile_images', {
+            public: true,
+            fileSizeLimit: 10485760 // 10MB
+          });
+        }
+      } catch (bucketError) {
+        console.error('Error checking/creating bucket:', bucketError);
+      }
+      
+      // Upload file to storage with strong caching and upsert enabled
       const { error: uploadError, data: uploadData } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
@@ -166,19 +183,19 @@ export function useProfile() {
       
       console.log('Upload realizado com sucesso:', uploadData);
       
-      // Get public URL for the uploaded file
+      // Get public URL for the uploaded file - with cache busting parameter
       const { data: urlData } = supabase.storage
         .from('profile_images')
-        .getPublicUrl(filePath);
+        .getPublicUrl(`${filePath}?t=${timestamp}`);
       
       const avatarUrl = urlData.publicUrl;
       
-      console.log('URL do avatar:', avatarUrl);
+      console.log('URL do avatar com cache busting:', avatarUrl);
       
       // Update profile with new avatar URL
       const { error: updateError, data: profileData } = await supabase
         .from('profiles')
-        .update({ avatar_url: avatarUrl })
+        .update({ avatar_url: urlData.publicUrl })
         .eq('id', user.id)
         .select();
       
@@ -205,7 +222,7 @@ export function useProfile() {
         });
       }
       
-      // Force refetch to ensure fresh data
+      // Immediately invalidate queries to force a refetch from server
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast.success('Foto de perfil atualizada com sucesso');
     },
