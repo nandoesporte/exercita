@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,14 @@ const Index = () => {
   const targetMuscles = recommendedWorkout?.category?.name || "Corpo completo";
   
   // Add timestamp to force avatar refresh
-  const avatarTimestamp = Date.now();
+  const [avatarTimestamp, setAvatarTimestamp] = useState(() => Date.now());
+  
+  // Update timestamp when profile changes
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      setAvatarTimestamp(Date.now());
+    }
+  }, [profile?.avatar_url]);
   
   // Function to get user initials for the avatar fallback
   const getInitials = () => {

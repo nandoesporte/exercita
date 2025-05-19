@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -49,7 +48,7 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 1000 * 60, // Consider data stale after 1 minute
+    staleTime: 0, // Always fetch fresh data after login
     gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
   });
 
@@ -137,7 +136,7 @@ export function useProfile() {
     }
   });
   
-  // Function for profile image upload - Fixed to ensure persistence
+  // Function for profile image upload - Improved to ensure persistence
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
       if (!user) {
@@ -147,17 +146,18 @@ export function useProfile() {
       
       // Create a more specific file path with user ID and timestamp to prevent overwriting
       const fileExt = file.name.split('.').pop();
+      const uniqueId = uuidv4(); // Generate a unique ID for each upload
       const timestamp = new Date().getTime();
-      const filePath = `${user.id}/profile_${timestamp}.${fileExt}`;
+      const filePath = `${user.id}/${uniqueId}_${timestamp}.${fileExt}`;
       
       console.log('Fazendo upload da imagem do perfil:', filePath);
       
-      // Make sure the storage bucket exists (this won't hurt if it does)
       try {
-        const { error: bucketCheckError } = await supabase.storage
-          .getBucket('profile_images');
-          
-        if (bucketCheckError && bucketCheckError.message.includes('does not exist')) {
+        // Check if bucket exists and create it if necessary
+        const { data: bucketList } = await supabase.storage.listBuckets();
+        const bucketExists = bucketList?.some(bucket => bucket.name === 'profile_images');
+        
+        if (!bucketExists) {
           console.log('Creating profile_images bucket');
           await supabase.storage.createBucket('profile_images', {
             public: true,
@@ -166,6 +166,7 @@ export function useProfile() {
         }
       } catch (bucketError) {
         console.error('Error checking/creating bucket:', bucketError);
+        // Continue with upload attempt even if bucket check fails
       }
       
       // Upload file to storage with strong caching and upsert enabled
@@ -183,19 +184,19 @@ export function useProfile() {
       
       console.log('Upload realizado com sucesso:', uploadData);
       
-      // Get public URL for the uploaded file - with cache busting parameter
+      // Get public URL for the uploaded file with cache busting parameter
       const { data: urlData } = supabase.storage
         .from('profile_images')
-        .getPublicUrl(`${filePath}?t=${timestamp}`);
+        .getPublicUrl(filePath);
       
       const avatarUrl = urlData.publicUrl;
       
-      console.log('URL do avatar com cache busting:', avatarUrl);
+      console.log('URL do avatar:', avatarUrl);
       
-      // Update profile with new avatar URL
+      // Update profile with new avatar URL in database
       const { error: updateError, data: profileData } = await supabase
         .from('profiles')
-        .update({ avatar_url: urlData.publicUrl })
+        .update({ avatar_url: avatarUrl })
         .eq('id', user.id)
         .select();
       
@@ -222,7 +223,7 @@ export function useProfile() {
         });
       }
       
-      // Immediately invalidate queries to force a refetch from server
+      // Force a refetch from server to ensure data is fresh
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast.success('Foto de perfil atualizada com sucesso');
     },

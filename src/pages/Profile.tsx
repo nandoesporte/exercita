@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
   HelpCircle, Bell, UserPlus, ChevronRight, Camera
@@ -18,8 +18,15 @@ const Profile = () => {
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
-  // Add timestamp for cache-busting
-  const [imageTimestamp, setImageTimestamp] = useState(Date.now());
+  // Add timestamp for cache-busting with automatic updating
+  const [imageTimestamp, setImageTimestamp] = useState(() => Date.now());
+  
+  // Refresh timestamp when profile changes
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      setImageTimestamp(Date.now());
+    }
+  }, [profile?.avatar_url]);
   
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -50,14 +57,22 @@ const Profile = () => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast('Por favor selecione uma imagem válida (JPEG, PNG, or GIF)');
+      toast({
+        title: "Formato inválido",
+        description: "Por favor selecione uma imagem válida (JPEG, PNG, or GIF)",
+        variant: "destructive"
+      });
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast('A imagem deve ter menos de 5MB');
+      toast({
+        title: "Arquivo muito grande", 
+        description: "A imagem deve ter menos de 5MB",
+        variant: "destructive"
+      });
       return;
     }
     
