@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -288,7 +289,7 @@ const Index = () => {
                 </div>
                 
                 <p className="text-gray-300">
-                  Receba orientação personalizada para seus treinos, nutrição e objetivos fitness diretamente de um personal trainer especializado.
+                  Receba orientação personalizada para seus treinos e objetivos fitness diretamente de um personal trainer especializado.
                 </p>
                 
                 <ul className="space-y-2">
