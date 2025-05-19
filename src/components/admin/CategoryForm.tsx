@@ -72,13 +72,31 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
   const onSubmit = async (values: CategoryFormValues) => {
     try {
       if (category?.id) {
+        // Ensure name is provided when updating
+        if (!values.name) {
+          toast('Nome da categoria é obrigatório');
+          return;
+        }
+        
         await updateCategory({
-          ...values,
           id: category.id,
+          name: values.name, // Required field
+          color: values.color,
+          icon: values.icon,
         });
         toast('Categoria atualizada com sucesso');
       } else {
-        await createCategory(values);
+        // Ensure name is provided when creating
+        if (!values.name) {
+          toast('Nome da categoria é obrigatório');
+          return;
+        }
+        
+        await createCategory({
+          name: values.name, // Required field
+          color: values.color,
+          icon: values.icon,
+        });
         toast('Categoria criada com sucesso');
       }
       onOpenChange(false);

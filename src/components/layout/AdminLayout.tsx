@@ -54,6 +54,10 @@ const AdminLayout = () => {
     navigate(-1);
   };
 
+  const handleCloseSidebar = () => {
+    setOpen(false);
+  };
+
   // Show loading state while auth is being checked
   if (loading) {
     return (
@@ -89,7 +93,7 @@ const AdminLayout = () => {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-[85vw]" style={{ maxWidth: SIDEBAR_WIDTH_MOBILE }}>
-                  <AdminSidebar onNavItemClick={() => setOpen(false)} />
+                  <AdminSidebar onNavItemClick={handleCloseSidebar} />
                 </SheetContent>
               </Sheet>
             </div>

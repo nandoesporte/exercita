@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
@@ -25,13 +26,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const AdminSidebar = () => {
+interface AdminSidebarProps {
+  onNavItemClick?: () => void;
+}
+
+const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (onNavItemClick) {
+      onNavItemClick();
+    }
   };
 
   const items = [
@@ -115,7 +127,7 @@ const AdminSidebar = () => {
             className={`flex items-center w-full justify-start py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
               isExpanded ? "pl-4" : "justify-center"
             }`}
-            onClick={() => navigate(item.to)}
+            onClick={() => handleNavigation(item.to)}
           >
             {item.icon}
             <span
@@ -157,7 +169,7 @@ const AdminSidebar = () => {
               Configurações
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()}>Sair</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()}>Sair</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
