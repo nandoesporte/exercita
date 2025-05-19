@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { useStore } from '@/hooks/useStore';
 import { ProductCard } from '@/components/ui/product-card';
@@ -11,6 +11,19 @@ const Store = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const isMobile = useIsMobile();
+
+  // Get categories that have at least one product
+  const categoriesWithProducts = useMemo(() => {
+    // Create a set of category IDs that have products
+    const categoryIdsWithProducts = new Set(
+      products
+        .map(product => product.category_id)
+        .filter(id => id !== null) as string[]
+    );
+    
+    // Filter the categories list to only include those with products
+    return categories.filter(category => categoryIdsWithProducts.has(category.id));
+  }, [products, categories]);
 
   // Filtragem de produtos
   const filteredProducts = products.filter(product => {
@@ -58,7 +71,7 @@ const Store = () => {
             >
               Todos
             </button>
-            {categories.map(category => (
+            {categoriesWithProducts.map(category => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
