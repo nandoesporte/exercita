@@ -4,19 +4,27 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Dumbbell, History, User, ShoppingBag, Calendar, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWorkouts } from '@/hooks/useWorkouts';
+import { useUserPersonalizedWorkout } from '@/hooks/useWorkoutHistory';
 
 const MobileNavbar = () => {
   const location = useLocation();
   const { data: workouts } = useWorkouts();
+  const { data: personalizedWorkoutId, isLoading } = useUserPersonalizedWorkout();
   
-  // Find the first workout to link to, or use a fallback
-  const firstWorkoutId = workouts && workouts.length > 0 
-    ? workouts[0].id 
-    : 'default';
+  // Determine which workout to link to
+  let workoutLink = '/workouts'; // Default to workouts page if no specific workout is available
+  
+  if (personalizedWorkoutId) {
+    // Use the personalized workout if available
+    workoutLink = `/workout/${personalizedWorkoutId}`;
+  } else if (!isLoading && workouts && workouts.length > 0) {
+    // Fall back to the first workout in the list if no personalized workout
+    workoutLink = `/workout/${workouts[0].id}`;
+  }
   
   const navItems = [
     { icon: Home, path: '/', label: 'Início' },
-    { icon: Dumbbell, path: `/workout/${firstWorkoutId}`, label: 'Treinos' },
+    { icon: Dumbbell, path: workoutLink, label: 'Treinos' },
     { icon: Camera, path: '/gym-photos', label: 'Fotos' },
     { icon: ShoppingBag, path: '/store', label: 'Loja' },
     { icon: User, path: '/profile', label: 'Perfil' },

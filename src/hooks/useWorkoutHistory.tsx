@@ -118,12 +118,76 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
   }
 };
 
+// Function to fetch the user's personalized workout
+export const fetchUserPersonalizedWorkout = async (): Promise<string | null> => {
+  const { data: user } = await supabase.auth.getUser();
+  
+  if (!user.user) {
+    throw new Error("Usuário não autenticado");
+  }
+  
+  try {
+    // First check for workout recommendations specific to this user
+    const { data: recommendations, error: recError } = await supabase
+      .from("workout_recommendations")
+      .select("workout_id")
+      .eq("user_id", user.user.id)
+      .limit(1);
+      
+    if (recError) {
+      console.error("Erro ao buscar recomendações de treinos:", recError);
+      return null;
+    }
+    
+    // If there's a recommendation, return the workout ID
+    if (recommendations && recommendations.length > 0) {
+      console.log("Workout recommendation found:", recommendations[0].workout_id);
+      return recommendations[0].workout_id;
+    }
+    
+    // If no recommendation, check workout history
+    const { data: history, error: histError } = await supabase
+      .from("user_workout_history")
+      .select("workout_id")
+      .eq("user_id", user.user.id)
+      .order("completed_at", { ascending: false })
+      .limit(1);
+      
+    if (histError) {
+      console.error("Erro ao buscar histórico de treinos:", histError);
+      return null;
+    }
+    
+    // If there's a workout in history, return that ID
+    if (history && history.length > 0) {
+      console.log("Recent workout from history:", history[0].workout_id);
+      return history[0].workout_id;
+    }
+    
+    // If no personalized workouts found
+    return null;
+  } catch (err) {
+    console.error("Exception in personalized workout fetch:", err);
+    return null;
+  }
+};
+
 export const useWorkoutHistory = () => {
   const queryClient = useQueryClient();
   
   return useQuery({
     queryKey: ["workoutHistory"],
     queryFn: fetchWorkoutHistory,
+    refetchOnWindowFocus: false,
+    retry: 2,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useUserPersonalizedWorkout = () => {
+  return useQuery({
+    queryKey: ["userPersonalizedWorkout"],
+    queryFn: fetchUserPersonalizedWorkout,
     refetchOnWindowFocus: false,
     retry: 2,
     staleTime: 1000 * 60 * 5, // 5 minutes
