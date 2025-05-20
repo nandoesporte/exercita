@@ -27,8 +27,14 @@ const WorkoutHistory = () => {
     if (!history) return [];
     
     return history.filter((workout) => {
-      const workoutDate = parseISO(workout.completed_at || '');
-      return isSameDay(workoutDate, day);
+      if (!workout.completed_at) return false;
+      try {
+        const workoutDate = parseISO(workout.completed_at);
+        return isSameDay(workoutDate, day);
+      } catch (error) {
+        console.error("Invalid date format for workout:", workout.id, workout.completed_at);
+        return false;
+      }
     });
   };
   
@@ -97,14 +103,23 @@ const WorkoutHistory = () => {
     const grouped: Record<string, typeof history> = {};
     
     history.forEach((workout) => {
-      const workoutDate = parseISO(workout.completed_at || '');
-      const monthKey = format(workoutDate, 'yyyy-MM');
-      
-      if (!grouped[monthKey]) {
-        grouped[monthKey] = [];
+      if (!workout.completed_at) {
+        console.warn("Workout missing completed_at:", workout);
+        return;
       }
       
-      grouped[monthKey].push(workout);
+      try {
+        const workoutDate = parseISO(workout.completed_at);
+        const monthKey = format(workoutDate, 'yyyy-MM');
+        
+        if (!grouped[monthKey]) {
+          grouped[monthKey] = [];
+        }
+        
+        grouped[monthKey].push(workout);
+      } catch (error) {
+        console.error("Invalid date format:", workout.completed_at, error);
+      }
     });
     
     return grouped;
@@ -152,37 +167,46 @@ const WorkoutHistory = () => {
                   
                   <div className="space-y-3">
                     {groupedWorkouts[monthKey].map((workout) => {
-                      const workoutDate = parseISO(workout.completed_at || '');
+                      if (!workout.completed_at) {
+                        return null;
+                      }
                       
-                      return (
-                        <Link
-                          to={`/workout/${workout.workout_id}`}
-                          key={workout.id}
-                          className="block bg-fitness-darkGray p-4 rounded-lg"
-                        >
-                          <div className="flex justify-between">
-                            <div>
-                              <h4 className="font-semibold">{workout.workout?.title || 'Treino Personalizado'}</h4>
-                              <div className="flex items-center text-sm text-gray-400 mt-1">
-                                <Calendar className="h-4 w-4 mr-1" />
-                                <span>{format(workoutDate, 'dd/MM/yyyy')}</span>
+                      try {
+                        const workoutDate = parseISO(workout.completed_at);
+                        
+                        return (
+                          <Link
+                            to={`/workout/${workout.workout_id}`}
+                            key={workout.id}
+                            className="block bg-fitness-darkGray p-4 rounded-lg"
+                          >
+                            <div className="flex justify-between">
+                              <div>
+                                <h4 className="font-semibold">{workout.workout?.title || 'Treino Personalizado'}</h4>
+                                <div className="flex items-center text-sm text-gray-400 mt-1">
+                                  <Calendar className="h-4 w-4 mr-1" />
+                                  <span>{format(workoutDate, 'dd/MM/yyyy')}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col items-end">
+                                <div className="flex items-center text-sm">
+                                  <Flame className="h-4 w-4 text-fitness-orange mr-1" />
+                                  <span>{workout.calories_burned || '0'} kcal</span>
+                                </div>
+                                <div className="flex items-center text-sm text-gray-400 mt-1">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  <span>{workout.duration || '0'} min</span>
+                                </div>
                               </div>
                             </div>
-                            
-                            <div className="flex flex-col items-end">
-                              <div className="flex items-center text-sm">
-                                <Flame className="h-4 w-4 text-fitness-orange mr-1" />
-                                <span>{workout.calories_burned || '0'} kcal</span>
-                              </div>
-                              <div className="flex items-center text-sm text-gray-400 mt-1">
-                                <Clock className="h-4 w-4 mr-1" />
-                                <span>{workout.duration || '0'} min</span>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                          </Link>
+                        );
+                      } catch (error) {
+                        console.error("Failed to render workout:", workout.id, error);
+                        return null;
+                      }
+                    }).filter(Boolean)}
                   </div>
                 </div>
               );
