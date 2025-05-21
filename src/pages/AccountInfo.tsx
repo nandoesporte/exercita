@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
@@ -39,6 +39,7 @@ const AccountInfo = () => {
   const { user } = useAuth();
   const { profile, isLoading, updateProfile } = useProfile();
   const [isSaving, setIsSaving] = useState(false);
+  const [formInitialized, setFormInitialized] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -93,7 +94,7 @@ const AccountInfo = () => {
   };
   
   useEffect(() => {
-    if (profile) {
+    if (profile && !formInitialized) {
       console.log('Carregando dados do perfil no formulário:', profile);
       form.reset({
         first_name: profile.first_name || '',
@@ -104,8 +105,9 @@ const AccountInfo = () => {
         height: profile.height ? String(profile.height) : '',
         fitness_goal: profile.fitness_goal || '',
       });
+      setFormInitialized(true);
     }
-  }, [profile, form]);
+  }, [profile, form, formInitialized]);
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
@@ -137,7 +139,9 @@ const AccountInfo = () => {
       // Send update to backend
       await updateProfile(profileData);
       
-      // Add a delay before navigation to ensure the update is processed
+      toast.success('Informações salvas com sucesso!');
+      
+      // Delay navigation to ensure the update is processed
       setTimeout(() => {
         navigate('/profile');
       }, 1000);

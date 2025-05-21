@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -111,9 +112,20 @@ export function useProfile() {
       
       console.log('Atualizando perfil com dados:', profileData);
       
+      // Ensure all fields are properly formatted
+      const cleanedProfileData = Object.entries(profileData).reduce((acc, [key, value]) => {
+        // Skip null or undefined values to prevent overwriting with nulls
+        if (value !== undefined && value !== null) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+      
+      console.log('Dados limpos para atualização:', cleanedProfileData);
+      
       const { data, error } = await supabase
         .from('profiles')
-        .update(profileData)
+        .update(cleanedProfileData)
         .eq('id', user.id)
         .select();
       
@@ -138,12 +150,12 @@ export function useProfile() {
         queryClient.setQueryData(['profile', user?.id], updatedProfile);
         // Force refetch to ensure fresh data from server
         queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-        toast.success('Perfil atualizado com sucesso');
+        toast({ title: 'Perfil atualizado com sucesso', variant: 'default' });
       }
     },
     onError: (error: Error) => {
       console.error('Erro na atualização do perfil:', error);
-      toast.error(error.message || 'Falha ao atualizar o perfil');
+      toast({ title: error.message || 'Falha ao atualizar o perfil', variant: 'destructive' });
     }
   });
   
@@ -200,16 +212,21 @@ export function useProfile() {
         .from('profile_images')
         .getPublicUrl(filePath);
       
+      if (!urlData || !urlData.publicUrl) {
+        throw new Error('Erro ao obter URL pública do avatar');
+      }
+      
       // Adicionar timestamp para evitar cache
       const avatarUrl = new URL(urlData.publicUrl);
       avatarUrl.searchParams.set('t', Date.now().toString());
+      const finalAvatarUrl = avatarUrl.toString();
       
-      console.log('URL do avatar com cache busting:', avatarUrl.toString());
+      console.log('URL do avatar com cache busting:', finalAvatarUrl);
       
       // Update profile with new avatar URL in database
       const { error: updateError, data: profileData } = await supabase
         .from('profiles')
-        .update({ avatar_url: avatarUrl.toString() })
+        .update({ avatar_url: finalAvatarUrl })
         .eq('id', user.id)
         .select();
       
@@ -220,7 +237,7 @@ export function useProfile() {
       
       console.log('Perfil atualizado com novo avatar:', profileData);
       
-      return { avatarUrl: avatarUrl.toString(), updatedProfile: profileData?.[0] };
+      return { avatarUrl: finalAvatarUrl, updatedProfile: profileData?.[0] };
     },
     onSuccess: (result) => {
       // Update the profile in cache with the new avatar URL and full profile data
@@ -238,11 +255,11 @@ export function useProfile() {
       
       // Force a refetch from server to ensure data is fresh
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      toast.success('Foto de perfil atualizada com sucesso');
+      toast({ title: 'Foto de perfil atualizada com sucesso', variant: 'default' });
     },
     onError: (error: Error) => {
       console.error('Erro ao atualizar foto de perfil:', error);
-      toast.error(error.message || 'Falha ao atualizar foto de perfil');
+      toast({ title: error.message || 'Falha ao atualizar foto de perfil', variant: 'destructive' });
     }
   });
   

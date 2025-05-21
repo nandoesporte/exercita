@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -34,10 +35,16 @@ const Header: React.FC<HeaderProps> = ({
   useEffect(() => {
     if (profile?.avatar_url) {
       try {
+        // Always create a new URL object to ensure we're not appending multiple timestamps
         const url = new URL(profile.avatar_url);
+        // Clear any existing timestamp parameter
+        url.searchParams.delete('t');
+        // Add a new timestamp
         url.searchParams.set('t', Date.now().toString());
         setAvatarUrl(url.toString());
+        console.log('Header: Avatar URL atualizada com cache busting:', url.toString());
       } catch (e) {
+        console.error('Header: Erro ao processar URL do avatar:', e);
         setAvatarUrl(profile.avatar_url); // Fallback para o URL original se houver erro
       }
     } else {
@@ -226,15 +233,17 @@ const Header: React.FC<HeaderProps> = ({
               className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
             >
               <Avatar className="h-8 w-8 border-2 border-fitness-green">
-                <AvatarImage 
-                  src={avatarUrl || ''} 
-                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
-                  onError={(e) => {
-                    console.error('Error loading avatar image in header:', e);
-                    // Fallback to initials on error
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
+                {avatarUrl ? (
+                  <AvatarImage 
+                    src={avatarUrl} 
+                    alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+                    onError={(e) => {
+                      console.error('Error loading avatar image in header:', e);
+                      // Fallback to initials on error
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : null}
                 <AvatarFallback className="bg-fitness-dark text-white">
                   {getInitials()}
                 </AvatarFallback>
