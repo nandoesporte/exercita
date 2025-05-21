@@ -155,7 +155,7 @@ const AccountInfo = () => {
       // Send update to backend
       await updateProfile(profileData);
       
-      // Force a profile refresh after update to ensure we have the latest data
+      // Force a complete profile refresh after update to ensure we have the latest data
       setTimeout(() => {
         refreshProfile();
       }, 500);

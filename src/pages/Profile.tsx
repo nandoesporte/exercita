@@ -13,14 +13,13 @@ import { toast } from 'sonner';
 import PaymentTabs from '@/components/profile/PaymentTabs';
 
 const Profile = () => {
-  const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey, refreshProfile } = useProfile();
+  const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey, refreshProfile, getDisplayAvatarUrl } = useProfile();
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
   
-  // Force refresh profile data ONLY ONCE when component mounts
+  // Force refresh profile data ONCE when component mounts
   useEffect(() => {
     let isMounted = true;
     if (user && isMounted) {
@@ -33,32 +32,6 @@ const Profile = () => {
     };
   }, [user, refreshProfile]);
   
-  // Update avatar URL when profile changes, but prevent infinite loop
-  useEffect(() => {
-    if (profile?.avatar_url && !imageError) {
-      try {
-        // Rather than creating a new timestamp on every render,
-        // create one stable URL per profile update
-        const url = new URL(profile.avatar_url);
-        const existingTimestamp = url.searchParams.get('t');
-        
-        // Only update the timestamp if it doesn't exist or profile changed
-        if (!existingTimestamp) {
-          url.searchParams.set('t', Date.now().toString());
-          setAvatarUrl(url.toString());
-        } else {
-          // Use existing URL with timestamp
-          setAvatarUrl(profile.avatar_url);
-        }
-      } catch (error) {
-        console.error('Error parsing avatar URL:', error);
-        setAvatarUrl(profile.avatar_url);
-      }
-    } else {
-      setAvatarUrl(null);
-    }
-  }, [profile?.avatar_url, imageError]);
-  
   const formatDate = (date: Date | null) => {
     if (!date) return '';
     return format(date, 'MMMM yyyy');
@@ -69,7 +42,7 @@ const Profile = () => {
       ? `${profile.first_name} ${profile.last_name}` 
       : user?.email || 'User',
     email: user?.email || '',
-    avatar: avatarUrl,
+    avatar: getDisplayAvatarUrl(profile?.avatar_url),
     memberSince: user?.created_at 
       ? formatDate(new Date(user.created_at)) 
       : 'Unknown',
@@ -103,10 +76,12 @@ const Profile = () => {
     setImageError(false);
     
     try {
+      console.log('Starting profile image upload');
       // Upload the image
       await uploadProfileImage(file);
       
       // Let's wait before refreshing to ensure the image is processed
+      console.log('Upload successful, refreshing profile data');
       setTimeout(() => {
         refreshProfile();
       }, 1000);
@@ -144,7 +119,7 @@ const Profile = () => {
               onClick={handleImageClick}
             >
               <AvatarImage 
-                src={avatarUrl} 
+                src={userData.avatar || undefined} 
                 alt={userData.name} 
                 className="object-cover" 
                 onError={handleImageLoadError}

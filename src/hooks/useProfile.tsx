@@ -1,11 +1,10 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { updateUserProfile } from '@/contexts/auth/profileUtils';
+import { updateUserProfile, fetchUserProfile } from '@/contexts/auth/profileUtils';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
@@ -32,27 +31,34 @@ export function useProfile() {
       
       try {
         console.log('Fetching profile for user:', user.id);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
         
-        if (error) {
-          console.error('Erro ao buscar perfil:', error);
-          throw new Error(`Erro ao buscar perfil: ${error.message}`);
+        // First check if we have cached data
+        const cachedData = queryClient.getQueryData<Profile>(['profile', user.id]);
+        
+        // If we have valid cached data and this is not an initial load, use it
+        if (cachedData?.id && cachedData.first_name && cachedData.last_name) {
+          console.log('Using valid cached profile data:', cachedData);
+          return cachedData;
         }
         
-        console.log('Perfil carregado:', data);
-        return data as Profile;
+        // Fetch fresh data from database
+        const profile = await fetchUserProfile(user.id);
+        
+        if (!profile) {
+          console.error('Failed to fetch profile data');
+          return null;
+        }
+        
+        console.log('New profile data loaded:', profile);
+        return profile as Profile;
       } catch (error) {
         console.error('Exception in profile fetch:', error);
         return null;
       }
     },
     enabled: !!user,
-    staleTime: 1000 * 60, // Consider data stale after 1 minute
-    gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
+    staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes (increased from 1)
+    gcTime: 1000 * 60 * 30, // Keep cache for 30 minutes (increased from 5)
   });
 
   const pixKeyQuery = useQuery({
@@ -113,33 +119,43 @@ export function useProfile() {
       
       console.log('Dados limpos para atualização:', cleanedProfileData);
       
+      // Cache the current data before update for rollback if needed
+      const currentData = queryClient.getQueryData<Profile>(['profile', user.id]);
+      
+      // Optimistically update the UI
+      if (currentData) {
+        queryClient.setQueryData(['profile', user.id], {
+          ...currentData,
+          ...cleanedProfileData,
+        });
+      }
+      
       // Use the utility function for profile updates
       const success = await updateUserProfile(user.id, cleanedProfileData);
       
       if (!success) {
+        // Roll back to previous data if update failed
+        if (currentData) {
+          queryClient.setQueryData(['profile', user.id], currentData);
+        }
         throw new Error('Erro ao atualizar perfil');
       }
       
       // Get the updated profile data
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const updatedProfile = await fetchUserProfile(user.id);
       
-      if (error) {
-        console.error('Erro ao obter perfil atualizado:', error);
-        throw new Error(`Erro ao obter perfil atualizado: ${error.message}`);
+      if (!updatedProfile) {
+        throw new Error('Erro ao obter perfil atualizado');
       }
       
-      console.log('Perfil atualizado com sucesso:', data);
-      return data as Profile;
+      console.log('Perfil atualizado com sucesso:', updatedProfile);
+      return updatedProfile as Profile;
     },
     onSuccess: (updatedProfile) => {
       if (updatedProfile) {
         // Update cache immediately with new data
         queryClient.setQueryData(['profile', user?.id], updatedProfile);
-        // Force refetch to ensure fresh data
+        // This won't trigger a refetch since we already have the data
         queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
         toast('Perfil atualizado com sucesso');
       }
@@ -203,8 +219,23 @@ export function useProfile() {
         throw new Error('Erro ao obter URL pública do avatar');
       }
       
-      const avatarUrl = urlData.publicUrl;
-      console.log('Avatar URL:', avatarUrl);
+      // Get a clean URL without cache parameters
+      let avatarUrl = urlData.publicUrl;
+      
+      console.log('Avatar URL antes de salvamento permanente:', avatarUrl);
+      
+      // Store the plain URL without any params to ensure consistency
+      try {
+        const url = new URL(avatarUrl);
+        url.search = '';
+        avatarUrl = url.toString();
+      } catch (e) {
+        console.error('Error parsing URL:', e);
+        // Continue with original URL if parsing fails
+      }
+      
+      // Cache current profile data before update
+      const currentProfile = queryClient.getQueryData<Profile>(['profile', user.id]);
       
       // Update profile with new avatar URL using updateUserProfile utility
       const success = await updateUserProfile(user.id, { avatar_url: avatarUrl });
@@ -214,32 +245,26 @@ export function useProfile() {
       }
       
       // Get the updated profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const updatedProfile = await fetchUserProfile(user.id);
       
-      if (profileError) {
-        console.error('Erro ao obter perfil atualizado:', profileError);
-        throw new Error(`Erro ao obter perfil atualizado: ${profileError.message}`);
+      if (!updatedProfile) {
+        throw new Error('Erro ao obter perfil atualizado');
       }
       
-      console.log('Perfil atualizado com novo avatar:', profileData);
+      console.log('Perfil atualizado com novo avatar:', updatedProfile);
       
       return { 
         avatarUrl, 
-        updatedProfile: profileData 
+        updatedProfile 
       };
     },
     onSuccess: (result) => {
       // Update profile cache with new data
-      if (result.updatedProfile) {
-        queryClient.setQueryData(['profile', user?.id], result.updatedProfile);
+      if (result.updatedProfile && user?.id) {
+        queryClient.setQueryData(['profile', user.id], result.updatedProfile);
+        console.log('Profile cache updated with new avatar');
       }
       
-      // Force a refetch from server
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast('Foto de perfil atualizada com sucesso');
     },
     onError: (error: Error) => {
@@ -248,11 +273,43 @@ export function useProfile() {
     }
   });
 
-  // Simple refresh method that forces immediate invalidation
+  // Immediate refresh method that forces a full data reload
   const refreshProfile = () => {
-    console.log('Forcing profile refresh');
-    queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-    queryClient.invalidateQueries({ queryKey: ['pixKey', 'primary', user?.id] });
+    if (!user?.id) return;
+    
+    console.log('Forcing complete profile refresh');
+    
+    // Force immediate refetch from server
+    queryClient.invalidateQueries({ 
+      queryKey: ['profile', user.id],
+      refetchType: 'active',
+    });
+    
+    queryClient.invalidateQueries({ 
+      queryKey: ['pixKey', 'primary', user.id],
+      refetchType: 'active',
+    });
+    
+    // Force immediate refetch
+    queryClient.refetchQueries({ queryKey: ['profile', user.id] });
+  };
+  
+  // Function to ensure avatar URL has necessary cache busting for display
+  const getDisplayAvatarUrl = (url?: string | null): string | null => {
+    if (!url) return null;
+    
+    try {
+      const parsedUrl = new URL(url);
+      // Only add cache busting if not already present
+      if (!parsedUrl.searchParams.has('t')) {
+        parsedUrl.searchParams.set('t', Date.now().toString());
+        return parsedUrl.toString();
+      }
+      return url;
+    } catch (e) {
+      console.error('Error parsing avatar URL:', e);
+      return url;
+    }
   };
   
   return {
@@ -266,5 +323,6 @@ export function useProfile() {
     pixKey: pixKeyQuery.data,
     isLoadingPixKey: pixKeyQuery.isLoading || !user,
     refreshProfile,
+    getDisplayAvatarUrl,
   };
 }

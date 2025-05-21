@@ -5,7 +5,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast';
 import { AuthContext } from './AuthContext';
-import { checkAdminStatus, ensureProfileExists } from './profileUtils';
+import { checkAdminStatus, ensureProfileExists, fetchUserProfile } from './profileUtils';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -30,8 +30,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Invalidating all profile queries to force refresh");
       window.queryClient.invalidateQueries({ queryKey: ['profile'] });
       window.queryClient.invalidateQueries({ queryKey: ['pixKey'] });
+      
+      // Force refetch profile data immediately
+      if (user?.id) {
+        fetchUserProfile(user.id).then(profileData => {
+          if (profileData) {
+            window.queryClient.setQueryData(['profile', user.id], profileData);
+          }
+        });
+      }
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     console.log("AuthProvider useEffect running");
@@ -39,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // First set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         console.log("Auth state change detected", { 
           event, 
           user: currentSession?.user?.email,
@@ -54,13 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Then defer checking admin status to avoid deadlocks
         if (currentSession?.user) {
-          setTimeout(() => {
+          setTimeout(async () => {
             if (mounted) {
-              updateAdminStatus(currentSession.user.id);
+              await updateAdminStatus(currentSession.user.id);
               
               // Ensure profile exists for this user
               const metadata = currentSession.user.user_metadata;
-              ensureProfileExists(currentSession.user.id, metadata);
+              const profileCreated = await ensureProfileExists(currentSession.user.id, metadata);
               
               // Always force refresh profile data on auth state change
               refreshUserProfile();
@@ -263,7 +272,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = window.queryClient.getQueryData(['profile', user.id]);
           if (profileData) {
             console.log("Saving profile data before logout:", profileData);
-            // We don't need additional actions here - the data is already saved in Supabase
+            // Make sure avatar_url and other critical data is saved to database before logout
+            const { avatar_url, first_name, last_name } = profileData as any;
+            if (avatar_url || first_name || last_name) {
+              await supabase
+                .from('profiles')
+                .update({ 
+                  avatar_url, 
+                  first_name, 
+                  last_name,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', user.id);
+              console.log("Profile permanently saved to database before logout");
+            }
           }
         }
       } catch (error) {
@@ -276,7 +298,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAdmin(false);
       
       // Clear profile data from cache before signing out
-      refreshUserProfile();
+      if (window.queryClient) {
+        window.queryClient.removeQueries({ queryKey: ['profile'] });
+        window.queryClient.removeQueries({ queryKey: ['pixKey'] });
+      }
       
       // Try to sign out from Supabase, but don't block the UI flow if it fails
       try {
