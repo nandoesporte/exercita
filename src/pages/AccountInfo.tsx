@@ -93,6 +93,7 @@ const AccountInfo = () => {
     }
   };
   
+  // Use effect to load profile data into form
   useEffect(() => {
     if (profile && !formInitialized) {
       console.log('Carregando dados do perfil no formulário:', profile);
@@ -111,7 +112,7 @@ const AccountInfo = () => {
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
-      toast.error('Você precisa estar logado para salvar alterações');
+      toast('Você precisa estar logado para salvar alterações');
       return;
     }
     
@@ -139,7 +140,7 @@ const AccountInfo = () => {
       // Send update to backend
       await updateProfile(profileData);
       
-      toast.success('Informações salvas com sucesso!');
+      toast('Informações salvas com sucesso!');
       
       // Delay navigation to ensure the update is processed
       setTimeout(() => {
@@ -147,7 +148,7 @@ const AccountInfo = () => {
       }, 1000);
     } catch (error: any) {
       console.error('Erro ao atualizar perfil:', error);
-      toast.error(error.message || 'Ocorreu um erro ao salvar as informações');
+      toast(error.message || 'Ocorreu um erro ao salvar as informações');
     } finally {
       setIsSaving(false);
     }
