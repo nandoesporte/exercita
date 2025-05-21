@@ -27,7 +27,7 @@ const queryClient = new QueryClient({
       retry: 2, // Retry failed queries twice
       refetchOnReconnect: true, // Refetch when reconnecting
       refetchOnMount: true, // Refetch when component mounts
-      cacheTime: 1000 * 60 * 10, // Cache for 10 minutes
+      gcTime: 1000 * 60 * 10, // Cache for 10 minutes (renamed from cacheTime)
     },
   },
 });
