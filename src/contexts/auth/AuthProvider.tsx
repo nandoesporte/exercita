@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -255,6 +256,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       console.log("Attempting to sign out user");
+      
+      // Save profile data to make sure we don't lose it
+      try {
+        if (user && window.queryClient) {
+          const profileData = window.queryClient.getQueryData(['profile', user.id]);
+          if (profileData) {
+            console.log("Saving profile data before logout:", profileData);
+            // We don't need additional actions here - the data is already saved in Supabase
+          }
+        }
+      } catch (error) {
+        console.error("Error handling profile data before logout:", error);
+      }
       
       // Clear local auth state first for immediate UI feedback
       setUser(null);

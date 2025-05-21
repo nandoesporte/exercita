@@ -80,3 +80,31 @@ export const ensureProfileExists = async (userId: string, metadata?: any): Promi
     console.error('Exception in ensureProfileExists:', error);
   }
 };
+
+// New function to update profile with better error handling
+export const updateUserProfile = async (userId: string, profileData: any): Promise<boolean> => {
+  try {
+    if (!userId) {
+      console.error("Cannot update profile without user ID");
+      return false;
+    }
+    
+    console.log("Updating profile for user:", userId, "with data:", profileData);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update(profileData)
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('Error updating profile:', error);
+      return false;
+    }
+    
+    console.log("Profile updated successfully");
+    return true;
+  } catch (error) {
+    console.error('Exception in updateUserProfile:', error);
+    return false;
+  }
+};

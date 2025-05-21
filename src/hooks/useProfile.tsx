@@ -5,6 +5,7 @@ import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { updateUserProfile } from '@/contexts/auth/profileUtils';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
@@ -42,7 +43,6 @@ export function useProfile() {
           throw new Error(`Erro ao buscar perfil: ${error.message}`);
         }
         
-        // No persistent URL modification here, just return the data
         console.log('Perfil carregado:', data);
         return data as Profile;
       } catch (error) {
@@ -51,11 +51,8 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 0, // Consider data always stale to ensure freshness
+    staleTime: 1000 * 60, // Consider data stale after 1 minute
     gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
   });
 
   const pixKeyQuery = useQuery({
@@ -71,14 +68,14 @@ export function useProfile() {
           .from('pix_keys')
           .select('*')
           .eq('is_primary', true)
-          .single();
+          .maybeSingle();
         
         if (error) {
-          if (error.code !== 'PGRST116') { // no rows returned
-            console.error('Erro ao buscar chave PIX:', error);
-          }
+          console.error('Erro ao buscar chave PIX:', error);
           return null;
         }
+        
+        if (!data) return null;
         
         return {
           id: data.id,
@@ -93,7 +90,7 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 1000 * 60, // Consider data stale after 1 minute
   });
   
   const updateProfile = useMutation({
@@ -116,26 +113,27 @@ export function useProfile() {
       
       console.log('Dados limpos para atualização:', cleanedProfileData);
       
+      // Use the utility function for profile updates
+      const success = await updateUserProfile(user.id, cleanedProfileData);
+      
+      if (!success) {
+        throw new Error('Erro ao atualizar perfil');
+      }
+      
+      // Get the updated profile data
       const { data, error } = await supabase
         .from('profiles')
-        .update(cleanedProfileData)
+        .select('*')
         .eq('id', user.id)
-        .select();
+        .single();
       
       if (error) {
-        console.error('Erro ao atualizar perfil:', error);
-        throw new Error(`Erro ao atualizar perfil: ${error.message}`);
+        console.error('Erro ao obter perfil atualizado:', error);
+        throw new Error(`Erro ao obter perfil atualizado: ${error.message}`);
       }
       
       console.log('Perfil atualizado com sucesso:', data);
-      
-      // Check if there's returned data
-      if (!data || data.length === 0) {
-        console.warn('Nenhum dado retornado após atualização do perfil');
-        return null;
-      }
-      
-      return data[0] as Profile;
+      return data as Profile;
     },
     onSuccess: (updatedProfile) => {
       if (updatedProfile) {
@@ -184,7 +182,7 @@ export function useProfile() {
       }
       
       // Upload file to storage with caching disabled
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
           cacheControl: 'no-cache, no-store, must-revalidate',
@@ -196,9 +194,7 @@ export function useProfile() {
         throw new Error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
       }
       
-      console.log('Upload realizado com sucesso:', uploadData);
-      
-      // Get public URL with a simple timestamp to avoid caching
+      // Get public URL
       const { data: urlData } = supabase.storage
         .from('profile_images')
         .getPublicUrl(filePath);
@@ -207,29 +203,33 @@ export function useProfile() {
         throw new Error('Erro ao obter URL pública do avatar');
       }
       
-      // Create a clean URL with a single timestamp parameter
-      const baseUrl = urlData.publicUrl;
-      const avatarUrl = `${baseUrl}?t=${Date.now()}`;
+      const avatarUrl = urlData.publicUrl;
+      console.log('Avatar URL:', avatarUrl);
       
-      console.log('URL do avatar com cache busting:', avatarUrl);
+      // Update profile with new avatar URL using updateUserProfile utility
+      const success = await updateUserProfile(user.id, { avatar_url: avatarUrl });
       
-      // Update profile with new avatar URL
-      const { error: updateError, data: profileData } = await supabase
+      if (!success) {
+        throw new Error('Erro ao atualizar perfil com novo avatar');
+      }
+      
+      // Get the updated profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .update({ avatar_url: baseUrl }) // Store clean URL without timestamp
+        .select('*')
         .eq('id', user.id)
-        .select();
+        .single();
       
-      if (updateError) {
-        console.error('Erro ao atualizar perfil com novo avatar:', updateError);
-        throw new Error(`Erro ao atualizar perfil com novo avatar: ${updateError.message}`);
+      if (profileError) {
+        console.error('Erro ao obter perfil atualizado:', profileError);
+        throw new Error(`Erro ao obter perfil atualizado: ${profileError.message}`);
       }
       
       console.log('Perfil atualizado com novo avatar:', profileData);
       
       return { 
-        avatarUrl: baseUrl, // Return clean URL
-        updatedProfile: profileData?.[0] 
+        avatarUrl, 
+        updatedProfile: profileData 
       };
     },
     onSuccess: (result) => {

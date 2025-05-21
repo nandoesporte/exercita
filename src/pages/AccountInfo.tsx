@@ -96,13 +96,8 @@ const AccountInfo = () => {
   useEffect(() => {
     if (user) {
       console.log('AccountInfo component mounted, forcing immediate profile refresh');
-      // Small delay to ensure auth is fully initialized
-      const timeoutId = setTimeout(() => {
-        refreshProfile();
-        setFormInitialized(false); // Reset form initialization to ensure form gets updated with fresh data
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
+      refreshProfile();
+      setFormInitialized(false); // Reset form initialization to ensure form gets updated with fresh data
     }
   }, [user, refreshProfile]);
   
@@ -160,12 +155,12 @@ const AccountInfo = () => {
       // Send update to backend
       await updateProfile(profileData);
       
-      toast('Informações salvas com sucesso!');
-      
-      // Force a profile refresh after update
+      // Force a profile refresh after update to ensure we have the latest data
       setTimeout(() => {
         refreshProfile();
       }, 500);
+      
+      toast('Informações salvas com sucesso!');
       
       // Delay navigation to ensure the update is processed
       setTimeout(() => {
