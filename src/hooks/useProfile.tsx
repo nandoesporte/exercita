@@ -30,6 +30,7 @@ export function useProfile() {
       }
       
       try {
+        console.log('Fetching profile for user:', user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -62,6 +63,9 @@ export function useProfile() {
     enabled: !!user,
     staleTime: 0, // Always fetch fresh data after login
     gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
+    refetchOnWindowFocus: true, // Refetch on window focus
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnReconnect: true, // Refetch on reconnect
   });
 
   // Add function to fetch primary PIX key
@@ -262,6 +266,12 @@ export function useProfile() {
       toast(error.message || 'Falha ao atualizar foto de perfil');
     }
   });
+
+  // Add a refetch method for easier manual data refresh
+  const refreshProfile = () => {
+    console.log('Forcing profile refresh');
+    queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+  };
   
   return {
     profile: profileQuery.data,
@@ -273,5 +283,6 @@ export function useProfile() {
     isUploadingImage: uploadProfileImage.isPending,
     pixKey: pixKeyQuery.data,
     isLoadingPixKey: pixKeyQuery.isLoading || !user,
+    refreshProfile, // Expose the refresh method
   };
 }

@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -14,20 +13,33 @@ import { toast } from 'sonner';
 import PaymentTabs from '@/components/profile/PaymentTabs';
 
 const Profile = () => {
-  const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey } = useProfile();
+  const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey, refreshProfile } = useProfile();
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
   // Usando um estado controlado por useEffect para garantir atualização quando o perfil mudar
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
+  // Force refresh profile data on component mount
+  useEffect(() => {
+    if (user) {
+      console.log('Profile component mounted, refreshing profile data');
+      refreshProfile();
+    }
+  }, [user, refreshProfile]);
+  
   // Atualiza URL do avatar quando o perfil muda, incluindo timestamp para cache busting
   useEffect(() => {
     if (profile?.avatar_url) {
-      // Adiciona ou atualiza o parâmetro de timestamp para evitar cache
-      const url = new URL(profile.avatar_url);
-      url.searchParams.set('t', Date.now().toString());
-      setAvatarUrl(url.toString());
+      try {
+        // Adiciona ou atualiza o parâmetro de timestamp para evitar cache
+        const url = new URL(profile.avatar_url);
+        url.searchParams.set('t', Date.now().toString());
+        setAvatarUrl(url.toString());
+      } catch (error) {
+        console.error('Error parsing avatar URL:', error);
+        setAvatarUrl(profile.avatar_url);
+      }
     } else {
       setAvatarUrl(null);
     }
@@ -76,6 +88,11 @@ const Profile = () => {
     try {
       // Upload the image
       await uploadProfileImage(file);
+      
+      // Force refresh profile data after upload
+      setTimeout(() => {
+        refreshProfile();
+      }, 500);
       
       // Forçar atualização do avatar URL com novo timestamp
       if (profile?.avatar_url) {

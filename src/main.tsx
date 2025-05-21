@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -14,11 +13,23 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 declare global {
   interface Window {
     deferredPromptEvent: any;
+    queryClient: any; // Add queryClient to the window object type
   }
 }
 
 // Create the query client outside the component to avoid re-creation on renders
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0, // Default stale time of 0 to always fetch fresh data
+      refetchOnWindowFocus: true, // Refetch data when window regains focus
+      retry: 1, // Retry failed queries once
+    },
+  },
+});
+
+// Make queryClient globally available for auth state change handling
+window.queryClient = queryClient;
 
 // Root component that wraps the application
 const Main = () => {

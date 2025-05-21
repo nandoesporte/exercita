@@ -52,6 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               // Ensure profile exists for this user
               const metadata = currentSession.user.user_metadata;
               ensureProfileExists(currentSession.user.id, metadata);
+              
+              // Invalidate profile queries to force refresh after login
+              if (window.queryClient) {
+                console.log("Invalidating profile queries after auth state change");
+                window.queryClient.invalidateQueries({ queryKey: ['profile'] });
+              }
             }
           }, 0);
         } else {

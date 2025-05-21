@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ const formSchema = z.object({
 const AccountInfo = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile, isLoading, updateProfile } = useProfile();
+  const { profile, isLoading, updateProfile, refreshProfile } = useProfile();
   const [isSaving, setIsSaving] = useState(false);
   const [formInitialized, setFormInitialized] = useState(false);
   
@@ -93,6 +92,14 @@ const AccountInfo = () => {
     }
   };
   
+  // Refresh profile data on component mount
+  useEffect(() => {
+    if (user) {
+      console.log('AccountInfo component mounted, refreshing profile data');
+      refreshProfile();
+    }
+  }, [user, refreshProfile]);
+  
   // Use effect to load profile data into form
   useEffect(() => {
     if (profile && !formInitialized) {
@@ -109,6 +116,13 @@ const AccountInfo = () => {
       setFormInitialized(true);
     }
   }, [profile, form, formInitialized]);
+  
+  // Reset form initialized state when profile changes to ensure form gets updated with new data
+  useEffect(() => {
+    if (!profile) {
+      setFormInitialized(false);
+    }
+  }, [profile]);
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
@@ -141,6 +155,11 @@ const AccountInfo = () => {
       await updateProfile(profileData);
       
       toast('Informações salvas com sucesso!');
+      
+      // Force a profile refresh after update
+      setTimeout(() => {
+        refreshProfile();
+      }, 500);
       
       // Delay navigation to ensure the update is processed
       setTimeout(() => {
