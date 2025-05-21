@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -17,13 +18,18 @@ const Profile = () => {
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
-  // Add timestamp for cache-busting with automatic updating
-  const [imageTimestamp, setImageTimestamp] = useState(() => Date.now());
+  // Usando um estado controlado por useEffect para garantir atualização quando o perfil mudar
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
-  // Refresh timestamp when profile changes
+  // Atualiza URL do avatar quando o perfil muda, incluindo timestamp para cache busting
   useEffect(() => {
     if (profile?.avatar_url) {
-      setImageTimestamp(Date.now());
+      // Adiciona ou atualiza o parâmetro de timestamp para evitar cache
+      const url = new URL(profile.avatar_url);
+      url.searchParams.set('t', Date.now().toString());
+      setAvatarUrl(url.toString());
+    } else {
+      setAvatarUrl(null);
     }
   }, [profile?.avatar_url]);
   
@@ -37,7 +43,7 @@ const Profile = () => {
       ? `${profile.first_name} ${profile.last_name}` 
       : user?.email || 'User',
     email: user?.email || '',
-    avatar: profile?.avatar_url ? `${profile.avatar_url}?t=${imageTimestamp}` : undefined,
+    avatar: avatarUrl, // Usando o avatar URL com timestamp
     memberSince: user?.created_at 
       ? formatDate(new Date(user.created_at)) 
       : 'Unknown',
@@ -71,8 +77,12 @@ const Profile = () => {
       // Upload the image
       await uploadProfileImage(file);
       
-      // Update timestamp to force re-render of avatar with new image
-      setImageTimestamp(Date.now());
+      // Forçar atualização do avatar URL com novo timestamp
+      if (profile?.avatar_url) {
+        const url = new URL(profile.avatar_url);
+        url.searchParams.set('t', Date.now().toString());
+        setAvatarUrl(url.toString());
+      }
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
     }

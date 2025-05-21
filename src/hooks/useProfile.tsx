@@ -40,6 +40,17 @@ export function useProfile() {
           throw new Error(`Erro ao buscar perfil: ${error.message}`);
         }
         
+        // Garantir que a URL do avatar tenha o timestamp para evitar cache
+        if (data && data.avatar_url) {
+          try {
+            const url = new URL(data.avatar_url);
+            url.searchParams.set('t', Date.now().toString());
+            data.avatar_url = url.toString();
+          } catch (e) {
+            console.warn('URL do avatar inválida, usando original:', data.avatar_url);
+          }
+        }
+        
         console.log('Perfil carregado:', data);
         return data as Profile;
       } catch (error) {
@@ -136,7 +147,7 @@ export function useProfile() {
     }
   });
   
-  // Function for profile image upload - Improved to ensure persistence
+  // Function for profile image upload - Enhanced for better persistence
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
       if (!user) {
@@ -173,7 +184,7 @@ export function useProfile() {
       const { error: uploadError, data: uploadData } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
-          cacheControl: '3600',
+          cacheControl: '0', // Desabilita cache para evitar problemas
           upsert: true,
         });
       
@@ -189,14 +200,16 @@ export function useProfile() {
         .from('profile_images')
         .getPublicUrl(filePath);
       
-      const avatarUrl = urlData.publicUrl;
+      // Adicionar timestamp para evitar cache
+      const avatarUrl = new URL(urlData.publicUrl);
+      avatarUrl.searchParams.set('t', Date.now().toString());
       
-      console.log('URL do avatar:', avatarUrl);
+      console.log('URL do avatar com cache busting:', avatarUrl.toString());
       
       // Update profile with new avatar URL in database
       const { error: updateError, data: profileData } = await supabase
         .from('profiles')
-        .update({ avatar_url: avatarUrl })
+        .update({ avatar_url: avatarUrl.toString() })
         .eq('id', user.id)
         .select();
       
@@ -207,7 +220,7 @@ export function useProfile() {
       
       console.log('Perfil atualizado com novo avatar:', profileData);
       
-      return { avatarUrl, updatedProfile: profileData?.[0] };
+      return { avatarUrl: avatarUrl.toString(), updatedProfile: profileData?.[0] };
     },
     onSuccess: (result) => {
       // Update the profile in cache with the new avatar URL and full profile data

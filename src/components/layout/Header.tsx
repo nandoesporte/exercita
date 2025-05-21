@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -29,6 +28,22 @@ const Header: React.FC<HeaderProps> = ({
   const { user, isAdmin, loading: authLoading } = useAuth();
   const location = useLocation();
   const { data: workouts } = useWorkouts();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  
+  // Atualizar URL do avatar quando o perfil mudar, com cache busting
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      try {
+        const url = new URL(profile.avatar_url);
+        url.searchParams.set('t', Date.now().toString());
+        setAvatarUrl(url.toString());
+      } catch (e) {
+        setAvatarUrl(profile.avatar_url); // Fallback para o URL original se houver erro
+      }
+    } else {
+      setAvatarUrl(null);
+    }
+  }, [profile?.avatar_url]);
   
   // Find the first workout to link to, or use a fallback
   const firstWorkoutId = workouts && workouts.length > 0 
@@ -212,8 +227,13 @@ const Header: React.FC<HeaderProps> = ({
             >
               <Avatar className="h-8 w-8 border-2 border-fitness-green">
                 <AvatarImage 
-                  src={profile?.avatar_url || ''} 
+                  src={avatarUrl || ''} 
                   alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+                  onError={(e) => {
+                    console.error('Error loading avatar image in header:', e);
+                    // Fallback to initials on error
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
                 <AvatarFallback className="bg-fitness-dark text-white">
                   {getInitials()}
