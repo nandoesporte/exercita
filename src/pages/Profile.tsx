@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -20,11 +21,16 @@ const Profile = () => {
   // Usando um estado controlado por useEffect para garantir atualização quando o perfil mudar
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
-  // Force refresh profile data on component mount
+  // Force refresh profile data IMMEDIATELY when component mounts
   useEffect(() => {
     if (user) {
-      console.log('Profile component mounted, refreshing profile data');
-      refreshProfile();
+      console.log('Profile component mounted, forcing immediate profile refresh');
+      // Small delay to ensure auth is fully initialized
+      const timeoutId = setTimeout(() => {
+        refreshProfile();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [user, refreshProfile]);
   
@@ -38,7 +44,11 @@ const Profile = () => {
         setAvatarUrl(url.toString());
       } catch (error) {
         console.error('Error parsing avatar URL:', error);
-        setAvatarUrl(profile.avatar_url);
+        // If URL parsing fails, append timestamp as query string
+        const timestampedUrl = profile.avatar_url.includes('?') 
+          ? `${profile.avatar_url}&t=${Date.now()}` 
+          : `${profile.avatar_url}?t=${Date.now()}`;
+        setAvatarUrl(timestampedUrl);
       }
     } else {
       setAvatarUrl(null);
@@ -74,14 +84,14 @@ const Profile = () => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Formato inválido. Por favor selecione uma imagem válida (JPEG, PNG, or GIF)");
+      toast("Formato inválido. Por favor selecione uma imagem válida (JPEG, PNG, or GIF)");
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. A imagem deve ter menos de 5MB");
+      toast("Arquivo muito grande. A imagem deve ter menos de 5MB");
       return;
     }
     
@@ -89,17 +99,10 @@ const Profile = () => {
       // Upload the image
       await uploadProfileImage(file);
       
-      // Force refresh profile data after upload
+      // Force refresh profile data after upload with a short delay
       setTimeout(() => {
         refreshProfile();
       }, 500);
-      
-      // Forçar atualização do avatar URL com novo timestamp
-      if (profile?.avatar_url) {
-        const url = new URL(profile.avatar_url);
-        url.searchParams.set('t', Date.now().toString());
-        setAvatarUrl(url.toString());
-      }
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
     }

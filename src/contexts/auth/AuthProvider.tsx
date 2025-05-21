@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -22,6 +21,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const adminStatus = await checkAdminStatus(userId);
     setIsAdmin(adminStatus);
     return adminStatus;
+  }, []);
+
+  // Function to refresh profile data in cache
+  const refreshUserProfile = useCallback(() => {
+    if (window.queryClient) {
+      console.log("Invalidating all profile queries to force refresh");
+      window.queryClient.invalidateQueries({ queryKey: ['profile'] });
+      window.queryClient.invalidateQueries({ queryKey: ['pixKey'] });
+    }
   }, []);
 
   useEffect(() => {
@@ -53,11 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const metadata = currentSession.user.user_metadata;
               ensureProfileExists(currentSession.user.id, metadata);
               
-              // Invalidate profile queries to force refresh after login
-              if (window.queryClient) {
-                console.log("Invalidating profile queries after auth state change");
-                window.queryClient.invalidateQueries({ queryKey: ['profile'] });
-              }
+              // Always force refresh profile data on auth state change
+              refreshUserProfile();
             }
           }, 0);
         } else {
@@ -90,6 +95,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Ensure profile exists for this user during initial session check
           const metadata = currentSession.user.user_metadata;
           await ensureProfileExists(currentSession.user.id, metadata);
+          
+          // Force refresh profile data on initial session
+          refreshUserProfile();
         }
       } catch (error) {
         console.error("Error checking session:", error);
@@ -107,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription?.unsubscribe();
     };
-  }, [updateAdminStatus]);
+  }, [updateAdminStatus, refreshUserProfile]);
 
   const signUp = async (email: string, password: string, metadata = {}) => {
     try {
@@ -252,6 +260,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       setIsAdmin(false);
+      
+      // Clear profile data from cache before signing out
+      refreshUserProfile();
       
       // Try to sign out from Supabase, but don't block the UI flow if it fails
       try {

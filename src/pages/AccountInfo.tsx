@@ -92,11 +92,17 @@ const AccountInfo = () => {
     }
   };
   
-  // Refresh profile data on component mount
+  // Force refresh profile data on component mount
   useEffect(() => {
     if (user) {
-      console.log('AccountInfo component mounted, refreshing profile data');
-      refreshProfile();
+      console.log('AccountInfo component mounted, forcing immediate profile refresh');
+      // Small delay to ensure auth is fully initialized
+      const timeoutId = setTimeout(() => {
+        refreshProfile();
+        setFormInitialized(false); // Reset form initialization to ensure form gets updated with fresh data
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [user, refreshProfile]);
   

@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -13,7 +14,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 declare global {
   interface Window {
     deferredPromptEvent: any;
-    queryClient: any; // Add queryClient to the window object type
+    queryClient: QueryClient; // Add proper type for queryClient
   }
 }
 
@@ -23,7 +24,10 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 0, // Default stale time of 0 to always fetch fresh data
       refetchOnWindowFocus: true, // Refetch data when window regains focus
-      retry: 1, // Retry failed queries once
+      retry: 2, // Retry failed queries twice
+      refetchOnReconnect: true, // Refetch when reconnecting
+      refetchOnMount: true, // Refetch when component mounts
+      cacheTime: 1000 * 60 * 10, // Cache for 10 minutes
     },
   },
 });

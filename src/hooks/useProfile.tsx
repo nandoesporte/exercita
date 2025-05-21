@@ -61,7 +61,7 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 0, // Always fetch fresh data after login
+    staleTime: 1000 * 30, // Consider data stale after 30 seconds to ensure fresh data
     gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
     refetchOnWindowFocus: true, // Refetch on window focus
     refetchOnMount: true, // Always refetch when component mounts
@@ -104,7 +104,7 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes
+    staleTime: 1000 * 60, // Consider data stale after 1 minute
   });
   
   const updateProfile = useMutation({
@@ -270,7 +270,9 @@ export function useProfile() {
   // Add a refetch method for easier manual data refresh
   const refreshProfile = () => {
     console.log('Forcing profile refresh');
+    queryClient.removeQueries({ queryKey: ['profile', user?.id] });
     queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+    queryClient.invalidateQueries({ queryKey: ['pixKey', 'primary', user?.id] });
   };
   
   return {
