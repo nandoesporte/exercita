@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -30,27 +29,29 @@ const Header: React.FC<HeaderProps> = ({
   const location = useLocation();
   const { data: workouts } = useWorkouts();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   
-  // Atualizar URL do avatar quando o perfil mudar, com cache busting
+  // Update avatar URL when profile changes, with stable cache busting
   useEffect(() => {
-    if (profile?.avatar_url) {
+    if (profile?.avatar_url && !imageError) {
       try {
-        // Always create a new URL object to ensure we're not appending multiple timestamps
-        const url = new URL(profile.avatar_url);
-        // Clear any existing timestamp parameter
-        url.searchParams.delete('t');
-        // Add a new timestamp
-        url.searchParams.set('t', Date.now().toString());
-        setAvatarUrl(url.toString());
-        console.log('Header: Avatar URL atualizada com cache busting:', url.toString());
+        // Use a stable URL per profile update to prevent re-renders
+        if (profile.avatar_url.includes('?')) {
+          // Already has parameters, keep as is
+          setAvatarUrl(profile.avatar_url);
+        } else {
+          // Add timestamp parameter if not present
+          setAvatarUrl(`${profile.avatar_url}?t=${Date.now()}`);
+        }
+        console.log('Header: Avatar URL set:', avatarUrl);
       } catch (e) {
         console.error('Header: Erro ao processar URL do avatar:', e);
-        setAvatarUrl(profile.avatar_url); // Fallback para o URL original se houver erro
+        setAvatarUrl(profile.avatar_url); // Fallback to original URL on error
       }
     } else {
       setAvatarUrl(null);
     }
-  }, [profile?.avatar_url]);
+  }, [profile?.avatar_url, imageError]);
   
   // Find the first workout to link to, or use a fallback
   const firstWorkoutId = workouts && workouts.length > 0 
@@ -73,6 +74,11 @@ const Header: React.FC<HeaderProps> = ({
     const lastName = profile.last_name || '';
     
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
+
+  const handleImageError = () => {
+    console.error('Error loading header avatar image');
+    setImageError(true);
   };
 
   // If auth is loading, show a simplified header to prevent errors
@@ -236,12 +242,8 @@ const Header: React.FC<HeaderProps> = ({
                 {avatarUrl ? (
                   <AvatarImage 
                     src={avatarUrl} 
-                    alt={`${profile?.first_name || 'Usuário'}'s profile`} 
-                    onError={(e) => {
-                      console.error('Error loading avatar image in header:', e);
-                      // Fallback to initials on error
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
+                    alt={`${profile?.first_name || 'Usuário'}'s profile`}
+                    onError={handleImageError}
                   />
                 ) : null}
                 <AvatarFallback className="bg-fitness-dark text-white">

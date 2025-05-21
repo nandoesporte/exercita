@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   User, Settings, Calendar, Clock, LogOut,
@@ -18,42 +17,47 @@ const Profile = () => {
   const { signOut, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
-  // Usando um estado controlado por useEffect para garantir atualização quando o perfil mudar
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   
-  // Force refresh profile data IMMEDIATELY when component mounts
+  // Force refresh profile data ONLY ONCE when component mounts
   useEffect(() => {
-    if (user) {
-      console.log('Profile component mounted, forcing immediate profile refresh');
-      // Small delay to ensure auth is fully initialized
-      const timeoutId = setTimeout(() => {
-        refreshProfile();
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
+    let isMounted = true;
+    if (user && isMounted) {
+      console.log('Profile component mounted, refreshing profile data');
+      refreshProfile();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user, refreshProfile]);
   
-  // Atualiza URL do avatar quando o perfil muda, incluindo timestamp para cache busting
+  // Update avatar URL when profile changes, but prevent infinite loop
   useEffect(() => {
-    if (profile?.avatar_url) {
+    if (profile?.avatar_url && !imageError) {
       try {
-        // Adiciona ou atualiza o parâmetro de timestamp para evitar cache
+        // Rather than creating a new timestamp on every render,
+        // create one stable URL per profile update
         const url = new URL(profile.avatar_url);
-        url.searchParams.set('t', Date.now().toString());
-        setAvatarUrl(url.toString());
+        const existingTimestamp = url.searchParams.get('t');
+        
+        // Only update the timestamp if it doesn't exist or profile changed
+        if (!existingTimestamp) {
+          url.searchParams.set('t', Date.now().toString());
+          setAvatarUrl(url.toString());
+        } else {
+          // Use existing URL with timestamp
+          setAvatarUrl(profile.avatar_url);
+        }
       } catch (error) {
         console.error('Error parsing avatar URL:', error);
-        // If URL parsing fails, append timestamp as query string
-        const timestampedUrl = profile.avatar_url.includes('?') 
-          ? `${profile.avatar_url}&t=${Date.now()}` 
-          : `${profile.avatar_url}?t=${Date.now()}`;
-        setAvatarUrl(timestampedUrl);
+        setAvatarUrl(profile.avatar_url);
       }
     } else {
       setAvatarUrl(null);
     }
-  }, [profile?.avatar_url]);
+  }, [profile?.avatar_url, imageError]);
   
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -65,12 +69,12 @@ const Profile = () => {
       ? `${profile.first_name} ${profile.last_name}` 
       : user?.email || 'User',
     email: user?.email || '',
-    avatar: avatarUrl, // Usando o avatar URL com timestamp
+    avatar: avatarUrl,
     memberSince: user?.created_at 
       ? formatDate(new Date(user.created_at)) 
       : 'Unknown',
-    workoutsCompleted: 0, // This could be implemented with a count query
-    favoriteWorkout: 'Unknown', // This could be implemented with a query
+    workoutsCompleted: 0,
+    favoriteWorkout: 'Unknown',
   };
   
   const handleImageClick = () => {
@@ -95,17 +99,26 @@ const Profile = () => {
       return;
     }
     
+    // Reset error state when uploading new image
+    setImageError(false);
+    
     try {
       // Upload the image
       await uploadProfileImage(file);
       
-      // Force refresh profile data after upload with a short delay
+      // Let's wait before refreshing to ensure the image is processed
       setTimeout(() => {
         refreshProfile();
-      }, 500);
+      }, 1000);
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
+      toast("Erro ao fazer upload da imagem. Tente novamente.");
     }
+  };
+  
+  const handleImageLoadError = () => {
+    console.error('Error loading profile image');
+    setImageError(true);
   };
   
   if (isLoading) {
@@ -131,14 +144,10 @@ const Profile = () => {
               onClick={handleImageClick}
             >
               <AvatarImage 
-                src={userData.avatar} 
+                src={avatarUrl} 
                 alt={userData.name} 
                 className="object-cover" 
-                onError={(e) => {
-                  console.error('Error loading profile image:', e);
-                  // Fallback to initials on error
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+                onError={handleImageLoadError}
               />
               <AvatarFallback className="bg-fitness-darkGray text-xl">
                 {userData.name.substring(0, 1)}

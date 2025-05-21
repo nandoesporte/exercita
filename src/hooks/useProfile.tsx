@@ -42,17 +42,7 @@ export function useProfile() {
           throw new Error(`Erro ao buscar perfil: ${error.message}`);
         }
         
-        // Garantir que a URL do avatar tenha o timestamp para evitar cache
-        if (data && data.avatar_url) {
-          try {
-            const url = new URL(data.avatar_url);
-            url.searchParams.set('t', Date.now().toString());
-            data.avatar_url = url.toString();
-          } catch (e) {
-            console.warn('URL do avatar inválida, usando original:', data.avatar_url);
-          }
-        }
-        
+        // No persistent URL modification here, just return the data
         console.log('Perfil carregado:', data);
         return data as Profile;
       } catch (error) {
@@ -61,14 +51,13 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 1000 * 30, // Consider data stale after 30 seconds to ensure fresh data
+    staleTime: 0, // Consider data always stale to ensure freshness
     gcTime: 1000 * 60 * 5, // Keep cache for 5 minutes
-    refetchOnWindowFocus: true, // Refetch on window focus
-    refetchOnMount: true, // Always refetch when component mounts
-    refetchOnReconnect: true, // Refetch on reconnect
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
-  // Add function to fetch primary PIX key
   const pixKeyQuery = useQuery({
     queryKey: ['pixKey', 'primary', user?.id],
     queryFn: async () => {
@@ -104,7 +93,7 @@ export function useProfile() {
       }
     },
     enabled: !!user,
-    staleTime: 1000 * 60, // Consider data stale after 1 minute
+    staleTime: 0, // Always fetch fresh data
   });
   
   const updateProfile = useMutation({
@@ -140,7 +129,7 @@ export function useProfile() {
       
       console.log('Perfil atualizado com sucesso:', data);
       
-      // Verificar se há dados retornados
+      // Check if there's returned data
       if (!data || data.length === 0) {
         console.warn('Nenhum dado retornado após atualização do perfil');
         return null;
@@ -150,9 +139,9 @@ export function useProfile() {
     },
     onSuccess: (updatedProfile) => {
       if (updatedProfile) {
-        // Update cache immediately with the new data
+        // Update cache immediately with new data
         queryClient.setQueryData(['profile', user?.id], updatedProfile);
-        // Force refetch to ensure fresh data from server
+        // Force refetch to ensure fresh data
         queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
         toast('Perfil atualizado com sucesso');
       }
@@ -163,7 +152,6 @@ export function useProfile() {
     }
   });
   
-  // Function for profile image upload - Enhanced for better persistence
   const uploadProfileImage = useMutation({
     mutationFn: async (file: File) => {
       if (!user) {
@@ -171,16 +159,15 @@ export function useProfile() {
         throw new Error('Usuário precisa estar logado');
       }
       
-      // Create a more specific file path with user ID and timestamp to prevent overwriting
+      // Create a unique filename that won't overwrite previous uploads
       const fileExt = file.name.split('.').pop();
-      const uniqueId = uuidv4(); // Generate a unique ID for each upload
-      const timestamp = new Date().getTime();
-      const filePath = `${user.id}/${uniqueId}_${timestamp}.${fileExt}`;
+      const uniqueId = uuidv4(); // Generate a unique ID for this upload
+      const filePath = `${user.id}/${uniqueId}.${fileExt}`;
       
       console.log('Fazendo upload da imagem do perfil:', filePath);
       
       try {
-        // Check if bucket exists and create it if necessary
+        // Check if bucket exists and create it if needed
         const { data: bucketList } = await supabase.storage.listBuckets();
         const bucketExists = bucketList?.some(bucket => bucket.name === 'profile_images');
         
@@ -196,11 +183,11 @@ export function useProfile() {
         // Continue with upload attempt even if bucket check fails
       }
       
-      // Upload file to storage with strong caching and upsert enabled
+      // Upload file to storage with caching disabled
       const { error: uploadError, data: uploadData } = await supabase.storage
         .from('profile_images')
         .upload(filePath, file, {
-          cacheControl: '0', // Desabilita cache para evitar problemas
+          cacheControl: 'no-cache, no-store, must-revalidate',
           upsert: true,
         });
       
@@ -211,7 +198,7 @@ export function useProfile() {
       
       console.log('Upload realizado com sucesso:', uploadData);
       
-      // Get public URL for the uploaded file with cache busting parameter
+      // Get public URL with a simple timestamp to avoid caching
       const { data: urlData } = supabase.storage
         .from('profile_images')
         .getPublicUrl(filePath);
@@ -220,17 +207,16 @@ export function useProfile() {
         throw new Error('Erro ao obter URL pública do avatar');
       }
       
-      // Adicionar timestamp para evitar cache
-      const avatarUrl = new URL(urlData.publicUrl);
-      avatarUrl.searchParams.set('t', Date.now().toString());
-      const finalAvatarUrl = avatarUrl.toString();
+      // Create a clean URL with a single timestamp parameter
+      const baseUrl = urlData.publicUrl;
+      const avatarUrl = `${baseUrl}?t=${Date.now()}`;
       
-      console.log('URL do avatar com cache busting:', finalAvatarUrl);
+      console.log('URL do avatar com cache busting:', avatarUrl);
       
-      // Update profile with new avatar URL in database
+      // Update profile with new avatar URL
       const { error: updateError, data: profileData } = await supabase
         .from('profiles')
-        .update({ avatar_url: finalAvatarUrl })
+        .update({ avatar_url: baseUrl }) // Store clean URL without timestamp
         .eq('id', user.id)
         .select();
       
@@ -241,23 +227,18 @@ export function useProfile() {
       
       console.log('Perfil atualizado com novo avatar:', profileData);
       
-      return { avatarUrl: finalAvatarUrl, updatedProfile: profileData?.[0] };
+      return { 
+        avatarUrl: baseUrl, // Return clean URL
+        updatedProfile: profileData?.[0] 
+      };
     },
     onSuccess: (result) => {
-      // Update the profile in cache with the new avatar URL and full profile data
+      // Update profile cache with new data
       if (result.updatedProfile) {
         queryClient.setQueryData(['profile', user?.id], result.updatedProfile);
-      } else {
-        // Fall back to just updating the avatar_url if we don't have full profile data
-        queryClient.setQueryData(['profile', user?.id], (oldData: any) => {
-          if (oldData) {
-            return { ...oldData, avatar_url: result.avatarUrl };
-          }
-          return oldData;
-        });
       }
       
-      // Force a refetch from server to ensure data is fresh
+      // Force a refetch from server
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast('Foto de perfil atualizada com sucesso');
     },
@@ -267,17 +248,16 @@ export function useProfile() {
     }
   });
 
-  // Add a refetch method for easier manual data refresh
+  // Simple refresh method that forces immediate invalidation
   const refreshProfile = () => {
     console.log('Forcing profile refresh');
-    queryClient.removeQueries({ queryKey: ['profile', user?.id] });
     queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
     queryClient.invalidateQueries({ queryKey: ['pixKey', 'primary', user?.id] });
   };
   
   return {
     profile: profileQuery.data,
-    isLoading: profileQuery.isLoading || !user, // Consider loading if no user yet
+    isLoading: profileQuery.isLoading || !user,
     error: profileQuery.error,
     updateProfile: updateProfile.mutate,
     isUpdating: updateProfile.isPending,
@@ -285,6 +265,6 @@ export function useProfile() {
     isUploadingImage: uploadProfileImage.isPending,
     pixKey: pixKeyQuery.data,
     isLoadingPixKey: pixKeyQuery.isLoading || !user,
-    refreshProfile, // Expose the refresh method
+    refreshProfile,
   };
 }
