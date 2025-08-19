@@ -24,7 +24,7 @@ interface GroupedWorkouts {
 }
 
 const History = () => {
-  const { data: workoutHistory, isLoading, error } = useWorkoutHistory();
+  const { data: workoutHistory, isLoading, error, refetch } = useWorkoutHistory();
   const [workoutToDelete, setWorkoutToDelete] = React.useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -84,16 +84,8 @@ const History = () => {
     
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from('user_workout_history')
-        .delete()
-        .eq('id', workoutToDelete);
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast.success('Treino excluído com sucesso');
+      console.log('MySQL delete workout history placeholder');
+      toast.error('Exclusão de treinos será implementada em breve');
       
       refetch();
     } catch (error) {

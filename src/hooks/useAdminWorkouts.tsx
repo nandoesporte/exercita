@@ -81,58 +81,64 @@ export function useAdminWorkouts() {
     areUsersLoading: false,
     exercises: [],
     areExercisesLoading: false,
-    createWorkout: async () => {
+    createWorkout: (data: WorkoutFormData) => {
       toast.error('Criação de treinos será implementada em breve');
-      return null;
     },
-    updateWorkout: async () => {
+    updateWorkout: (data: UpdateWorkoutData) => {
       toast.error('Atualização de treinos será implementada em breve');
-      return null;
+      return Promise.resolve(null);
     },
-    deleteWorkout: async () => {
+    deleteWorkout: (id: string) => {
       toast.error('Exclusão de treinos será implementada em breve');
+      return Promise.resolve();
     },
-    cloneWorkout: async () => {
+    cloneWorkout: (id: string) => {
       toast.error('Clonagem de treinos será implementada em breve');
-      return null;
+      return Promise.resolve(null);
     },
-    getWorkoutExercises: () => ({
+    getWorkoutExercises: (workoutId: string) => ({
       data: [],
       isLoading: false,
       error: null
     }),
-    getWorkoutDays: () => ({
+    getWorkoutDays: (workoutId: string) => ({
       data: [],
       isLoading: false,
       error: null
     }),
-    getWorkoutRecommendations: () => ({
+    getWorkoutRecommendations: (workoutId: string) => ({
       data: [],
       isLoading: false,
       error: null
     }),
-    addWorkoutRecommendation: async () => {
+    addWorkoutRecommendation: (data: WorkoutRecommendation) => {
       toast.error('Recomendações serão implementadas em breve');
+      return Promise.resolve();
     },
     isAddingRecommendation: false,
-    removeWorkoutRecommendation: async () => {
+    removeWorkoutRecommendation: (data: { recommendationId: string; workoutId: string }) => {
       toast.error('Remoção de recomendações será implementada em breve');
+      return Promise.resolve();
     },
     isRemovingRecommendation: false,
-    addExerciseToWorkout: async () => {
+    addExerciseToWorkout: (workoutId: string, exerciseData: any) => {
       toast.error('Adição de exercícios será implementada em breve');
+      return Promise.resolve();
     },
     isAddingExercise: false,
-    removeExerciseFromWorkout: async () => {
+    removeExerciseFromWorkout: (exerciseId: string) => {
       toast.error('Remoção de exercícios será implementada em breve');
+      return Promise.resolve();
     },
     isRemovingExercise: false,
-    updateExerciseOrder: async () => {
+    updateExerciseOrder: (exercises: any[]) => {
       toast.error('Reordenação será implementada em breve');
+      return Promise.resolve();
     },
     isUpdatingExerciseOrder: false,
-    cloneExercisesToDays: async () => {
+    cloneExercisesToDays: (workoutId: string, sourceDays: string[], targetDays: string[]) => {
       toast.error('Clonagem de exercícios será implementada em breve');
+      return Promise.resolve();
     },
     isCloningExercises: false
   };

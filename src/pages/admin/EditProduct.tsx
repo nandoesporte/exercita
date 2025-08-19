@@ -76,10 +76,7 @@ const EditProduct = () => {
     
     try {
       console.log('Submitting product update:', data);
-      await updateProduct({
-        id,
-        ...data
-      });
+      await updateProduct(id, data);
       
       toast('Produto atualizado com sucesso');
       

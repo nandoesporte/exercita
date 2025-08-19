@@ -52,8 +52,11 @@ export function useAdminExercises() {
   return {
     exercises: exercisesQuery.data || [],
     isLoading: exercisesQuery.isLoading,
+    error: exercisesQuery.error?.message,
     createExercise: createExercise.mutate,
     isCreating: createExercise.isPending,
+    isUpdating: false,
+    isDeleting: false,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
     batchCreateExercises: () => toast.info('Em desenvolvimento'),

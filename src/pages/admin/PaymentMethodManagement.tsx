@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/lib/toast-wrapper';
-import { Loader2, Clipboard, CheckCircle, CreditCard, QrCode } from 'lucide-react';
+import { Loader2, Clipboard, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface PixKey {
@@ -26,16 +25,6 @@ interface PaymentSettings {
   accept_pix_payments: boolean;
   accept_monthly_fee: boolean;
   monthly_fee_amount: number;
-}
-
-// Type for database response
-interface PixKeyFromDB {
-  id: string;
-  key_type: string;
-  key_value: string;
-  recipient_name: string;
-  is_primary: boolean;
-  created_at: string;
 }
 
 const PaymentMethodManagement = () => {
@@ -59,30 +48,9 @@ const PaymentMethodManagement = () => {
 
   const fetchPixKeys = async () => {
     try {
-      console.log("Fetching PIX keys...");
-      const { data, error } = await supabase
-        .from('pix_keys')
-        .select('*')
-        .order('is_primary', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching PIX keys:", error);
-        throw error;
-      }
-      
-      console.log("PIX keys fetched:", data);
-      
-      // Transform the data to ensure key_type is the correct union type
-      const formattedData = data?.map((item: PixKeyFromDB) => ({
-        id: item.id,
-        key_type: item.key_type as 'cpf' | 'email' | 'phone' | 'random',
-        key_value: item.key_value,
-        recipient_name: item.recipient_name,
-        is_primary: item.is_primary || false,
-        created_at: item.created_at
-      }));
-      
-      setPixKeys(formattedData || []);
+      console.log("MySQL PIX keys fetch placeholder");
+      toast("PIX keys será implementado em breve");
+      setPixKeys([]);
     } catch (error) {
       console.error('Error fetching pix keys:', error);
       toast("Erro ao carregar chaves PIX.");
@@ -91,19 +59,8 @@ const PaymentMethodManagement = () => {
 
   const fetchPaymentSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('payment_settings')
-        .select('*')
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (data) {
-        setAcceptCardPayments(data.accept_card_payments || false);
-        setAcceptPixPayments(data.accept_pix_payments || false);
-        setAcceptMonthlyFee(data.accept_monthly_fee || false);
-        setMonthlyFeeAmount(data.monthly_fee_amount || 0);
-      }
+      console.log("MySQL payment settings fetch placeholder");
+      // Placeholder - will be implemented with MySQL
     } catch (error) {
       console.error('Error fetching payment settings:', error);
       toast("Erro ao carregar configurações de pagamento.");
@@ -119,41 +76,11 @@ const PaymentMethodManagement = () => {
     setSavingPixKey(true);
     
     try {
-      console.log("Saving PIX key with:", { keyType, keyValue, recipientName });
-      
-      const newKey: PixKey = {
-        key_type: keyType,
-        key_value: keyValue,
-        recipient_name: recipientName,
-        is_primary: pixKeys.length === 0, // First key is primary
-      };
-
-      // Usar a função segura para contornar a política RLS
-      if (isAdmin && user) {
-        const { data, error } = await supabase.rpc('admin_add_pix_key', {
-          key_type_val: keyType,
-          key_value_val: keyValue,
-          recipient_name_val: recipientName,
-          is_primary_val: pixKeys.length === 0
-        });
-        
-        if (error) {
-          console.error('Error saving PIX key:', error);
-          throw error;
-        }
-        
-        console.log("PIX key saved successfully:", data);
-        toast("Chave PIX adicionada com sucesso!");
-      } else {
-        toast("Você não tem permissão para adicionar chaves PIX.");
-        return;
-      }
-      
-      // Reset form and refresh keys
+      console.log("MySQL PIX key save placeholder");
+      toast.error('Salvar chave PIX será implementado em breve');
       setKeyType('cpf');
       setKeyValue('');
       setRecipientName('');
-      fetchPixKeys();
     } catch (error: any) {
       console.error('Error saving pix key:', error);
       toast(`Erro ao salvar chave PIX: ${error.message || 'Falha desconhecida'}`);
@@ -164,26 +91,8 @@ const PaymentMethodManagement = () => {
 
   const handleSetPrimaryPixKey = async (id: string) => {
     try {
-      console.log("Setting primary PIX key:", id);
-      
-      if (!isAdmin || !user) {
-        toast("Você não tem permissão para definir a chave principal.");
-        return;
-      }
-      
-      // Usar a função segura para contornar a política RLS
-      const { error } = await supabase.rpc('admin_set_primary_pix_key', {
-        key_id_val: id
-      });
-      
-      if (error) {
-        console.error('Error setting primary key:', error);
-        throw error;
-      }
-      
-      console.log("Primary PIX key updated successfully");
-      toast("Chave principal atualizada!");
-      fetchPixKeys();
+      console.log("MySQL set primary PIX key placeholder");
+      toast.error('Definir chave principal será implementado em breve');
     } catch (error: any) {
       console.error('Error setting primary key:', error);
       toast(`Erro ao definir chave principal: ${error.message || 'Falha desconhecida'}`);
@@ -192,26 +101,8 @@ const PaymentMethodManagement = () => {
 
   const handleDeletePixKey = async (id: string) => {
     try {
-      console.log("Deleting PIX key:", id);
-      
-      if (!isAdmin || !user) {
-        toast("Você não tem permissão para remover chaves PIX.");
-        return;
-      }
-      
-      // Usar a função segura para contornar a política RLS
-      const { error } = await supabase.rpc('admin_delete_pix_key', {
-        key_id_val: id
-      });
-        
-      if (error) {
-        console.error('Error deleting PIX key:', error);
-        throw error;
-      }
-      
-      console.log("PIX key deleted successfully");
-      toast("Chave PIX removida com sucesso!");
-      fetchPixKeys();
+      console.log("MySQL delete PIX key placeholder");
+      toast.error('Remover chave PIX será implementado em breve');
     } catch (error: any) {
       console.error('Error deleting pix key:', error);
       toast(`Erro ao remover chave PIX: ${error.message || 'Falha desconhecida'}`);
@@ -222,23 +113,8 @@ const PaymentMethodManagement = () => {
     setSavingSettings(true);
     
     try {
-      if (!isAdmin || !user) {
-        toast("Você não tem permissão para salvar configurações de pagamento.");
-        setSavingSettings(false);
-        return;
-      }
-      
-      // Usar a função segura para contornar a política RLS
-      const { error } = await supabase.rpc('admin_save_payment_settings', {
-        accept_card_payments_val: acceptCardPayments,
-        accept_pix_payments_val: acceptPixPayments,
-        accept_monthly_fee_val: acceptMonthlyFee,
-        monthly_fee_amount_val: monthlyFeeAmount
-      });
-      
-      if (error) throw error;
-      
-      toast("Configurações de pagamento salvas com sucesso!");
+      console.log("MySQL save payment settings placeholder");
+      toast.error('Salvar configurações será implementado em breve');
     } catch (error) {
       console.error('Error saving payment settings:', error);
       toast("Erro ao salvar configurações de pagamento.");
@@ -284,7 +160,7 @@ const PaymentMethodManagement = () => {
               {pixKeys.length > 0 ? (
                 <div className="grid gap-4">
                   {pixKeys.map((key) => (
-                    <Card key={key.id} className="bg-fitness-darkGray">
+                    <Card key={key.id} className="bg-muted">
                       <CardHeader>
                         <CardTitle className="flex justify-between items-center">
                           {key.is_primary ? (
@@ -306,7 +182,7 @@ const PaymentMethodManagement = () => {
                         </CardTitle>
                         <CardDescription>
                           <div className="flex items-center gap-2">
-                            <Label className="text-xs text-gray-400">
+                            <Label className="text-xs text-muted-foreground">
                               Nome do Recebedor:
                             </Label>
                             <span>{key.recipient_name}</span>

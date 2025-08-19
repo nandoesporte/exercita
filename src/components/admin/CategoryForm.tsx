@@ -80,7 +80,7 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
         
         await updateCategory({
           id: category.id,
-          name: values.name, // Required field
+          name: values.name,
           color: values.color,
           icon: values.icon,
         });
@@ -93,7 +93,7 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
         }
         
         await createCategory({
-          name: values.name, // Required field
+          name: values.name,
           color: values.color,
           icon: values.icon,
         });
