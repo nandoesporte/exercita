@@ -1,8 +1,7 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { useEffect, useState } from 'react';
-import { checkAuthSession } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,7 +11,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
-  const [isCheckingSession, setIsCheckingSession] = useState(false);
   
   // Debug auth state on protected routes
   useEffect(() => {
@@ -25,26 +23,10 @@ const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps)
       adminOnly: isAdminRoute,
       loading
     });
-    
-    // Only verify session if no user is found and we're not already checking
-    if (!loading && !user && !isCheckingSession) {
-      setIsCheckingSession(true);
-      
-      checkAuthSession().then(session => {
-        if (session) {
-          console.log("Session found in direct check but not in context", session);
-          // Force page reload to re-initialize auth context if there's a mismatch
-          window.location.reload();
-        } else {
-          console.log("No active session found in direct check");
-        }
-        setIsCheckingSession(false);
-      });
-    }
-  }, [user, loading, isAdmin, isAdminRoute, location.pathname, isCheckingSession]);
+  }, [user, loading, isAdmin, isAdminRoute, location.pathname]);
 
-  // Show loading state if either the auth context is loading or we're checking the session
-  if (loading || isCheckingSession) {
+  // Show loading state
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
@@ -64,8 +46,7 @@ const ProtectedRoute = ({ children, isAdminRoute = false }: ProtectedRouteProps)
     console.log("Access denied: User is not an admin", { 
       userId: user.id, 
       isAdmin, 
-      email: user.email,
-      metadata: user.user_metadata 
+      email: user.email
     });
     
     // Redirect to admin login instead of homepage
