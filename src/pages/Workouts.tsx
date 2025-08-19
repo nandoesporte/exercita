@@ -3,17 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Search, Calendar } from 'lucide-react';
 import { WorkoutCard } from '@/components/ui/workout-card';
 import { useWorkoutCategories, useWorkoutsByDay, useRecommendedWorkoutsForUser } from '@/hooks/useWorkouts';
-import { Database } from '@/integrations/supabase/types';
+import { Workout } from '@/types/database';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from '@/contexts/auth/useAuth'; 
 
-type Workout = Database['public']['Tables']['workouts']['Row'] & {
-  category?: Database['public']['Tables']['workout_categories']['Row'] | null;
-  days_of_week?: string[];
-};
+// Removed old type definitions - now using MySQL types
 
 const weekdays = [
   { id: 'monday', label: 'Segunda' },

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Clock, Dumbbell, Scale, ZoomIn, Weight } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import { Exercise } from '@/types/database';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
@@ -15,12 +15,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-type Exercise = Database['public']['Tables']['exercises']['Row'];
-type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
-  exercise?: Exercise | null;
-  is_title_section?: boolean;
-  section_title?: string | null;
-};
+// Removed old Database type references - now using MySQL types
+
+import { WorkoutExercise } from '@/types/database';
 
 interface ExerciseDetailProps {
   workoutExercise: WorkoutExercise;
