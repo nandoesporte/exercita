@@ -79,8 +79,6 @@ export function useWorkout(id: string | undefined) {
     queryFn: async () => {
       if (!id) throw new Error('Workout ID is required');
       
-      console.log('useWorkout - Starting fetch for ID:', id);
-      
       const { data, error } = await supabase
         .from('workouts')
         .select(`
@@ -114,9 +112,6 @@ export function useWorkout(id: string | undefined) {
         .eq('id', id)
         .single();
       
-      console.log('useWorkout - Supabase response data:', data);
-      console.log('useWorkout - Supabase response error:', error);
-      
       if (error) {
         throw new Error(`Error fetching workout: ${error.message}`);
       }
@@ -127,17 +122,12 @@ export function useWorkout(id: string | undefined) {
         .select('day_of_week')
         .eq('workout_id', id);
 
-      console.log('useWorkout - Days data:', daysData);
-      console.log('useWorkout - Days error:', daysError);
-
       if (daysError) {
         console.error(`Error fetching days for workout ${id}:`, daysError);
       } else {
         // We need to explicitly type data to include the days_of_week property
         (data as Workout).days_of_week = daysData.map(d => d.day_of_week);
       }
-      
-      console.log('useWorkout - Final workout data:', data);
       
       return data as Workout & {
         workout_exercises: Array<Database['public']['Tables']['workout_exercises']['Row'] & {
