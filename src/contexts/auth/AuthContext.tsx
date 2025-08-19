@@ -1,10 +1,10 @@
 
 import { createContext } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User } from '@/lib/auth';
 
 export type AuthContextType = {
   user: User | null;
-  session: Session | null;
+  session: { access_token: string; user: User; expires_at: number } | null;
   loading: boolean;
   isAdmin: boolean;
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<any>;
