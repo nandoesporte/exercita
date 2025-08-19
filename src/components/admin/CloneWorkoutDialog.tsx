@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Check, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+// Removed Supabase imports - using MySQL now
 
 import {
   Dialog,
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 
 interface CloneWorkoutDialogProps {
   workoutId: string;
@@ -34,23 +32,9 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isCloning, setIsCloning] = useState(false);
   
-  // Fetch users for selection - Fixed the query to join with auth.users to get email
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['admin-users-for-clone'],
-    queryFn: async () => {
-      // Instead of directly selecting email from profiles, we use a database function
-      // that has proper permissions to access both profiles and auth.users tables
-      const { data, error } = await supabase
-        .rpc('debug_get_all_users');
-      
-      if (error) {
-        toast.error(`Error fetching users: ${error.message}`);
-        throw new Error(`Error fetching users: ${error.message}`);
-      }
-      
-      return data || [];
-    },
-  });
+  // Placeholder - user fetching not yet implemented with MySQL
+  const users: any[] = [];
+  const isLoadingUsers = false;
 
   const handleCloneWorkout = async () => {
     if (!selectedUserId || !workoutId) {
@@ -61,19 +45,9 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
     setIsCloning(true);
     
     try {
-      const { data, error } = await supabase.rpc(
-        'clone_workout_for_user',
-        {
-          source_workout_id: workoutId,
-          target_user_id: selectedUserId
-        }
-      );
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast.success(`Workout cloned successfully for user!`);
+      // Placeholder - cloning not yet implemented with MySQL
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Clonagem de treinos será implementada em breve');
       onClose();
     } catch (error: any) {
       console.error('Error cloning workout:', error);
@@ -114,18 +88,22 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     <span>Loading users...</span>
                   </div>
+                ) : users.length === 0 ? (
+                  <div className="flex items-center justify-center p-2">
+                    <span>Funcionalidade em desenvolvimento</span>
+                  </div>
                 ) : (
                   users.map(user => (
-                    <SelectItem key={user.user_id} value={user.user_id}>
+                    <SelectItem key={user.id} value={user.id}>
                       <div className="flex items-center">
                         <Avatar className="h-6 w-6 mr-2">
                           <div className="bg-primary text-white rounded-full h-full w-full flex items-center justify-center text-xs">
-                            {user.raw_user_meta_data?.first_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                            {user.first_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                           </div>
                         </Avatar>
                         <span>
-                          {user.raw_user_meta_data?.first_name && user.raw_user_meta_data?.last_name 
-                            ? `${user.raw_user_meta_data.first_name} ${user.raw_user_meta_data.last_name}`
+                          {user.first_name && user.last_name 
+                            ? `${user.first_name} ${user.last_name}`
                             : user.email}
                         </span>
                       </div>

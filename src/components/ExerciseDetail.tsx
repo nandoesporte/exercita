@@ -236,13 +236,13 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <p className="text-xl font-bold text-white">
-                          {rest >= 60 && rest % 60 === 0 
-                            ? `${rest / 60} min` 
+                          {rest && rest >= 60 && rest % 60 === 0 
+                            ? `${Math.floor(rest / 60)} min` 
                             : `${rest} seg`}
                         </p>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {rest >= 60 
+                        {rest && rest >= 60 
                           ? `${rest} segundos` 
                           : ''}
                       </TooltipContent>

@@ -6,6 +6,7 @@ export interface User {
   last_name?: string;
   avatar_url?: string;
   is_admin?: boolean;
+  user_metadata?: { [key: string]: any }; // For backward compatibility
   created_at?: string;
   updated_at?: string;
 }
@@ -52,12 +53,17 @@ export interface Workout {
   description?: string;
   category_id?: string;
   difficulty_level?: 'beginner' | 'intermediate' | 'advanced';
+  level?: 'beginner' | 'intermediate' | 'advanced'; // Alias for difficulty_level
   duration_minutes?: number;
+  duration?: number; // Alias for duration_minutes
+  calories?: number;
+  image_url?: string;
   is_recommended?: boolean;
   created_at?: string;
   updated_at?: string;
   category?: WorkoutCategory;
   exercises?: WorkoutExercise[];
+  workout_exercises?: WorkoutExercise[]; // Alias for exercises
   days_of_week?: string[];
 }
 
@@ -66,9 +72,9 @@ export interface WorkoutExercise {
   workout_id: string;
   exercise_id?: string;
   sets?: number;
-  reps?: string;
-  duration?: string;
-  rest?: string;
+  reps?: number; // Changed to number for consistency
+  duration?: number; // Changed to number (seconds)
+  rest?: number; // Changed to number (seconds)  
   weight?: number;
   order_position: number;
   day_of_week?: string;
