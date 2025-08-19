@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Database } from '@/integrations/supabase/types';
 
+console.log('WorkoutDetail module loaded');
+
 // Days mapping in Portuguese
 const weekdaysMapping: Record<string, string> = {
   "monday": "Segunda-feira",
@@ -60,7 +62,15 @@ const WorkoutDetail = () => {
   const { profile } = useProfile();
   const [viewingImage, setViewingImage] = useState<{url: string, alt: string} | null>(null);
   
+  // Debug logs
+  console.log('WorkoutDetail render - ID from params:', id);
+  console.log('WorkoutDetail render - Current URL:', window.location.href);
+  
   const { data: workout, isLoading, error } = useWorkout(id);
+  
+  console.log('WorkoutDetail render - Workout data:', workout);
+  console.log('WorkoutDetail render - IsLoading:', isLoading);
+  console.log('WorkoutDetail render - Error:', error);
   
   // Helper function to format duration
   const formatDuration = (seconds: number | null | undefined) => {
