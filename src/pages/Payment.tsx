@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/lib/toast-wrapper';
 import { DataTable } from '@/components/ui/data-table';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { supabase } from '@/integrations/supabase/client';
+// Removed Supabase import - using MySQL now
 import { useAuth } from '@/hooks/useAuth';
 
 interface PaymentMethod {

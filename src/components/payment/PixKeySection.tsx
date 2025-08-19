@@ -4,7 +4,7 @@ import { Edit, Key, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/lib/toast-wrapper';
-import { supabase } from '@/integrations/supabase/client';
+// Removed Supabase import - using MySQL now
 import { useAuth } from '@/hooks/useAuth';
 
 interface PixKeySectionProps {
@@ -39,74 +39,20 @@ const PixKeySection = ({
         if (isAdmin) {
           console.log("Admin is saving PIX key to pix_keys table");
           
-          // First check if there are any existing PIX keys
-          const { data: existingKeys } = await supabase
-            .from('pix_keys')
-            .select('id, is_primary')
-            .limit(1);
-            
-          const isPrimary = !existingKeys || existingKeys.length === 0;
-          
-          // Insert the new PIX key
-          const { error: insertError } = await supabase
-            .from('pix_keys')
-            .insert({
-              key_type: pixKeyType,
-              key_value: pixKey,
-              recipient_name: user.first_name ? 
-                `${user.first_name} ${user.last_name || ''}`.trim() : 
-                'Usuário da Academia',
-              is_primary: isPrimary
-            });
-            
-          if (insertError) {
-            console.error("Error inserting PIX key:", insertError);
-            throw insertError;
-          }
+        // First check if there are any existing PIX keys - placeholder for MySQL
+        // TODO: Replace with MySQL implementation
+        console.log("PIX key functionality will be implemented with MySQL");
+        
+        const isPrimary = true; // Default for now
+        
+        toast('PIX key functionality will be implemented soon');
+        return;
         } else {
-          // Regular user - save to user_pix_keys table
-          console.log("Regular user saving to user_pix_keys table");
-          
-          // First check if user already has a PIX key
-          const { data: existingKey, error: fetchError } = await supabase
-            .from('user_pix_keys')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
-            
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error("Error checking existing PIX key:", fetchError);
-            throw fetchError;
-          }
-            
-          // Update or insert PIX key
-          if (existingKey) {
-            const { error: updateError } = await supabase
-              .from('user_pix_keys')
-              .update({ 
-                key_type: pixKeyType,
-                key_value: pixKey 
-              })
-              .eq('user_id', user.id);
-              
-            if (updateError) {
-              console.error("Error updating PIX key:", updateError);
-              throw updateError;
-            }
-          } else {
-            const { error: insertError } = await supabase
-              .from('user_pix_keys')
-              .insert({
-                user_id: user.id,
-                key_type: pixKeyType,
-                key_value: pixKey
-              });
-              
-            if (insertError) {
-              console.error("Error inserting PIX key:", insertError);
-              throw insertError;
-            }
-          }
+        // Regular user - save to user_pix_keys table - placeholder for MySQL
+        console.log("User PIX functionality will be implemented with MySQL");
+        
+        toast('User PIX functionality will be implemented soon');
+        return;
         }
       }
       

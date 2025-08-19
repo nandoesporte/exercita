@@ -10,6 +10,11 @@ type Profile = {
   avatar_url?: string;
   phone?: string;
   birth_date?: string;
+  birthdate?: string; // Alias for birth_date
+  gender?: string;
+  weight?: number;
+  height?: number;
+  fitness_goal?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -43,6 +48,11 @@ export function useProfile() {
       avatar_url: user.avatar_url,
       phone: '',
       birth_date: '',
+      birthdate: '', // Alias
+      gender: '',
+      weight: 0,
+      height: 0,
+      fitness_goal: '',
       created_at: user.created_at,
       updated_at: user.updated_at
     } : null,

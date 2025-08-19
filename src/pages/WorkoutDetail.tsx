@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+// Removed Supabase import - using MySQL now
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

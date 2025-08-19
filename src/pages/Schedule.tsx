@@ -26,7 +26,7 @@ import { toast } from '@/lib/toast-wrapper';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardHeader, CardContent, CardDescription } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { supabase } from '@/integrations/supabase/client';
+// Removed Supabase import - using MySQL now
 
 // Default fallback WhatsApp number if not loaded from DB
 const DEFAULT_WHATSAPP = "44997270698";
