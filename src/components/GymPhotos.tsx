@@ -17,9 +17,11 @@ const GymPhotos = () => {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      await uploadPhoto(file, description);
-      setDescription('');
-      event.target.value = '';
+      const result = await uploadPhoto();
+      if (result) {
+        setDescription('');
+        event.target.value = '';
+      }
     }
   };
   
@@ -29,7 +31,7 @@ const GymPhotos = () => {
 
   const handleDeletePhoto = (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta foto?')) {
-      deletePhoto(id);
+      deletePhoto();
     }
   };
 

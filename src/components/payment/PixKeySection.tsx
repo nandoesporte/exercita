@@ -53,8 +53,8 @@ const PixKeySection = ({
             .insert({
               key_type: pixKeyType,
               key_value: pixKey,
-              recipient_name: user.user_metadata?.first_name ? 
-                `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : 
+              recipient_name: user.first_name ? 
+                `${user.first_name} ${user.last_name || ''}`.trim() : 
                 'Usuário da Academia',
               is_primary: isPrimary
             });

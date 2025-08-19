@@ -27,14 +27,15 @@ export type WorkoutHistoryItem = {
   notes: string | null;
 };
 
-export const useWorkoutHistory = () => {
+export function useWorkoutHistory() {
   const { user } = useAuth();
   
   // Placeholder - workout history not yet implemented with MySQL
   return {
     data: [],
     isLoading: false,
-    error: null
+    error: null,
+    refetch: () => console.log('Refetch will be implemented')
   };
 };
 

@@ -24,7 +24,7 @@ interface GroupedWorkouts {
 }
 
 const History = () => {
-  const { data: workoutHistory, isLoading, error, refetch } = useWorkoutHistory();
+  const { data: workoutHistory, isLoading, error } = useWorkoutHistory();
   const [workoutToDelete, setWorkoutToDelete] = React.useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);

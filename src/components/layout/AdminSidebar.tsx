@@ -145,7 +145,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarImage src={user?.avatar_url} />
                 <AvatarFallback>
                   {user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
