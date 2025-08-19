@@ -1,158 +1,112 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService, User, Session } from '@/lib/auth';
-import { toast } from '@/lib/toast';
-import { AuthContext } from './AuthContext';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { User } from '@/types/database';
+import { login, register, validateToken, logout } from '@/lib/auth';
+
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  console.log("AuthProvider initializing");
-
-  // Initialize auth state
-  useEffect(() => {
-    console.log("AuthProvider useEffect running");
+  const loginUser = async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
     
-    const initializeAuth = () => {
-      const currentSession = authService.getSession();
-      if (currentSession) {
-        setSession(currentSession);
-        setUser(currentSession.user);
-        setIsAdmin(currentSession.user.is_admin || false);
+    try {
+      const result = await login(email, password);
+      if (result.success && result.user && result.token) {
+        setUser(result.user);
+        setToken(result.token);
+        return { success: true };
+      } else {
+        setError(result.error || 'Login failed');
+        return { success: false, error: result.error };
       }
-      setLoading(false);
-    };
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Authentication failed');
+      return { success: false, error: 'Authentication failed' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    initializeAuth();
+  const registerUser = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await register({ email, password, firstName: firstName || '', lastName: lastName || '' });
+      if (result.success) {
+        return { success: true };
+      } else {
+        setError(result.error || 'Registration failed');
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError('Registration failed');
+      return { success: false, error: 'Registration failed' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logoutUser = () => {
+    logout();
+    setUser(null);
+    setToken(null);
+    setError(null);
+  };
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const storedToken = localStorage.getItem('auth_token');
+      if (storedToken) {
+        const user = await validateToken(storedToken);
+        if (user) {
+          setUser(user);
+          setToken(storedToken);
+        }
+      }
+      setIsLoading(false);
+    };
+    
+    checkSession();
   }, []);
 
-  const signUp = async (email: string, password: string, metadata = {}) => {
-    try {
-      console.log("Attempting to sign up with:", email, "and metadata:", metadata);
-      
-      const response = await authService.signUp(email, password, metadata);
-      
-      if (response.error) {
-        console.error("SignUp error:", response.error);
-        throw new Error(response.error);
-      }
-      
-      console.log("SignUp result:", response);
-      
-      if (response.user && response.session) {
-        setUser(response.user);
-        setSession(response.session);
-        setIsAdmin(response.user.is_admin || false);
-        toast.success('Conta criada com sucesso!');
-      }
-
-      return response;
-    } catch (error: any) {
-      console.error("Exception during signup:", error);
-      toast.error(error.message || 'Ocorreu um erro durante o cadastro');
-      throw error;
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      console.log("Attempting login with:", email);
-      
-      const response = await authService.signIn(email, password);
-      
-      if (response.error) {
-        console.error("Login error details:", response.error);
-        throw new Error(response.error);
-      }
-      
-      console.log("Login successful:", { 
-        user: response.user?.email,
-        hasSession: !!response.session
-      });
-      
-      if (response.user && response.session) {
-        setUser(response.user);
-        setSession(response.session);
-        setIsAdmin(response.user.is_admin || false);
-      }
-      
-      return response;
-    } catch (error: any) {
-      console.error("Error during login:", error);
-      throw error;
-    }
-  };
-
-  const adminLogin = async (password: string) => {
-    try {
-      // Check if the password matches the admin password
-      if (password !== 'Nando045+-') {
-        throw new Error('Invalid admin password');
-      }
-
-      // If there is a logged-in user, make them an admin
-      if (user) {
-        console.log("Setting admin status for user:", user.id);
-        const success = await authService.setAdminStatus(user.id, true);
-        
-        if (!success) {
-          throw new Error('Failed to set admin status');
-        }
-        
-        setIsAdmin(true);
-        toast.success('Admin access granted!');
-        navigate('/admin');
-        return;
-      }
-      
-      // If no user is logged in, show an error
-      throw new Error('You must be logged in to become an admin');
-    } catch (error: any) {
-      toast.error(error.message || 'Error granting admin access');
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      console.log("Attempting to sign out user");
-      
-      // Clear local auth state
-      setUser(null);
-      setSession(null);
-      setIsAdmin(false);
-      
-      // Sign out from auth service
-      authService.signOut();
-      
-      // Clear query cache if available
-      if (window.queryClient) {
-        window.queryClient.clear();
-      }
-      
-      console.log("Redirecting to login page");
-      navigate('/login');
-      toast.success('Logout realizado com sucesso');
-    } catch (error: any) {
-      console.error("Final signOut error:", error);
-      navigate('/login');
-    }
-  };
-
-  console.log("AuthProvider rendering with state:", { 
-    hasUser: !!user,
-    isAdmin,
-    loading,
-    email: user?.email
-  });
-
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signUp, signIn, adminLogin, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      isLoading, 
+      error,
+      login: loginUser,
+      register: registerUser,
+      logout: logoutUser
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

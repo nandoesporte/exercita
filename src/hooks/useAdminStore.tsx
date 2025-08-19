@@ -11,8 +11,17 @@ export function useAdminStore() {
     error: null,
     isUpdating: false,
     isDeleting: false,
+    isCreating: false, // Added missing property
+    isCreatingCategory: false, // Added missing property
+    isUpdatingCategory: false, // Added missing property
+    isDeletingCategory: false, // Added missing property
+    isLoadingCategories: false, // Added missing property
     categories: [],
     areCategoriesLoading: false,
+    fetchProduct: async () => {
+      console.log('Fetch product will be implemented with MySQL');
+      return null;
+    },
     createProduct: async (data: ProductFormData) => {
       toast.error('Criação de produtos será implementada em breve');
       return null;

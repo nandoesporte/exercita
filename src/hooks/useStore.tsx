@@ -12,6 +12,13 @@ export function useStore() {
     areCategoriesLoading: false,
     isAddingToCart: false,
     cart: [],
+    featuredProducts: [], // Added missing property
+    isLoadingFeaturedProducts: false, // Added missing property
+    isLoadingProducts: false, // Added missing property (alias for isLoading)
+    fetchProduct: async () => {
+      console.log('Fetch product will be implemented with MySQL');
+      return null;
+    },
     addToCart: async () => {
       console.log('Add to cart will be implemented with MySQL');
     },
