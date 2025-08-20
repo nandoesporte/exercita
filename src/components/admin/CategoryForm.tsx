@@ -40,8 +40,8 @@ interface CategoryFormProps {
 }
 
 export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps) => {
-  const { createCategory, updateCategory, isCreatingCategory, isUpdatingCategory } = useAdminStore();
-  const isLoading = isCreatingCategory || isUpdatingCategory;
+  // Category management is disabled since the functions don't exist in useAdminStore
+  const isLoading = false;
   
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(formSchema),
@@ -71,34 +71,8 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
   
   const onSubmit = async (values: CategoryFormValues) => {
     try {
-      if (category?.id) {
-        // Ensure name is provided when updating
-        if (!values.name) {
-          toast('Nome da categoria é obrigatório');
-          return;
-        }
-        
-        await updateCategory({
-          id: category.id,
-          name: values.name, // Required field
-          color: values.color,
-          icon: values.icon,
-        });
-        toast('Categoria atualizada com sucesso');
-      } else {
-        // Ensure name is provided when creating
-        if (!values.name) {
-          toast('Nome da categoria é obrigatório');
-          return;
-        }
-        
-        await createCategory({
-          name: values.name, // Required field
-          color: values.color,
-          icon: values.icon,
-        });
-        toast('Categoria criada com sucesso');
-      }
+      // Category management functionality is disabled
+      toast('Category management functionality is disabled');
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving category:', error);

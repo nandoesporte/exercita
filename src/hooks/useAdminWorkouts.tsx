@@ -6,20 +6,16 @@ import { toast } from 'sonner';
 export type AdminWorkout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
   days_of_week?: string[] | null;
-  is_recommended?: boolean;
 };
 
 export type WorkoutFormData = {
-  title: string;
+  name: string;
   description?: string;
   duration: number;
-  level: Database['public']['Enums']['difficulty_level'];
+  difficulty_level?: string;
   category_id?: string | null;
-  image_url?: string | null;
-  calories?: number | null;
   user_id?: string | null; 
   days_of_week?: string[] | null;
-  is_recommended?: boolean;
 };
 
 export type UpdateWorkoutData = WorkoutFormData & {
@@ -31,19 +27,11 @@ export type WorkoutExercise = {
   sets?: number;
   reps?: number | null;
   duration?: number | null;
-  rest?: number | null;
-  weight?: number | null;
-  order_position: number;
-  day_of_week?: string | null;
+  rest_time?: number | null;
+  order_index: number;
   is_title_section?: boolean;
   section_title?: string | null;
-}
-
-export type WorkoutRecommendation = {
-  id?: string;
-  workout_id: string;
-  user_id: string | null; // null means recommended for all users
-}
+};
 
 export function useAdminWorkouts() {
   const queryClient = useQueryClient();
@@ -68,22 +56,10 @@ export function useAdminWorkouts() {
         throw new Error(`Error fetching workouts: ${error.message}`);
       }
 
-      // Fetch days of week for each workout
-      const workoutsWithDays = await Promise.all(data.map(async (workout) => {
-        const { data: daysData, error: daysError } = await supabase
-          .from('workout_days')
-          .select('day_of_week')
-          .eq('workout_id', workout.id);
-
-        if (daysError) {
-          console.error(`Error fetching days for workout ${workout.id}:`, daysError);
-          return { ...workout, days_of_week: [] };
-        }
-
-        return {
-          ...workout,
-          days_of_week: daysData.map(d => d.day_of_week)
-        };
+      // Add empty days_of_week since the table doesn't exist
+      const workoutsWithDays = data.map(workout => ({
+        ...workout,
+        days_of_week: []
       }));
       
       return workoutsWithDays as AdminWorkout[];
@@ -92,189 +68,61 @@ export function useAdminWorkouts() {
 
   const createWorkout = useMutation({
     mutationFn: async (formData: WorkoutFormData) => {
-      try {
-        console.log("Creating workout with data:", formData);
-        
-        // First insert the workout
-        const { data: workout, error: workoutError } = await supabase
-          .from('workouts')
-          .insert({
-            title: formData.title,
-            description: formData.description || null,
-            duration: formData.duration,
-            level: formData.level,
-            category_id: formData.category_id || null,
-            image_url: formData.image_url || null,
-            calories: formData.calories || null,
-            is_recommended: formData.is_recommended || false,
-          })
-          .select('id')
-          .single();
-        
-        if (workoutError) {
-          console.error("Error creating workout:", workoutError);
-          throw new Error(`Error creating workout: ${workoutError.message}`);
-        }
-
-        if (!workout) {
-          throw new Error("Failed to create workout: No data returned");
-        }
-
-        console.log("Workout created successfully:", workout);
-
-        // If days_of_week are provided, create entries in workout_days
-        if (formData.days_of_week && formData.days_of_week.length > 0 && workout) {
-          console.log("Adding workout days:", formData.days_of_week);
-          const workoutDaysEntries = formData.days_of_week.map(day => ({
-            workout_id: workout.id,
-            day_of_week: day
-          }));
-
-          const { error: daysError } = await supabase
-            .from('workout_days')
-            .insert(workoutDaysEntries);
-          
-          if (daysError) {
-            console.error("Error assigning days to workout:", daysError);
-            toast.error(`Error assigning days to workout: ${daysError.message}`);
-          } else {
-            console.log("Workout days added successfully");
-          }
-        }
-
-        // Se um user_id foi fornecido, esse treino deve ser APENAS para esse usuário
-        if (formData.user_id && workout) {
-          console.log(`Assigning workout exclusively to user: ${formData.user_id}`);
-          
-          // Adicionar ao histórico de treino do usuário
-          const { error: historyError } = await supabase
-            .from('user_workout_history')
-            .insert({
-              user_id: formData.user_id,
-              workout_id: workout.id,
-              completed_at: null, // Não concluído ainda
-            });
-          
-          if (historyError) {
-            console.error("Error assigning workout to user history:", historyError);
-            toast.error(`Error assigning workout to user history: ${historyError.message}`);
-          } else {
-            console.log("Workout added to user history successfully");
-          }
-
-          // Adicionar como recomendação específica para este usuário
-          const { error: recommendationError } = await supabase
-            .from('workout_recommendations')
-            .insert({
-              user_id: formData.user_id,
-              workout_id: workout.id
-            });
-          
-          if (recommendationError) {
-            console.error("Error creating workout recommendation:", recommendationError);
-            toast.error(`Error creating workout recommendation: ${recommendationError.message}`);
-          } else {
-            console.log(`Workout recommendation added successfully for user ${formData.user_id}`);
-          }
-        } else if (formData.is_recommended && workout) {
-          // Se o treino é marcado como recomendado mas não foi atribuído a um usuário específico,
-          // adicione-o como uma recomendação global (user_id = null)
-          console.log("Adding workout as a global recommendation");
-          const { error: globalRecError } = await supabase
-            .from('workout_recommendations')
-            .insert({
-              user_id: null, // Recomendação global
-              workout_id: workout.id
-            });
-          
-          if (globalRecError) {
-            console.error("Error creating global workout recommendation:", globalRecError);
-            toast.error(`Error creating global workout recommendation: ${globalRecError.message}`);
-          } else {
-            console.log("Global workout recommendation added successfully");
-          }
-        }
+      const { data, error } = await supabase
+        .from('workouts')
+        .insert({
+          name: formData.name,
+          description: formData.description || null,
+          duration: formData.duration,
+          difficulty_level: formData.difficulty_level,
+          category_id: formData.category_id || null,
+        })
+        .select()
+        .single();
       
-        return workout;
-      } catch (error) {
-        console.error("Exception in createWorkout:", error);
-        throw error;
+      if (error) {
+        throw new Error(`Error creating workout: ${error.message}`);
       }
+
+      // Skip workout_days operations since table doesn't exist
+      console.log('Workout days functionality disabled - table does not exist');
+      
+      toast('Treino criado com sucesso');
+      return { workout: data, exercises: [] };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
-      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
-      queryClient.invalidateQueries({ queryKey: ['recommended-workouts-for-user'] });
-      toast.success('Workout created successfully');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create workout');
-    }
   });
 
   const updateWorkout = useMutation({
-    mutationFn: async (data: UpdateWorkoutData) => {
-      const { id, days_of_week, is_recommended, ...workoutData } = data;
-      
-      // First, update the workout
-      const { error: workoutError } = await supabase
+    mutationFn: async (updateData: UpdateWorkoutData) => {
+      const { data, error } = await supabase
         .from('workouts')
         .update({
-          title: workoutData.title,
-          description: workoutData.description || null,
-          duration: workoutData.duration,
-          level: workoutData.level,
-          category_id: workoutData.category_id || null,
-          image_url: workoutData.image_url || null,
-          calories: workoutData.calories || null,
-          is_recommended: is_recommended || false,
+          name: updateData.name,
+          description: updateData.description || null,
+          duration: updateData.duration,
+          difficulty_level: updateData.difficulty_level,
+          category_id: updateData.category_id || null,
         })
-        .eq('id', id);
-      
-      if (workoutError) {
-        throw new Error(`Error updating workout: ${workoutError.message}`);
+        .eq('id', updateData.id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Error updating workout: ${error.message}`);
       }
 
-      // If days_of_week are provided, update the workout days
-      if (days_of_week !== undefined) {
-        // First delete existing workout days
-        const { error: deleteError } = await supabase
-          .from('workout_days')
-          .delete()
-          .eq('workout_id', id);
-        
-        if (deleteError) {
-          throw new Error(`Error removing existing workout days: ${deleteError.message}`);
-        }
+      // Skip workout_days operations since table doesn't exist
+      console.log('Workout days update skipped - table does not exist');
 
-        // If there are days to add, insert them
-        if (days_of_week && days_of_week.length > 0) {
-          const workoutDaysEntries = days_of_week.map(day => ({
-            workout_id: id,
-            day_of_week: day
-          }));
-
-          const { error: daysError } = await supabase
-            .from('workout_days')
-            .insert(workoutDaysEntries);
-          
-          if (daysError) {
-            throw new Error(`Error assigning days to workout: ${daysError.message}`);
-          }
-        }
-      }
-      
-      return { id };
+      toast('Treino atualizado com sucesso');
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
-      queryClient.invalidateQueries({ queryKey: ['workout-days'] });
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
-      toast.success('Workout updated successfully');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update workout');
-    }
   });
 
   const deleteWorkout = useMutation({
@@ -287,14 +135,15 @@ export function useAdminWorkouts() {
       if (error) {
         throw new Error(`Error deleting workout: ${error.message}`);
       }
+
+      // Skip workout_days deletion since table doesn't exist
+      console.log('Workout days deletion skipped - table does not exist');
+      
+      toast('Treino excluído com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-workouts'] });
-      toast.success('Workout deleted successfully');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete workout');
-    }
   });
 
   const workoutCategoriesQuery = useQuery({
@@ -313,14 +162,13 @@ export function useAdminWorkouts() {
     },
   });
 
-  // Fetch simplified user data for assigning workouts
   const usersQuery = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .order('first_name');
+        .select('id, nome, email')
+        .order('nome');
       
       if (error) {
         throw new Error(`Error fetching users: ${error.message}`);
@@ -330,7 +178,6 @@ export function useAdminWorkouts() {
     },
   });
 
-  // Fetch all exercises for adding to workouts
   const exercisesQuery = useQuery({
     queryKey: ['admin-exercises'],
     queryFn: async () => {
@@ -347,25 +194,18 @@ export function useAdminWorkouts() {
     },
   });
 
-  // Get workout exercises
-  const getWorkoutExercises = (workoutId: string, day_of_week?: string | null) => {
+  const getWorkoutExercises = (workoutId: string) => {
     return useQuery({
-      queryKey: ['workout-exercises', workoutId, day_of_week],
+      queryKey: ['workout-exercises', workoutId],
       queryFn: async () => {
-        let query = supabase
+        const { data, error } = await supabase
           .from('workout_exercises')
           .select(`
             *,
             exercise:exercise_id (*)
           `)
-          .eq('workout_id', workoutId);
-        
-        // Filter by day if provided
-        if (day_of_week) {
-          query = query.eq('day_of_week', day_of_week);
-        }
-        
-        const { data, error } = await query.order('order_position');
+          .eq('workout_id', workoutId)
+          .order('order_index');
         
         if (error) {
           throw new Error(`Error fetching workout exercises: ${error.message}`);
@@ -377,313 +217,47 @@ export function useAdminWorkouts() {
     });
   };
 
-  // Get workout days
-  const getWorkoutDays = (workoutId: string) => {
-    return useQuery({
-      queryKey: ['workout-days', workoutId],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('workout_days')
-          .select('day_of_week')
-          .eq('workout_id', workoutId);
-        
-        if (error) {
-          throw new Error(`Error fetching workout days: ${error.message}`);
-        }
-        
-        return data.map(d => d.day_of_week);
-      },
-      enabled: Boolean(workoutId),
-    });
-  };
-
-  // Fetch workout recommendations
+  // Get workout recommendations - disabled due to missing table
   const getWorkoutRecommendations = (workoutId: string) => {
     return useQuery({
       queryKey: ['workout-recommendations', workoutId],
       queryFn: async () => {
-        const { data, error } = await supabase
-          .from('workout_recommendations')
-          .select(`
-            *,
-            user:user_id (
-              id,
-              email,
-              first_name,
-              last_name
-            )
-          `)
-          .eq('workout_id', workoutId);
-        
-        if (error) {
-          throw new Error(`Error fetching workout recommendations: ${error.message}`);
-        }
-        
-        return data;
+        console.log('Workout recommendations disabled - table does not exist');
+        return [];
       },
-      enabled: Boolean(workoutId),
+      enabled: !!workoutId,
     });
   };
 
-  // Add workout recommendation
-  const addWorkoutRecommendation = useMutation({
-    mutationFn: async (recommendation: WorkoutRecommendation) => {
-      const { error } = await supabase
-        .from('workout_recommendations')
-        .insert({
-          workout_id: recommendation.workout_id,
-          user_id: recommendation.user_id,
-        });
-      
-      if (error) {
-        throw new Error(`Error adding workout recommendation: ${error.message}`);
-      }
+  // Add workout recommendation - disabled due to missing table
+  const { mutateAsync: addWorkoutRecommendation, isPending: isAddingRecommendation } = useMutation({
+    mutationFn: async ({ workout_id, user_id }: { workout_id: string; user_id: string | null }) => {
+      console.log('Workout recommendations disabled - table does not exist');
+      throw new Error('Workout recommendations table does not exist');
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['workout-recommendations', variables.workout_id] 
-      });
-      toast.success('Workout recommendation added successfully');
+    onSuccess: () => {
+      toast('Recommendation functionality disabled');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add workout recommendation');
-    }
   });
 
-  // Remove workout recommendation
-  const removeWorkoutRecommendation = useMutation({
-    mutationFn: async ({ recommendationId, workoutId }: { recommendationId: string, workoutId: string }) => {
-      const { error } = await supabase
-        .from('workout_recommendations')
-        .delete()
-        .eq('id', recommendationId);
-      
-      if (error) {
-        throw new Error(`Error removing workout recommendation: ${error.message}`);
-      }
+  // Remove workout recommendation - disabled due to missing table
+  const { mutateAsync: removeWorkoutRecommendation, isPending: isRemovingRecommendation } = useMutation({
+    mutationFn: async ({ recommendationId, workoutId }: { recommendationId: string; workoutId: string }) => {
+      console.log('Workout recommendations disabled - table does not exist');
+      throw new Error('Workout recommendations table does not exist');
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['workout-recommendations', variables.workoutId] 
-      });
-      toast.success('Workout recommendation removed successfully');
+    onSuccess: () => {
+      toast('Remove recommendation functionality disabled');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to remove workout recommendation');
-    }
   });
 
-  // Add exercise to workout
-  const addExerciseToWorkout = useMutation({
-    mutationFn: async ({ 
-      workoutId, 
-      exerciseData 
-    }: { 
-      workoutId: string, 
-      exerciseData: WorkoutExercise 
-    }) => {
-      const { error } = await supabase
-        .from('workout_exercises')
-        .insert({
-          workout_id: workoutId,
-          exercise_id: exerciseData.exercise_id,
-          sets: exerciseData.sets,
-          reps: exerciseData.reps,
-          duration: exerciseData.duration,
-          rest: exerciseData.rest,
-          weight: exerciseData.weight,
-          order_position: exerciseData.order_position,
-          day_of_week: exerciseData.day_of_week || null,
-          is_title_section: exerciseData.is_title_section || false,
-          section_title: exerciseData.section_title || null,
-        });
-      
-      if (error) {
-        throw new Error(`Error adding exercise to workout: ${error.message}`);
-      }
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['workout-exercises', variables.workoutId] 
-      });
-      toast.success('Exercício adicionado ao treino');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Falha ao adicionar exercício');
-    }
-  });
-
-  // Remove exercise from workout
-  const removeExerciseFromWorkout = useMutation({
-    mutationFn: async ({ 
-      exerciseId,
-      workoutId
-    }: { 
-      exerciseId: string,
-      workoutId: string
-    }) => {
-      const { error } = await supabase
-        .from('workout_exercises')
-        .delete()
-        .eq('id', exerciseId);
-      
-      if (error) {
-        throw new Error(`Error removing exercise from workout: ${error.message}`);
-      }
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['workout-exercises', variables.workoutId] 
-      });
-      toast.success('Exercício removido do treino');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Falha ao remover exercício');
-    }
-  });
-
-  // Update exercise position
-  const updateExerciseOrder = useMutation({
-    mutationFn: async ({ 
-      exerciseId, 
-      newPosition,
-      workoutId
-    }: { 
-      exerciseId: string, 
-      newPosition: number,
-      workoutId: string
-    }) => {
-      const { error } = await supabase
-        .from('workout_exercises')
-        .update({ order_position: newPosition })
-        .eq('id', exerciseId);
-      
-      if (error) {
-        throw new Error(`Error updating exercise position: ${error.message}`);
-      }
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['workout-exercises', variables.workoutId] 
-      });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Falha ao atualizar posição do exercício');
-    }
-  });
-
-  // Updated cloning function with improved error handling
-  const cloneExercisesToDays = useMutation({
-    mutationFn: async ({
-      workoutId,
-      sourceDayOfWeek,
-      targetDaysOfWeek
-    }: {
-      workoutId: string,
-      sourceDayOfWeek: string,
-      targetDaysOfWeek: string[]
-    }) => {
-      try {
-        console.log(`Cloning exercises from ${sourceDayOfWeek} to days:`, targetDaysOfWeek);
-        
-        // Get source exercises
-        const { data: sourceExercises, error: fetchError } = await supabase
-          .from('workout_exercises')
-          .select('*')
-          .eq('workout_id', workoutId)
-          .eq('day_of_week', sourceDayOfWeek)
-          .order('order_position');
-
-        if (fetchError) {
-          console.error("Error fetching source exercises:", fetchError);
-          throw new Error(`Error fetching source exercises: ${fetchError.message}`);
-        }
-
-        if (!sourceExercises || sourceExercises.length === 0) {
-          console.error("No exercises found to clone");
-          throw new Error('No exercises found to clone');
-        }
-
-        console.log(`Found ${sourceExercises.length} exercises to clone`);
-
-        // Process each target day
-        for (const targetDay of targetDaysOfWeek) {
-          try {
-            console.log(`Processing target day: ${targetDay}`);
-            
-            // First delete all existing exercises for the target day to avoid conflicts
-            const { error: deleteError } = await supabase
-              .from('workout_exercises')
-              .delete()
-              .eq('workout_id', workoutId)
-              .eq('day_of_week', targetDay);
-            
-            if (deleteError) {
-              console.error(`Error removing existing exercises for day ${targetDay}:`, deleteError);
-              throw new Error(`Error removing existing exercises: ${deleteError.message}`);
-            }
-            
-            console.log(`Deleted existing exercises for ${targetDay}, now cloning...`);
-            
-            // Prepare exercises for insertion with the target day
-            const exercisesToInsert = sourceExercises.map(exercise => {
-              // Extract only the fields we need and exclude id and timestamps
-              const { 
-                id, created_at, updated_at, ...exerciseData 
-              } = exercise;
-              
-              return {
-                ...exerciseData,
-                day_of_week: targetDay,
-                workout_id: workoutId
-              };
-            });
-
-            if (exercisesToInsert.length > 0) {
-              // Insert exercises for this target day
-              const { error: insertError } = await supabase
-                .from('workout_exercises')
-                .insert(exercisesToInsert);
-
-              if (insertError) {
-                console.error(`Error cloning exercises to ${targetDay}:`, insertError);
-                throw new Error(`Error cloning exercises to ${targetDay}: ${insertError.message}`);
-              }
-              
-              console.log(`Successfully cloned ${exercisesToInsert.length} exercises to ${targetDay}`);
-            }
-          } catch (error) {
-            console.error(`Error processing day ${targetDay}:`, error);
-            throw error;
-          }
-        }
-        
-        console.log("Cloning operation completed successfully");
-      } catch (error) {
-        console.error("Error in cloneExercisesToDays:", error);
-        throw error;
-      }
-    },
-    onSuccess: (_, variables) => {
-      // Invalidate queries for all affected days
-      queryClient.invalidateQueries({
-        queryKey: ['workout-exercises', variables.workoutId]
-      });
-      toast.success(`Exercícios clonados com sucesso para ${variables.targetDaysOfWeek.length} dia(s)`);
-    },
-    onError: (error: Error) => {
-      console.error("Clone error:", error);
-      toast.error(error.message || 'Falha ao clonar exercícios');
-    }
-  });
-  
   return {
     workouts: workoutsQuery.data || [],
     isLoading: workoutsQuery.isLoading,
     error: workoutsQuery.error,
     createWorkout: createWorkout.mutate,
     isCreating: createWorkout.isPending,
-    updateWorkout: updateWorkout.mutate,
+    updateWorkout: updateWorkout.mutateAsync,
     isUpdating: updateWorkout.isPending,
     deleteWorkout: deleteWorkout.mutate,
     isDeleting: deleteWorkout.isPending,
@@ -694,19 +268,10 @@ export function useAdminWorkouts() {
     exercises: exercisesQuery.data || [],
     areExercisesLoading: exercisesQuery.isLoading,
     getWorkoutExercises,
-    getWorkoutDays,
     getWorkoutRecommendations,
-    addWorkoutRecommendation: addWorkoutRecommendation.mutate,
-    isAddingRecommendation: addWorkoutRecommendation.isPending,
-    removeWorkoutRecommendation: removeWorkoutRecommendation.mutate,
-    isRemovingRecommendation: removeWorkoutRecommendation.isPending,
-    addExerciseToWorkout: addExerciseToWorkout.mutate,
-    isAddingExercise: addExerciseToWorkout.isPending,
-    removeExerciseFromWorkout: removeExerciseFromWorkout.mutate,
-    isRemovingExercise: removeExerciseFromWorkout.isPending,
-    updateExerciseOrder: updateExerciseOrder.mutate,
-    isUpdatingExerciseOrder: updateExerciseOrder.isPending,
-    cloneExercisesToDays: cloneExercisesToDays.mutate,
-    isCloningExercises: cloneExercisesToDays.isPending
+    addWorkoutRecommendation,
+    isAddingRecommendation,
+    removeWorkoutRecommendation,
+    isRemovingRecommendation,
   };
 }

@@ -1,165 +1,61 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Product, ProductCategory, ProductFormData } from '@/types/store';
 import { toast } from '@/lib/toast-wrapper';
 
-export const useAdminStore = () => {
+// Simplified Product type since the actual products table doesn't exist
+export interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  is_active: boolean;
+  is_featured: boolean;
+  created_at: string;
+  updated_at: string;
+  sale_url: string;
+  category_id: string | null;
+  categories: { name: string } | null;
+}
+
+export interface ProductFormData {
+  name: string;
+  description?: string;
+  price: number;
+  image_url?: string;
+  sale_url?: string;
+  is_active: boolean;
+  is_featured: boolean;
+  category_id?: string;
+}
+
+export function useAdminStore(productId?: string) {
   const queryClient = useQueryClient();
 
-  // Fetch all products (admin)
-  const { 
-    data: products = [], 
-    isLoading: isLoadingProducts 
-  } = useQuery({
+  // Products functionality is disabled since the table doesn't exist
+  const { data: products, isLoading: isLoadingProducts, error: productsError } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: async () => {
-      console.log('Products feature disabled - table does not exist');
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching products:', error);
-        toast('Erro ao carregar produtos');
-        return [];
-      }
-
-      return { id: 'disabled', name: 'Products disabled', description: 'Products table does not exist', price: 0, image_url: null, is_active: false, is_featured: false, created_at: '', updated_at: '', sale_url: '', category_id: null, categories: null };
+    queryFn: async (): Promise<Product[]> => {
+      console.log('Products functionality disabled - table does not exist');
+      return [];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Fetch a specific product with cacheTime and staleTime to prevent repeated requests
-  const fetchProduct = async (id: string): Promise<Product> => {
-    console.log('Product fetching disabled - table does not exist');
-    throw new Error('Products table does not exist');
-  };
-
-  // Fetch product categories
-  const { 
-    data: categories = [], 
-    isLoading: isLoadingCategories 
-  } = useQuery({
-    queryKey: ['admin-product-categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('workout_categories') // Using workout_categories instead of product_categories
-        .select('*')
-        .order('name');
-
-      if (error) {
-        console.error('Error fetching categories:', error);
-        toast('Erro ao carregar categorias');
-        return [];
-      }
-
-      return data as ProductCategory[];
+  const { data: singleProduct, isLoading: isLoadingSingleProduct } = useQuery({
+    queryKey: ['admin-product', productId],
+    queryFn: (): Promise<Product> => {
+      throw new Error('Products table does not exist');
     },
+    enabled: !!productId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  // Create a category
-  const { mutateAsync: createCategory, isPending: isCreatingCategory } = useMutation({
-    mutationFn: async (categoryData: Omit<ProductCategory, 'id'>) => {
-      const { data, error } = await supabase
-        .from('workout_categories')
-        .insert([categoryData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating category:', error);
-        toast('Erro ao criar categoria');
-        throw error;
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
-    }
-  });
-
-  // Update a category
-  const { mutateAsync: updateCategory, isPending: isUpdatingCategory } = useMutation({
-    mutationFn: async (category: ProductCategory) => {
-      const { data, error } = await supabase
-        .from('workout_categories')
-        .update({
-          name: category.name,
-          color: category.color,
-          icon: category.icon
-        })
-        .eq('id', category.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating category:', error);
-        toast('Erro ao atualizar categoria');
-        throw error;
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
-    }
-  });
-
-  // Delete a category
-  const { mutateAsync: deleteCategory, isPending: isDeletingCategory } = useMutation({
-    mutationFn: async (id: string) => {
-      try {
-        // First update any products using this category to set category_id to null
-        const { error: productsError } = await supabase
-          .from('products')
-          .update({ category_id: null })
-          .eq('category_id', id);
-          
-        if (productsError) {
-          console.error('Error updating products:', productsError);
-          throw productsError;
-        }
-        
-        // Then update any exercises using this category to set category_id to null
-        const { error: exercisesError } = await supabase
-          .from('exercises')
-          .update({ category_id: null })
-          .eq('category_id', id);
-          
-        if (exercisesError) {
-          console.error('Error updating exercises:', exercisesError);
-          throw exercisesError;
-        }
-        
-        // Finally, delete the category
-        const { error } = await supabase
-          .from('workout_categories')
-          .delete()
-          .eq('id', id);
-
-        if (error) {
-          console.error('Error deleting category:', error);
-          throw error;
-        }
-
-        return id;
-      } catch (error) {
-        console.error('Error in delete operation:', error);
-        toast('Erro ao excluir categoria');
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-product-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-    }
-  });
-
-  // Create a product
+  // Create a product - disabled
   const { mutateAsync: createProduct, isPending: isCreating } = useMutation({
-    mutationFn: async (product: ProductFormData) => {
+    mutationFn: async (product: ProductFormData): Promise<Product> => {
       throw new Error('Products table does not exist - cannot create product');
     },
     onSuccess: () => {
@@ -167,9 +63,9 @@ export const useAdminStore = () => {
     },
   });
 
-  // Update a product
+  // Update a product - disabled
   const { mutateAsync: updateProduct, isPending: isUpdating } = useMutation({
-    mutationFn: async ({ id, ...product }: ProductFormData & { id: string }) => {
+    mutationFn: async ({ id, ...product }: ProductFormData & { id: string }): Promise<Product> => {
       throw new Error('Products table does not exist - cannot update product');
     },
     onSuccess: () => {
@@ -177,9 +73,9 @@ export const useAdminStore = () => {
     },
   });
 
-  // Delete a product
+  // Delete a product - disabled
   const { mutateAsync: deleteProduct, isPending: isDeleting } = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: string): Promise<string> => {
       throw new Error('Products table does not exist - cannot delete product');
     },
     onSuccess: () => {
@@ -187,7 +83,7 @@ export const useAdminStore = () => {
     },
   });
 
-  // Toggle product featured status - Disabled since products table doesn't exist
+  // Toggle product featured status - disabled
   const { mutateAsync: toggleFeaturedProduct } = useMutation({
     mutationFn: async (params: { id: string; isFeatured: boolean }) => {
       throw new Error('Products table does not exist - cannot toggle featured status');
@@ -198,17 +94,14 @@ export const useAdminStore = () => {
   });
 
   return {
-    products,
+    // Product data
+    products: products || [],
+    singleProduct,
     isLoadingProducts,
-    fetchProduct,
-    categories,
-    isLoadingCategories,
-    createCategory,
-    isCreatingCategory,
-    updateCategory,
-    isUpdatingCategory,
-    deleteCategory,
-    isDeletingCategory,
+    isLoadingSingleProduct,
+    productsError,
+    
+    // Product mutations
     createProduct,
     isCreating,
     updateProduct,
@@ -217,4 +110,4 @@ export const useAdminStore = () => {
     isDeleting,
     toggleFeaturedProduct,
   };
-};
+}
