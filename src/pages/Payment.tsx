@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/lib/toast-wrapper';
 import { DataTable } from '@/components/ui/data-table';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-// Removed Supabase import - using MySQL now
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 interface PaymentMethod {
@@ -57,9 +57,11 @@ const Payment = () => {
     const fetchPaymentData = async () => {
       setIsLoading(true);
       try {
-        // MySQL placeholder - payment settings will be implemented
-        const settingsData = null;
-        const settingsError = null;
+        // Fetch payment settings from database
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('payment_settings')
+          .select('*')
+          .single();
           
         if (settingsError && settingsError.code !== 'PGRST116') {
           console.error('Error fetching payment settings:', settingsError);
@@ -80,10 +82,13 @@ const Payment = () => {
           setMonthlyFee('99.90');
         }
         
-        // MySQL placeholder - PIX key will be implemented
+        // Fetch PIX key if PIX payments are enabled
         if (settingsData?.accept_pix_payments) {
-          const pixData = null;
-          const pixError = null;
+          const { data: pixData, error: pixError } = await supabase
+            .from('pix_keys')
+            .select('key_type, key_value, is_primary')
+            .eq('is_primary', true)
+            .single();
             
           if (pixError && pixError.code !== 'PGRST116') {
             console.error('Error fetching PIX key:', pixError);
@@ -113,9 +118,13 @@ const Payment = () => {
           },
         ]);
 
-        // MySQL placeholder - payment history will be implemented
-        const historyData = null;
-        const historyError = null;
+        // Fetch payment history - in real implementation fetch from orders table
+        const { data: historyData, error: historyError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
           
         if (historyError) {
           console.error('Error fetching payment history:', historyError);

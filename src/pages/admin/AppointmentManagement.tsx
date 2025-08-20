@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// Removed Supabase import - using MySQL now
+import { supabase } from '@/integrations/supabase/client';
 import { format, isSameDay, parseISO, addMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
@@ -72,13 +72,17 @@ const AppointmentManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('upcoming');
 
-  // Fetch all appointments - MySQL placeholder
+  // Fetch all appointments
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['admin-appointments'],
     queryFn: async () => {
-      // MySQL placeholder - appointments not yet implemented
-      console.log('Appointments will be fetched from MySQL');
-      return [];
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('appointment_date', { ascending: true });
+
+      if (error) throw error;
+      return data as Appointment[];
     },
   });
 
@@ -107,12 +111,16 @@ const AppointmentManagement = () => {
     });
   });
 
-  // Create appointment mutation - MySQL placeholder
+  // Create appointment mutation
   const createAppointmentMutation = useMutation({
     mutationFn: async (newAppointment: Omit<Appointment, 'id'>) => {
-      // MySQL placeholder - appointment creation not yet implemented
-      console.log('Appointment will be created in MySQL:', newAppointment);
-      throw new Error('Agendamentos serão implementados em breve');
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([newAppointment])
+        .select();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-appointments'] });
@@ -124,13 +132,15 @@ const AppointmentManagement = () => {
     },
   });
 
-  // Delete appointment mutation - MySQL placeholder
+  // Delete appointment mutation
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (appointmentId: string) => {
-      // MySQL placeholder - appointment deletion not yet implemented
-      console.log('Appointment will be deleted from MySQL:', appointmentId);
-      throw new Error('Exclusão de agendamentos será implementada em breve');
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId);
 
+      if (error) throw error;
       return appointmentId;
     },
     onSuccess: () => {

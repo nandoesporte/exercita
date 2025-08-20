@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2 } from 'lucide-react';
 import { WorkoutFormData } from '@/hooks/useAdminWorkouts';
-import { Workout } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 
 import {
   Form,
@@ -56,8 +56,8 @@ const weekdays = [
 interface WorkoutFormProps {
   onSubmit: (data: WorkoutFormData) => void;
   isLoading: boolean;
-  categories: any[];
-  users: any[];
+  categories: Database['public']['Tables']['workout_categories']['Row'][];
+  users: Database['public']['Tables']['profiles']['Row'][];
   defaultValues?: WorkoutFormData;
   isEditing?: boolean;
 }

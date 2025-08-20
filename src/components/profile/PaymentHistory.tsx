@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-// Removed Supabase import - using MySQL now
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
 
@@ -23,9 +23,17 @@ const PaymentHistory: React.FC = () => {
       
       try {
         setIsLoading(true);
-        // Placeholder - payment history not yet implemented with MySQL
-        console.log("Payment history will be implemented with MySQL");
-        setPayments([]); // Empty for now
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          throw error;
+        }
+        
+        setPayments(data || []);
       } catch (error) {
         console.error('Erro ao buscar pagamentos:', error);
         toast("Erro ao carregar histórico", {

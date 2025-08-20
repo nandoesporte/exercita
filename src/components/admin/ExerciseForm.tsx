@@ -1,10 +1,13 @@
+
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Upload } from 'lucide-react';
-import { Exercise } from '@/types/database';
-import { toast } from '@/lib/toast';
+import { ExerciseFormData } from '@/hooks/useAdminExercises';
+import { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   Form,
@@ -25,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from '@/lib/toast-wrapper';
 
 // Define form schema with Zod
 const formSchema = z.object({
@@ -33,16 +37,19 @@ const formSchema = z.object({
   category_id: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
   video_url: z.string().optional().nullable(),
-  difficulty_level: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
 });
-
-type ExerciseFormData = z.infer<typeof formSchema>;
 
 interface ExerciseFormProps {
   onSubmit: (data: ExerciseFormData) => void;
   isLoading: boolean;
-  categories: any[];
-  initialData?: Exercise;
+  categories: Database['public']['Tables']['workout_categories']['Row'][];
+  initialData?: {
+    name: string;
+    description?: string | null;
+    category_id?: string | null;
+    image_url?: string | null;
+    video_url?: string | null;
+  };
   preSelectedCategory?: string | null;
 }
 
@@ -57,7 +64,7 @@ const ExerciseForm = ({
   const [gifPreview, setGifPreview] = useState<string | null>(initialData?.image_url || null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  const form = useForm<ExerciseFormData>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name || "",
@@ -65,16 +72,15 @@ const ExerciseForm = ({
       category_id: initialData?.category_id || preSelectedCategory || null,
       image_url: initialData?.image_url || "",
       video_url: initialData?.video_url || "",
-      difficulty_level: initialData?.difficulty_level || 'beginner',
     },
   });
 
-  const handleSubmit = (values: ExerciseFormData) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     if (uploadError) {
       toast.error("Please fix upload errors before submitting");
       return;
     }
-    onSubmit(values);
+    onSubmit(values as ExerciseFormData);
   };
 
   const handleGifUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,19 +98,42 @@ const ExerciseForm = ({
     
     try {
       setIsUploading(true);
+      console.log("Starting file upload to Supabase...");
       
-      // For now, create a local preview and placeholder URL
-      const previewUrl = URL.createObjectURL(file);
-      const placeholderUrl = `https://via.placeholder.com/400x300?text=${encodeURIComponent(form.getValues('name') || 'Exercise')}`;
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `exercises/${fileName}`;
       
-      form.setValue('image_url', placeholderUrl);
-      setGifPreview(previewUrl);
-      toast.success("Image will be uploaded in a future update");
+      // Upload file to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('exercises')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        setUploadError(`Upload error: ${uploadError.message}`);
+        throw uploadError;
+      }
+      
+      console.log("File uploaded successfully, getting public URL...");
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('exercises')
+        .getPublicUrl(filePath);
+      
+      console.log("Public URL obtained:", publicUrl);
+      
+      // Update form
+      form.setValue('image_url', publicUrl);
+      setGifPreview(publicUrl);
+      toast.success("GIF uploaded successfully");
       
     } catch (error: any) {
-      console.error('Error handling image:', error);
-      setUploadError(error.message || "Failed to process image");
-      toast.error("Failed to process image: " + (error.message || "Unknown error"));
+      console.error('Error uploading GIF:', error);
+      setUploadError(error.message || "Failed to upload GIF");
+      toast.error("Failed to upload GIF: " + (error.message || "Unknown error"));
     } finally {
       setIsUploading(false);
     }
@@ -145,58 +174,33 @@ const ExerciseForm = ({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="category_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  value={field.value || undefined}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="difficulty_level"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Difficulty Level</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select difficulty" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="category_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value || undefined}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -232,12 +236,12 @@ const ExerciseForm = ({
                       {isUploading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing...
+                          Uploading...
                         </>
                       ) : (
                         <>
                           <Upload className="mr-2 h-4 w-4" />
-                          Upload Image
+                          Upload GIF
                         </>
                       )}
                     </Button>
@@ -265,7 +269,7 @@ const ExerciseForm = ({
                 )}
                 
                 <FormDescription>
-                  Upload an image demonstrating the exercise or enter a URL. Supported formats: GIF, PNG, JPG.
+                  Upload a GIF demonstrating the exercise or enter a URL. Supported formats: GIF, PNG, JPG.
                 </FormDescription>
                 <FormMessage />
               </div>

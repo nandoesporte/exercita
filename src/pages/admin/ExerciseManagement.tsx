@@ -83,7 +83,7 @@ const ExerciseManagement = () => {
   if (error) {
     return (
       <div className="p-4 bg-destructive/20 rounded-md">
-        <p className="text-destructive">Erro: {error}</p>
+        <p className="text-destructive">Error: {error.message}</p>
       </div>
     );
   }

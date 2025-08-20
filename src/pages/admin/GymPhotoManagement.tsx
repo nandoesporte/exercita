@@ -42,14 +42,12 @@ const GymPhotoManagement = () => {
   const approvedPhotos = allPhotos.filter(photo => photo.approved);
   
   const handleApprove = (photoId: string) => {
-    // MySQL placeholder - will be implemented
-    console.log('Approve photo:', photoId);
+    updateApprovalStatus({ photoId, approved: true });
   };
   
   const handleReject = (photoId: string) => {
     if (confirm('Deseja rejeitar esta foto?')) {
-      // MySQL placeholder - will be implemented
-      console.log('Reject photo:', photoId);
+      updateApprovalStatus({ photoId, approved: false });
     }
   };
   

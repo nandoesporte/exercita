@@ -32,7 +32,10 @@ const ProductManagement = () => {
 
   const handleToggleFeatured = async (id: string, currentStatus: boolean) => {
     try {
-      await toggleFeaturedProduct(id, !currentStatus);
+      await toggleFeaturedProduct({ 
+        id, 
+        isFeatured: !currentStatus 
+      });
       toast.success(currentStatus ? 'Produto removido dos destaques' : 'Produto adicionado aos destaques');
     } catch (error: any) {
       console.error('Erro ao atualizar status de destaque:', error);

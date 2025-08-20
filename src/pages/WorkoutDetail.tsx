@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkouts';
 import { toast } from 'sonner';
-// Removed Supabase import - using MySQL now
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ExerciseDetail from '@/components/ExerciseDetail';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-// Remove import - using placeholder types now
+import { Database } from '@/integrations/supabase/types';
 
 // Days mapping in Portuguese
 const weekdaysMapping: Record<string, string> = {
@@ -41,35 +41,8 @@ const shortDayNames: Record<string, string> = {
 };
 
 // Define WorkoutExercise type to match the data structure from the database
-type Exercise = {
-  id: string;
-  name: string;
-  description?: string;
-  category_id?: string;
-  image_url?: string;
-  video_url?: string;
-  difficulty_level?: 'beginner' | 'intermediate' | 'advanced';
-  muscle_groups?: string[];
-  equipment?: string[];
-  created_at?: string;
-  updated_at?: string;
-};
-type WorkoutExercise = {
-  id: string;
-  workout_id: string;
-  exercise_id?: string;
-  sets?: number;
-  reps?: number;
-  duration?: number;
-  rest?: number;
-  weight?: number;
-  order_position: number;
-  day_of_week?: string;
-  is_title_section?: boolean;
-  section_title?: string;
-  created_at?: string;
-  updated_at?: string;
-} & {
+type Exercise = Database['public']['Tables']['exercises']['Row'];
+type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
   exercise?: Exercise | null;
   day_of_week?: string | null;
   is_title_section?: boolean;
@@ -242,14 +215,23 @@ const WorkoutDetail = () => {
     try {
       setIsSubmitting(true);
       
-      // MySQL placeholder - workout completion will be implemented
-      const user = { user: null };
-      const error = null;
+      const { data: user } = await supabase.auth.getUser();
       
       if (!user.user) {
         toast.error("Você precisa estar logado para registrar um treino.");
         return;
       }
+      
+      // Record the workout in history
+      const { error } = await supabase
+        .from('user_workout_history')
+        .insert({
+          user_id: user.user.id,
+          workout_id: workout.id,
+          completed_at: new Date().toISOString(),
+          duration: workout.duration,
+          calories_burned: workout.calories
+        });
       
       if (error) {
         console.error("Error recording workout:", error);

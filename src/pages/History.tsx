@@ -6,7 +6,7 @@ import { ptBR } from 'date-fns/locale';
 import { useWorkoutHistory, WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-// Removed Supabase import - using MySQL now
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +28,6 @@ const History = () => {
   const [workoutToDelete, setWorkoutToDelete] = React.useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
-
-  const handleRefresh = () => {
-    console.log('Refresh will be implemented with MySQL');
-  };
 
   if (isLoading) {
     return (
@@ -84,8 +80,16 @@ const History = () => {
     
     setIsDeleting(true);
     try {
-      console.log('MySQL delete workout history placeholder');
-      toast.error('Exclusão de treinos será implementada em breve');
+      const { error } = await supabase
+        .from('user_workout_history')
+        .delete()
+        .eq('id', workoutToDelete);
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success('Treino excluído com sucesso');
       
       refetch();
     } catch (error) {

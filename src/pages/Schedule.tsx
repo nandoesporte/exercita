@@ -26,7 +26,7 @@ import { toast } from '@/lib/toast-wrapper';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardHeader, CardContent, CardDescription } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-// Removed Supabase import - using MySQL now
+import { supabase } from '@/integrations/supabase/client';
 
 // Default fallback WhatsApp number if not loaded from DB
 const DEFAULT_WHATSAPP = "44997270698";
@@ -59,9 +59,11 @@ const Schedule = () => {
   useEffect(() => {
     const fetchTrainerData = async () => {
       try {
-        // MySQL placeholder - trainer data will be implemented
-        const data = null;
-        const error = null;
+        const { data, error } = await supabase
+          .from('personal_trainers')
+          .select('*')
+          .eq('is_primary', true)
+          .single();
 
         if (error) {
           console.error('Error fetching trainer data:', error);

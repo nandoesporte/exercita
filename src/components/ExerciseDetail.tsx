@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Clock, Dumbbell, Scale, ZoomIn, Weight } from 'lucide-react';
-import { Exercise } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
@@ -15,9 +15,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Removed old Database type references - now using MySQL types
-
-import { WorkoutExercise } from '@/types/database';
+type Exercise = Database['public']['Tables']['exercises']['Row'];
+type WorkoutExercise = Database['public']['Tables']['workout_exercises']['Row'] & {
+  exercise?: Exercise | null;
+  is_title_section?: boolean;
+  section_title?: string | null;
+};
 
 interface ExerciseDetailProps {
   workoutExercise: WorkoutExercise;
@@ -236,13 +239,13 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <p className="text-xl font-bold text-white">
-                          {rest && rest >= 60 && rest % 60 === 0 
-                            ? `${Math.floor(rest / 60)} min` 
+                          {rest >= 60 && rest % 60 === 0 
+                            ? `${rest / 60} min` 
                             : `${rest} seg`}
                         </p>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {rest && rest >= 60 
+                        {rest >= 60 
                           ? `${rest} segundos` 
                           : ''}
                       </TooltipContent>

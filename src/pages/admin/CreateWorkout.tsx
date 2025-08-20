@@ -22,7 +22,16 @@ const CreateWorkout = () => {
       toast('Considere selecionar dias da semana para o cronograma de treinos');
     }
     
-    createWorkout(data);
+    createWorkout(data, {
+      onSuccess: () => {
+        toast.success('Treino criado com sucesso!');
+        navigate('/admin/workouts');
+      },
+      onError: (error) => {
+        console.error("Erro ao criar treino:", error);
+        toast.error(`Erro ao criar treino: ${error.message}`);
+      }
+    });
   };
 
   const isLoading = isCreating || areCategoriesLoading || areUsersLoading;

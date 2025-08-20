@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// MySQL placeholder - removed Supabase import
+import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Loader2, UserPlus, UserCheck, UserX } from 'lucide-react';
@@ -54,9 +54,8 @@ const UserManagement = () => {
   const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      console.log("MySQL placeholder - users not yet implemented");
-      const data = [];
-      const error = null;
+      console.log("Fetching users for user management page...");
+      const { data, error } = await supabase.rpc('debug_get_all_users');
       
       if (error) {
         console.error("Erro ao carregar usuários:", error);
@@ -75,13 +74,21 @@ const UserManagement = () => {
   // Toggle user active status
   const toggleUserActiveMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string, isActive: boolean }) => {
-      // MySQL placeholder - user status toggle not yet implemented
-      console.log('User status will be toggled in MySQL:', { userId, isActive });
-      throw new Error('Alteração de status será implementada em breve');
+      const { error } = await supabase.rpc('toggle_user_active_status', {
+        user_id: userId,
+        is_active: isActive,
+      });
+      
+      if (error) throw new Error(error.message);
+      return { userId, isActive };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('Status alterado com sucesso!');
+      toast.success(
+        data.isActive 
+          ? 'Usuário ativado com sucesso!' 
+          : 'Usuário desativado com sucesso!'
+      );
     },
     onError: (error: Error) => {
       toast.error(`Erro ao alterar status do usuário: ${error.message}`);
@@ -91,9 +98,12 @@ const UserManagement = () => {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      // MySQL placeholder - user deletion not yet implemented
-      console.log('User will be deleted from MySQL:', userId);
-      throw new Error('Exclusão de usuários será implementada em breve');
+      const { error } = await supabase.rpc('admin_delete_user', {
+        user_id: userId,
+      });
+      
+      if (error) throw new Error(error.message);
+      return userId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
