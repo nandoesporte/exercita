@@ -89,7 +89,7 @@ export default function ExerciseLibrary() {
   if (error) {
     return (
       <div className="p-4 bg-destructive/20 rounded-md">
-        <p className="text-destructive">Erro: {error.message}</p>
+        <p className="text-destructive">Erro: {error}</p>
       </div>
     );
   }

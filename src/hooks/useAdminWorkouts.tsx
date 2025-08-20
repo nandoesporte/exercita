@@ -96,7 +96,7 @@ export function useAdminWorkouts() {
       toast.error('Clonagem de treinos será implementada em breve');
       return Promise.resolve(null);
     },
-    getWorkoutExercises: (workoutId: string) => ({
+    getWorkoutExercises: (workoutId: string, selectedDayOfWeek?: string | null) => ({
       data: [],
       isLoading: false,
       error: null
@@ -121,22 +121,22 @@ export function useAdminWorkouts() {
       return Promise.resolve();
     },
     isRemovingRecommendation: false,
-    addExerciseToWorkout: (workoutId: string, exerciseData: any) => {
+    addExerciseToWorkout: (data: { workoutId: string; exerciseData: any }) => {
       toast.error('Adição de exercícios será implementada em breve');
       return Promise.resolve();
     },
     isAddingExercise: false,
-    removeExerciseFromWorkout: (exerciseId: string) => {
+    removeExerciseFromWorkout: (data: { exerciseId: string; workoutId: string }) => {
       toast.error('Remoção de exercícios será implementada em breve');
       return Promise.resolve();
     },
     isRemovingExercise: false,
-    updateExerciseOrder: (exercises: any[]) => {
+    updateExerciseOrder: (data: { exerciseId: string; newPosition: number; workoutId: string }) => {
       toast.error('Reordenação será implementada em breve');
       return Promise.resolve();
     },
     isUpdatingExerciseOrder: false,
-    cloneExercisesToDays: (workoutId: string, sourceDays: string[], targetDays: string[]) => {
+    cloneExercisesToDays: (data: { workoutId: string; sourceDayOfWeek: string; targetDaysOfWeek: string[] }) => {
       toast.error('Clonagem de exercícios será implementada em breve');
       return Promise.resolve();
     },

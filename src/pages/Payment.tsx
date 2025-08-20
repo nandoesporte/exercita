@@ -57,11 +57,9 @@ const Payment = () => {
     const fetchPaymentData = async () => {
       setIsLoading(true);
       try {
-        // Fetch payment settings from database
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('payment_settings')
-          .select('*')
-          .single();
+        // MySQL placeholder - payment settings will be implemented
+        const settingsData = null;
+        const settingsError = null;
           
         if (settingsError && settingsError.code !== 'PGRST116') {
           console.error('Error fetching payment settings:', settingsError);
@@ -82,13 +80,10 @@ const Payment = () => {
           setMonthlyFee('99.90');
         }
         
-        // Fetch PIX key if PIX payments are enabled
+        // MySQL placeholder - PIX key will be implemented
         if (settingsData?.accept_pix_payments) {
-          const { data: pixData, error: pixError } = await supabase
-            .from('pix_keys')
-            .select('key_type, key_value, is_primary')
-            .eq('is_primary', true)
-            .single();
+          const pixData = null;
+          const pixError = null;
             
           if (pixError && pixError.code !== 'PGRST116') {
             console.error('Error fetching PIX key:', pixError);
@@ -118,13 +113,9 @@ const Payment = () => {
           },
         ]);
 
-        // Fetch payment history - in real implementation fetch from orders table
-        const { data: historyData, error: historyError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user?.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
+        // MySQL placeholder - payment history will be implemented
+        const historyData = null;
+        const historyError = null;
           
         if (historyError) {
           console.error('Error fetching payment history:', historyError);

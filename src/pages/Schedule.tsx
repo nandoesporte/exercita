@@ -59,11 +59,9 @@ const Schedule = () => {
   useEffect(() => {
     const fetchTrainerData = async () => {
       try {
-        const { data, error } = await supabase
-          .from('personal_trainers')
-          .select('*')
-          .eq('is_primary', true)
-          .single();
+        // MySQL placeholder - trainer data will be implemented
+        const data = null;
+        const error = null;
 
         if (error) {
           console.error('Error fetching trainer data:', error);

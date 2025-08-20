@@ -34,7 +34,7 @@ const ProductDetail = () => {
 
       try {
         setIsLoading(true);
-        const data = await fetchProduct(id);
+        const data = await fetchProduct();
         console.log('Product loaded successfully:', data);
         setProduct(data);
         setIsLoading(false);

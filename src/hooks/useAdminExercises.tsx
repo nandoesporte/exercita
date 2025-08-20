@@ -55,13 +55,13 @@ export function useAdminExercises() {
     error: exercisesQuery.error?.message,
     createExercise: createExercise.mutate,
     isCreating: createExercise.isPending,
+    updateExercise: () => toast.info('Em desenvolvimento'),
     isUpdating: false,
+    deleteExercise: () => toast.info('Em desenvolvimento'),
     isDeleting: false,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
     batchCreateExercises: () => toast.info('Em desenvolvimento'),
-    updateExercise: () => toast.info('Em desenvolvimento'),
-    deleteExercise: () => toast.info('Em desenvolvimento'),
     checkStorageBucket: () => Promise.resolve(true),
   };
 }
