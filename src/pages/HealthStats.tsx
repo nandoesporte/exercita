@@ -11,7 +11,7 @@ const HealthStats = () => {
   // Mock data - in a real app, this would come from the API
   const healthData = {
     weight: {
-      current: profile?.weight || 70,
+      current: 70, // Mock data since weight is not in profiles table
       history: [68, 69, 70, 72, 71, 70, 70],
       unit: 'kg',
     },

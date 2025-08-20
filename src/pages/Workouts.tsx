@@ -79,11 +79,11 @@ const Workouts = () => {
     if (activeFilter === 'Todos') {
       matchesFilter = true;
     } else if (activeFilter === 'Iniciante') {
-      matchesFilter = workout.level === 'beginner';
+      matchesFilter = workout.difficulty_level === 'beginner';
     } else if (activeFilter === 'Intermediário') {
-      matchesFilter = workout.level === 'intermediate';
+      matchesFilter = workout.difficulty_level === 'intermediate';
     } else if (activeFilter === 'Avançado') {
-      matchesFilter = workout.level === 'advanced';
+      matchesFilter = workout.difficulty_level === 'advanced';
     } else if (activeFilter === 'Rápido') {
       matchesFilter = workout.duration < 30;
     } else {
@@ -92,7 +92,7 @@ const Workouts = () => {
     }
                           
     const matchesSearch = searchQuery === '' ||
-      workout.title.toLowerCase().includes(searchQuery.toLowerCase());
+      workout.name.toLowerCase().includes(searchQuery.toLowerCase());
                          
     return matchesFilter && matchesSearch;
   });
@@ -184,13 +184,13 @@ const Workouts = () => {
                 <WorkoutCard 
                   key={workout.id} 
                   id={workout.id}
-                  title={workout.title}
-                  image={workout.image_url || ''}
-                  duration={`${workout.duration} min`}
-                  level={workout.level === 'beginner' ? 'Iniciante' : 
-                         workout.level === 'intermediate' ? 'Intermediário' : 
-                         workout.level === 'advanced' ? 'Avançado' : workout.level}
-                  calories={workout.calories || 0}
+                  title={workout.name}
+                  image=""
+                  duration={`${workout.duration || 0} min`}
+                  level={workout.difficulty_level === 'beginner' ? 'Iniciante' : 
+                         workout.difficulty_level === 'intermediate' ? 'Intermediário' : 
+                         workout.difficulty_level === 'advanced' ? 'Avançado' : workout.difficulty_level || 'N/A'}
+                  calories={0}
                   daysOfWeek={workout.days_of_week}
                 />
               ))}
