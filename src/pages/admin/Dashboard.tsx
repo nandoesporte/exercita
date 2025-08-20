@@ -40,8 +40,10 @@ const Dashboard = () => {
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: async () => {
-      // Get users count
-      const { data: usersData, error: usersError } = await supabase.rpc('debug_get_all_users');
+      // Get users count using direct query instead of RPC
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('id');
       if (usersError) console.error("Error fetching users:", usersError);
       
       // Get workouts count

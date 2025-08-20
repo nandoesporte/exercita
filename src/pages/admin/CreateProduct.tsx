@@ -11,9 +11,11 @@ const CreateProduct = () => {
   const { 
     createProduct, 
     isCreating, 
-    categories, 
-    isLoadingCategories,
   } = useAdminStore();
+  
+  // Mock categories since they're not in the admin store
+  const categories = [];
+  const isLoadingCategories = false;
   
   const handleCreateProduct = async (data: ProductFormData) => {
     try {

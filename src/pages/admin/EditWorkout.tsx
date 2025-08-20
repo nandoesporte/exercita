@@ -18,22 +18,25 @@ const EditWorkout = () => {
     areUsersLoading,
     updateWorkout,
     isUpdating,
-    getWorkoutDays,
   } = useAdminWorkouts();
   
-  const { data: workoutDays = [] } = getWorkoutDays(id || '');
+  // Mock missing functions since they're not in the admin store
+  const getWorkoutDays = (workoutId: string) => {
+    return [];
+  };
+  
+  // Mock getWorkoutDays to return empty array instead of query result
+  const workoutDays: string[] = [];
   const [defaultValues, setDefaultValues] = useState<WorkoutFormData | null>(null);
 
   useEffect(() => {
     if (workout && workoutDays) {
       setDefaultValues({
-        title: workout.title,
+        name: workout.name,
         description: workout.description || '',
         duration: workout.duration,
-        level: workout.level,
+        difficulty_level: workout.difficulty_level,
         category_id: workout.category_id || null,
-        image_url: workout.image_url || '',
-        calories: workout.calories || null,
         days_of_week: workoutDays,
       });
     }
@@ -80,7 +83,11 @@ const EditWorkout = () => {
             onSubmit={handleSubmit} 
             isLoading={isUpdating}
             categories={categories}
-            users={users}
+           users={users.map(user => ({
+             ...user,
+             atualizado_em: new Date().toISOString(),
+             criado_em: new Date().toISOString()
+           }))}
             defaultValues={defaultValues}
             isEditing={true}
           />

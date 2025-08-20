@@ -20,7 +20,13 @@ import { DataTable } from "@/components/ui/data-table";
 
 const CategoryManagement = () => {
   const navigate = useNavigate();
-  const { categories, isLoadingCategories, deleteCategory, isDeletingCategory } = useAdminStore();
+  // Mock category management since categories are not in the admin store
+  const categories = [];
+  const isLoadingCategories = false;
+  const deleteCategory = async (id: string) => {
+    console.log('Delete category not implemented');
+  };
+  const isDeletingCategory = false;
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

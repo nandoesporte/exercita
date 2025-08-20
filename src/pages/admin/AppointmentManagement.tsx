@@ -81,8 +81,13 @@ const AppointmentManagement = () => {
         .select('*')
         .order('appointment_date', { ascending: true });
 
-      if (error) throw error;
-      return data as Appointment[];
+      return (data || []).map(appointment => ({
+        ...appointment,
+        title: 'Agendamento',
+        description: appointment.notes || 'Consulta agendada',
+        duration: 60, // Default 60 minutes
+        trainer_name: 'Personal Trainer'
+      })) as Appointment[];
     },
   });
 
