@@ -33,25 +33,9 @@ const Header: React.FC<HeaderProps> = ({
   
   // Update avatar URL when profile changes, with stable cache busting
   useEffect(() => {
-    if (profile?.avatar_url && !imageError) {
-      try {
-        // Use a stable URL per profile update to prevent re-renders
-        if (profile.avatar_url.includes('?')) {
-          // Already has parameters, keep as is
-          setAvatarUrl(profile.avatar_url);
-        } else {
-          // Add timestamp parameter if not present
-          setAvatarUrl(`${profile.avatar_url}?t=${Date.now()}`);
-        }
-        console.log('Header: Avatar URL set:', avatarUrl);
-      } catch (e) {
-        console.error('Header: Erro ao processar URL do avatar:', e);
-        setAvatarUrl(profile.avatar_url); // Fallback to original URL on error
-      }
-    } else {
-      setAvatarUrl(null);
-    }
-  }, [profile?.avatar_url, imageError]);
+    // Profile doesn't have avatar_url in current schema
+    setAvatarUrl(null);
+  }, [profile]);
   
   // Find the first workout to link to, or use a fallback
   const firstWorkoutId = workouts && workouts.length > 0 
@@ -70,10 +54,10 @@ const Header: React.FC<HeaderProps> = ({
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const firstName = profile.first_name || '';
-    const lastName = profile.last_name || '';
+    const nome = profile.nome || '';
+    const firstLetter = nome.charAt(0).toUpperCase();
     
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+    return firstLetter || 'U';
   };
 
   const handleImageError = () => {
@@ -242,7 +226,7 @@ const Header: React.FC<HeaderProps> = ({
                 {avatarUrl ? (
                   <AvatarImage 
                     src={avatarUrl} 
-                    alt={`${profile?.first_name || 'Usuário'}'s profile`}
+                    alt={`${profile?.nome || 'Usuário'}'s profile`}
                     onError={handleImageError}
                   />
                 ) : null}

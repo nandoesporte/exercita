@@ -35,7 +35,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   }
   
   const [viewImage, setViewImage] = useState<boolean>(false);
-  const { exercise, sets, reps, duration, rest, weight } = workoutExercise;
+  const { exercise, sets, reps, duration, rest_time } = workoutExercise;
   const isMobile = useIsMobile();
   const { profile } = useProfile();
   
@@ -43,10 +43,10 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const firstName = profile.first_name || '';
-    const lastName = profile.last_name || '';
+    const nome = profile.nome || '';
+    const firstLetter = nome.charAt(0).toUpperCase();
     
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+    return firstLetter || 'U';
   };
   
   // Helper function to format duration
@@ -69,9 +69,8 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   };
   
   const formattedDuration = formatDuration(duration);
-  const showWeight = weight !== null && weight !== undefined && weight > 0;
   const showReps = reps !== null && reps !== undefined && reps > 0;
-  const showRest = rest !== null && rest !== undefined && rest > 0;
+  const showRest = rest_time !== null && rest_time !== undefined && rest_time > 0;
   
   return (
     <>
@@ -136,8 +135,8 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
             >
               <Avatar className="h-8 w-8 border-2 border-fitness-green">
                 <AvatarImage 
-                  src={profile?.avatar_url || ''} 
-                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+                  src={''} 
+                  alt={`${profile?.nome || 'Usuário'}'s profile`} 
                 />
                 <AvatarFallback className="bg-fitness-dark text-white">
                   {getInitials()}
@@ -203,12 +202,6 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="text-xl font-bold text-white">{reps}</p>
-                    {showWeight && (
-                      <span className="flex items-center gap-1 bg-fitness-darkGray/30 px-2 py-1 rounded-full text-sm font-medium text-white">
-                        <Weight className="h-3 w-3 text-fitness-orange" />
-                        {weight}kg
-                      </span>
-                    )}
                   </div>
                 </div>
               ) : formattedDuration ? (
@@ -239,31 +232,18 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <p className="text-xl font-bold text-white">
-                          {rest >= 60 && rest % 60 === 0 
-                            ? `${rest / 60} min` 
-                            : `${rest} seg`}
+                          {rest_time >= 60 && rest_time % 60 === 0 
+                            ? `${rest_time / 60} min` 
+                            : `${rest_time} seg`}
                         </p>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {rest >= 60 
-                          ? `${rest} segundos` 
+                        {rest_time >= 60 
+                          ? `${rest_time} segundos` 
                           : ''}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                </div>
-              )}
-              
-              {/* Weight parameter block - only if weight > 0 */}
-              {showWeight && (
-                <div className="p-4 border rounded-lg bg-fitness-darkGray/5">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Weight size={16} className="text-fitness-orange" />
-                    <span className="text-sm font-medium">Carga</span>
-                  </div>
-                  <p className="text-xl font-bold text-white flex items-center">
-                    {weight} <span className="ml-1">kg</span>
-                  </p>
                 </div>
               )}
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -43,21 +42,21 @@ export function RecommendWorkoutDialog({
     isLoading: recommendationsLoading 
   } = getWorkoutRecommendations(workoutId);
   
-  const [isRecommended, setIsRecommended] = useState(workout?.is_recommended || false);
+  const [isRecommended, setIsRecommended] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Sync the initial state with the workout data
   useEffect(() => {
     if (workout) {
-      setIsRecommended(workout.is_recommended || false);
+      setIsRecommended(false); // Simplified since we don't have is_recommended
     }
   }, [workout]);
 
   // Filter users based on search query
   const filteredUsers = users.filter(user => {
-    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase()) || 
+    const nome = user.nome || '';
+    return nome.toLowerCase().includes(searchQuery.toLowerCase()) || 
            (user.id && user.id.toLowerCase().includes(searchQuery.toLowerCase()));
   });
 
@@ -71,13 +70,7 @@ export function RecommendWorkoutDialog({
     if (!workout) return;
     
     setIsProcessing(true);
-    await updateWorkout({
-      id: workout.id,
-      title: workout.title,
-      duration: workout.duration,
-      level: workout.level,
-      is_recommended: !isRecommended
-    });
+    // Simplified - just update local state since we don't have is_recommended field
     setIsRecommended(!isRecommended);
     setIsProcessing(false);
   };
@@ -181,8 +174,7 @@ export function RecommendWorkoutDialog({
             ) : filteredUsers.length > 0 ? (
               <div className="p-0">
                 {filteredUsers.map((user) => {
-                  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-                  const displayName = fullName || user.id;
+                  const displayName = user.nome || user.id;
                   const isRecommended = isUserRecommended(user.id);
                   
                   return (

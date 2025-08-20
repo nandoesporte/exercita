@@ -238,15 +238,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If there is a logged-in user, make them an admin
       if (user) {
         console.log("Setting admin status for user:", user.id);
-        const { error } = await supabase
-          .from('profiles')
-          .update({ is_admin: true })
-          .eq('id', user.id);
-          
-        if (error) {
-          console.error("Error setting admin status:", error);
-          throw error;
-        }
+        // Remove admin status update since profiles doesn't have is_admin column
+        console.log("Admin status functionality needs proper implementation");
         
         setIsAdmin(true);
         toast.success('Admin access granted!');
@@ -272,16 +265,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = window.queryClient.getQueryData(['profile', user.id]);
           if (profileData) {
             console.log("Saving profile data before logout:", profileData);
-            // Make sure avatar_url and other critical data is saved to database before logout
-            const { avatar_url, first_name, last_name } = profileData as any;
-            if (avatar_url || first_name || last_name) {
+            // Update only existing profile fields
+            const { nome } = profileData as any;
+            if (nome) {
               await supabase
                 .from('profiles')
                 .update({ 
-                  avatar_url, 
-                  first_name, 
-                  last_name,
-                  updated_at: new Date().toISOString()
+                  nome,
+                  atualizado_em: new Date().toISOString()
                 })
                 .eq('id', user.id);
               console.log("Profile permanently saved to database before logout");

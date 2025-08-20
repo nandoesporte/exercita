@@ -350,7 +350,7 @@ const WorkoutForm = ({
                   <SelectContent>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
-                        {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.id}
+                        {user.nome || user.id}
                       </SelectItem>
                     ))}
                   </SelectContent>
