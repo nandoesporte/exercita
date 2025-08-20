@@ -54,19 +54,25 @@ const Index = () => {
   
   // Update timestamp when profile changes
   useEffect(() => {
-    if (profile?.avatar_url) {
+    if (profile?.nome) {
       setAvatarTimestamp(Date.now());
     }
-  }, [profile?.avatar_url]);
+  }, [profile?.nome]);
   
   // Function to get user initials for the avatar fallback
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const firstName = profile.first_name || '';
-    const lastName = profile.last_name || '';
+    const nome = profile.nome || '';
+    const words = nome.split(' ');
     
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+    if (words.length >= 2) {
+      return `${words[0].charAt(0)}${words[1].charAt(0)}`.toUpperCase();
+    } else if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    
+    return 'U';
   };
   
   return (
@@ -76,13 +82,8 @@ const Index = () => {
         <Link to="/profile">
           <Avatar className="h-24 w-24 border-4 border-fitness-green cursor-pointer hover:border-fitness-orange transition-all duration-300">
             <AvatarImage 
-              src={profile?.avatar_url ? `${profile.avatar_url}?t=${avatarTimestamp}` : undefined} 
-              alt={`${profile?.first_name || 'Usuário'}'s profile`} 
-              onError={(e) => {
-                console.error('Error loading profile image on index page:', e);
-                // Fallback to initials on error
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              src={undefined} 
+              alt={`${profile?.nome || 'Usuário'}'s profile`} 
             />
             <AvatarFallback className="bg-fitness-dark text-white text-3xl">
               {getInitials()}
@@ -94,7 +95,7 @@ const Index = () => {
       {/* Seção de Boas-vindas */}
       <section className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-fitness-orange mb-2">
-          {greeting}, {profile?.first_name || 'Atleta'}!
+          {greeting}, {profile?.nome?.split(' ')[0] || 'Atleta'}!
         </h1>
         <p className="text-xl text-gray-200">
           {hasAssignedWorkout 

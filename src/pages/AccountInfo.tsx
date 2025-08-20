@@ -20,17 +20,9 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 const formSchema = z.object({
-  first_name: z.string().min(2, {
+  nome: z.string().min(2, {
     message: 'Nome deve ter pelo menos 2 caracteres.',
   }),
-  last_name: z.string().min(2, {
-    message: 'Sobrenome deve ter pelo menos 2 caracteres.',
-  }),
-  birthdate: z.string().optional(),
-  gender: z.string().optional(),
-  weight: z.string().optional(),
-  height: z.string().optional(),
-  fitness_goal: z.string().optional(),
 });
 
 const AccountInfo = () => {
@@ -43,13 +35,7 @@ const AccountInfo = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: '',
-      last_name: '',
-      birthdate: '',
-      gender: '',
-      weight: '',
-      height: '',
-      fitness_goal: '',
+      nome: '',
     },
   });
   
@@ -106,13 +92,7 @@ const AccountInfo = () => {
     if (profile && !formInitialized) {
       console.log('Carregando dados do perfil no formulário:', profile);
       form.reset({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        birthdate: formatDateForDisplay(profile.birthdate),
-        gender: profile.gender || '',
-        weight: profile.weight ? String(profile.weight) : '',
-        height: profile.height ? String(profile.height) : '',
-        fitness_goal: profile.fitness_goal || '',
+        nome: profile.nome || '',
       });
       setFormInitialized(true);
     }
@@ -135,25 +115,10 @@ const AccountInfo = () => {
     console.log('Valores do formulário para envio:', values);
     
     try {
-      // Format and validate the date before sending to the backend
-      const birthdate = formatDateForBackend(values.birthdate);
-      console.log('Data de nascimento formatada:', birthdate);
-      
-      // Prepare profile data for update
-      const profileData = {
-        first_name: values.first_name,
-        last_name: values.last_name,
-        birthdate,
-        gender: values.gender || null,
-        weight: values.weight ? parseFloat(values.weight) : null,
-        height: values.height ? parseFloat(values.height) : null,
-        fitness_goal: values.fitness_goal || null,
-      };
-      
-      console.log('Enviando atualização de perfil:', profileData);
-      
       // Send update to backend
-      await updateProfile(profileData);
+      updateProfile({
+        nome: values.nome,
+      });
       
       // Force a complete profile refresh after update to ensure we have the latest data
       setTimeout(() => {
@@ -188,144 +153,19 @@ const AccountInfo = () => {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Seu nome"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sobrenome</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Seu sobrenome"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="birthdate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data de nascimento</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="dd/mm/aaaa"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gênero</FormLabel>
-                  <select 
-                    className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
-                    value={field.value}
-                    onChange={field.onChange}
-                  >
-                    <option value="">Selecione</option>
-                    <option value="male">Masculino</option>
-                    <option value="female">Feminino</option>
-                    <option value="other">Outro</option>
-                    <option value="prefer_not_to_say">Prefiro não dizer</option>
-                  </select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Peso (kg)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="70"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="height"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Altura (cm)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="175"
-                      className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
           <FormField
             control={form.control}
-            name="fitness_goal"
+            name="nome"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Objetivo Fitness</FormLabel>
-                <select 
-                  className="w-full rounded border bg-fitness-darkGray border-fitness-darkGray/50 p-2 text-white"
-                  value={field.value}
-                  onChange={field.onChange}
-                >
-                  <option value="">Selecione</option>
-                  <option value="lose_weight">Perder peso</option>
-                  <option value="build_muscle">Ganhar massa muscular</option>
-                  <option value="improve_fitness">Melhorar condicionamento</option>
-                  <option value="improve_health">Melhorar a saúde geral</option>
-                  <option value="maintain">Manter a forma</option>
-                </select>
+                <FormLabel>Nome Completo</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Seu nome completo"
+                    className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
