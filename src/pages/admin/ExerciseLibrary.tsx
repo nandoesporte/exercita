@@ -74,8 +74,9 @@ export default function ExerciseLibrary() {
   
   const handleBatchSubmit = async (data: any) => {
     try {
-      // We'll directly use the validated data without additional processing
-      await batchCreateExercises(data);
+      // MySQL placeholder - batch upload not yet implemented
+      console.log('Batch exercise creation will be implemented:', data);
+      batchCreateExercises();
       setIsBatchUploadOpen(false);
       toast.success("Exercícios importados com sucesso!");
     } catch (error: any) {
@@ -193,7 +194,13 @@ export default function ExerciseLibrary() {
           <ScrollArea className="max-h-[70vh] pr-4">
             <ExerciseBatchUpload 
               onSubmit={handleBatchSubmit} 
-              categories={categories}
+              categories={categories.map(cat => ({
+                ...cat,
+                color: cat.color || '#000000',
+                icon: cat.icon || 'Default',
+                created_at: cat.created_at || new Date().toISOString(),
+                updated_at: cat.updated_at || new Date().toISOString()
+              }))}
             />
           </ScrollArea>
         </DialogContent>

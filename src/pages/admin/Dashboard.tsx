@@ -40,21 +40,11 @@ const Dashboard = () => {
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: async () => {
-      // Get users count
-      const { data: usersData, error: usersError } = await supabase.rpc('debug_get_all_users');
-      if (usersError) console.error("Error fetching users:", usersError);
-      
-      // Get workouts count
-      const { count: workoutsCount, error: workoutsError } = await supabase
-        .from('workouts')
-        .select('*', { count: 'exact', head: true });
-      if (workoutsError) console.error("Error fetching workouts:", workoutsError);
-      
-      // Get appointments count
-      const { count: appointmentsCount, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select('*', { count: 'exact', head: true });
-      if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
+      // MySQL placeholders - stats not yet implemented
+      console.log('Stats will be fetched from MySQL');
+      const usersData = [];
+      const workoutsCount = 0;
+      const appointmentsCount = 0;
       
       return {
         users: usersData?.length || 0,
@@ -68,13 +58,10 @@ const Dashboard = () => {
   const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery({
     queryKey: ['admin-dashboard-appointments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*')
-        .order('appointment_date', { ascending: true })
-        .limit(3);
+      // MySQL placeholder - appointments not yet implemented
+      console.log('Appointments will be fetched from MySQL');
+      const data = [];
       
-      if (error) throw error;
       return data || [];
     },
   });
@@ -83,8 +70,9 @@ const Dashboard = () => {
   const { data: recentUsersData, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['admin-dashboard-users'],
     queryFn: async () => {
-      console.log("Fetching users with debug_get_all_users function");
-      const { data, error } = await supabase.rpc('debug_get_all_users');
+      console.log("MySQL placeholder - users not yet implemented");
+      const data = [];
+      const error = null;
       
       if (error) {
         console.error("Error fetching users:", error);
@@ -117,21 +105,13 @@ const Dashboard = () => {
   // Toggle user active status
   const toggleUserActiveMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string, isActive: boolean }) => {
-      const { error } = await supabase.rpc('toggle_user_active_status', {
-        user_id: userId,
-        is_active: isActive,
-      });
-      
-      if (error) throw new Error(error.message);
-      return { userId, isActive };
+      // MySQL placeholder - user status toggle not yet implemented
+      console.log('User status will be toggled in MySQL:', { userId, isActive });
+      throw new Error('Alteração de status será implementada em breve');
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
-      toast.success(
-        data.isActive 
-          ? 'Usuário ativado com sucesso!' 
-          : 'Usuário desativado com sucesso!'
-      );
+      toast.success('Status alterado com sucesso!');
     },
     onError: (error: Error) => {
       toast.error(`Erro ao alterar status do usuário: ${error.message}`);
@@ -141,24 +121,9 @@ const Dashboard = () => {
   // Create user mutation - Using admin_create_user RPC function instead of auth.admin API
   const createUserMutation = useMutation({
     mutationFn: async (userData: FormValues) => {
-      console.log("Creating user from dashboard with:", userData.email);
-      // Using the admin_create_user RPC function which runs with elevated privileges
-      const { data, error } = await supabase.rpc('admin_create_user', {
-        user_email: userData.email,
-        user_password: userData.password,
-        user_metadata: {
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-        }
-      });
-      
-      if (error) {
-        console.error("Error creating user:", error);
-        throw new Error(error.message);
-      }
-      
-      console.log("User created successfully:", data);
-      return data;
+      console.log("MySQL placeholder - user creation not yet implemented:", userData.email);
+      // MySQL placeholder - user creation will be handled by auth system
+      throw new Error('Criação de usuários será implementada em breve');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
@@ -174,12 +139,9 @@ const Dashboard = () => {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.rpc('admin_delete_user', {
-        user_id: userId,
-      });
-      
-      if (error) throw new Error(error.message);
-      return userId;
+      // MySQL placeholder - user deletion not yet implemented
+      console.log('User will be deleted from MySQL:', userId);
+      throw new Error('Exclusão de usuários será implementada em breve');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });

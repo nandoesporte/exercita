@@ -72,17 +72,13 @@ const AppointmentManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('upcoming');
 
-  // Fetch all appointments
+  // Fetch all appointments - MySQL placeholder
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['admin-appointments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*')
-        .order('appointment_date', { ascending: true });
-
-      if (error) throw error;
-      return data as Appointment[];
+      // MySQL placeholder - appointments not yet implemented
+      console.log('Appointments will be fetched from MySQL');
+      return [];
     },
   });
 
@@ -111,16 +107,12 @@ const AppointmentManagement = () => {
     });
   });
 
-  // Create appointment mutation
+  // Create appointment mutation - MySQL placeholder
   const createAppointmentMutation = useMutation({
     mutationFn: async (newAppointment: Omit<Appointment, 'id'>) => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([newAppointment])
-        .select();
-
-      if (error) throw error;
-      return data;
+      // MySQL placeholder - appointment creation not yet implemented
+      console.log('Appointment will be created in MySQL:', newAppointment);
+      throw new Error('Agendamentos serão implementados em breve');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-appointments'] });
@@ -132,15 +124,13 @@ const AppointmentManagement = () => {
     },
   });
 
-  // Delete appointment mutation
+  // Delete appointment mutation - MySQL placeholder
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (appointmentId: string) => {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', appointmentId);
+      // MySQL placeholder - appointment deletion not yet implemented
+      console.log('Appointment will be deleted from MySQL:', appointmentId);
+      throw new Error('Exclusão de agendamentos será implementada em breve');
 
-      if (error) throw error;
       return appointmentId;
     },
     onSuccess: () => {

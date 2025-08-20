@@ -8,7 +8,7 @@ export interface AdminExercise extends Exercise {
 }
 
 export interface ExerciseFormData {
-  name: string;
+  name?: string;
   description?: string;
   category_id?: string;
   image_url?: string;
@@ -55,9 +55,15 @@ export function useAdminExercises() {
     error: exercisesQuery.error?.message,
     createExercise: createExercise.mutate,
     isCreating: createExercise.isPending,
-    updateExercise: () => toast.info('Em desenvolvimento'),
+    updateExercise: (data: any) => {
+      console.log('Exercise update will be implemented:', data);
+      toast.info('Em desenvolvimento');
+    },
     isUpdating: false,
-    deleteExercise: () => toast.info('Em desenvolvimento'),
+    deleteExercise: (id: string) => {
+      console.log('Exercise deletion will be implemented:', id);
+      toast.info('Em desenvolvimento');
+    },
     isDeleting: false,
     categories: workoutCategoriesQuery.data || [],
     areCategoriesLoading: workoutCategoriesQuery.isLoading,
