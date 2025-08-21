@@ -36,7 +36,7 @@ export function useProfile() {
         const cachedData = queryClient.getQueryData<Profile>(['profile', user.id]);
         
         // If we have valid cached data and this is not an initial load, use it
-        if (cachedData?.id && cachedData.nome) {
+        if (cachedData?.id && (cachedData.first_name || cachedData.last_name)) {
           console.log('Using valid cached profile data:', cachedData);
           return cachedData;
         }

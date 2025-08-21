@@ -41,7 +41,7 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
       // Get users from profiles table directly
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nome, email');
+        .select('id, first_name, last_name');
       
       if (error) {
         toast.error(`Error fetching users: ${error.message}`);
@@ -111,13 +111,13 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
                     <SelectItem key={user.id} value={user.id}>
                       <div className="flex items-center">
                         <Avatar className="h-6 w-6 mr-2">
-                          <div className="bg-primary text-white rounded-full h-full w-full flex items-center justify-center text-xs">
-                            {user.nome?.charAt(0) || user.email?.charAt(0) || 'U'}
-                          </div>
-                        </Avatar>
-                        <span>
-                          {user.nome || user.email}
-                        </span>
+                           <div className="bg-primary text-white rounded-full h-full w-full flex items-center justify-center text-xs">
+                             {user.first_name?.charAt(0) || 'U'}
+                           </div>
+                         </Avatar>
+                         <span>
+                           {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name || 'Usuário'}
+                         </span>
                       </div>
                     </SelectItem>
                   ))

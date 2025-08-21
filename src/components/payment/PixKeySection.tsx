@@ -51,7 +51,6 @@ const PixKeySection = ({
           const { error: insertError } = await supabase
             .from('pix_keys')
             .insert({
-              user_id: user.id,
               key_type: pixKeyType,
               key_value: pixKey,
               recipient_name: user.user_metadata?.first_name ? 
@@ -68,46 +67,9 @@ const PixKeySection = ({
           // Regular user - save to pix_keys table
           console.log("Regular user saving to pix_keys table");
           
-          // First check if user already has a PIX key
-          const { data: existingKey, error: fetchError } = await supabase
-            .from('pix_keys')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
-            
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error("Error checking existing PIX key:", fetchError);
-            throw fetchError;
-          }
-            
-          // Update or insert PIX key
-          if (existingKey) {
-            const { error: updateError } = await supabase
-              .from('pix_keys')
-              .update({ 
-                key_type: pixKeyType,
-                key_value: pixKey 
-              })
-              .eq('user_id', user.id);
-              
-            if (updateError) {
-              console.error("Error updating PIX key:", updateError);
-              throw updateError;
-            }
-          } else {
-            const { error: insertError } = await supabase
-              .from('pix_keys')
-              .insert({
-                user_id: user.id,
-                key_type: pixKeyType,
-                key_value: pixKey
-              });
-              
-            if (insertError) {
-              console.error("Error inserting PIX key:", insertError);
-              throw insertError;
-            }
-          }
+          // PIX key management disabled for regular users since pix_keys table doesn't have user_id field
+          console.log("PIX key management not supported for regular users");
+          throw new Error("PIX key management only available for admins");
         }
       }
       

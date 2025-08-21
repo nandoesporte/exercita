@@ -28,7 +28,7 @@ const GymPhotoManagement = () => {
     // Filter by search query (user name)
     if (searchQuery.trim()) {
       photos = photos.filter(photo => {
-        const userName = photo.profiles?.nome || photo.profiles?.first_name || '';
+        const userName = photo.profiles?.first_name || '';
         const fullName = userName.toLowerCase();
         return fullName.includes(searchQuery.toLowerCase());
       });
@@ -183,11 +183,11 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6 ring-2 ring-white/20">
                       <AvatarFallback className="bg-fitness-green text-[10px]">
-                        {photo.profiles?.nome?.[0] || photo.profiles?.first_name?.[0] || 'U'}
+                        {photo.profiles?.first_name?.[0] || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-white text-sm font-medium">
-                      {photo.profiles?.nome || `${photo.profiles?.first_name || ''} ${photo.profiles?.last_name || ''}`.trim() || 'Usuário'}
+                      {`${photo.profiles?.first_name || ''} ${photo.profiles?.last_name || ''}`.trim() || 'Usuário'}
                     </span>
                   </div>
                 </div>

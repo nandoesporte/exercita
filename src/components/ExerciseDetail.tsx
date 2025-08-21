@@ -35,7 +35,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   }
   
   const [viewImage, setViewImage] = useState<boolean>(false);
-  const { exercise, sets, reps, duration, rest_time } = workoutExercise;
+  const { exercise, sets, reps, duration, rest } = workoutExercise;
   const isMobile = useIsMobile();
   const { profile } = useProfile();
   
@@ -43,8 +43,8 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const nome = profile.nome || '';
-    const firstLetter = nome.charAt(0).toUpperCase();
+    const firstName = profile.first_name || '';
+    const firstLetter = firstName.charAt(0).toUpperCase();
     
     return firstLetter || 'U';
   };
@@ -70,7 +70,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
   
   const formattedDuration = formatDuration(duration);
   const showReps = reps !== null && reps !== undefined && reps > 0;
-  const showRest = rest_time !== null && rest_time !== undefined && rest_time > 0;
+  const showRest = rest !== null && rest !== undefined && rest > 0;
   
   return (
     <>
@@ -136,7 +136,7 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
               <Avatar className="h-8 w-8 border-2 border-fitness-green">
                 <AvatarImage 
                   src={''} 
-                  alt={`${profile?.nome || 'Usuário'}'s profile`} 
+                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
                 />
                 <AvatarFallback className="bg-fitness-dark text-white">
                   {getInitials()}
@@ -231,17 +231,17 @@ const ExerciseDetail = ({ workoutExercise, onBack }: ExerciseDetailProps) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <p className="text-xl font-bold text-white">
-                          {rest_time >= 60 && rest_time % 60 === 0 
-                            ? `${rest_time / 60} min` 
-                            : `${rest_time} seg`}
-                        </p>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {rest_time >= 60 
-                          ? `${rest_time} segundos` 
-                          : ''}
-                      </TooltipContent>
+                         <p className="text-xl font-bold text-white">
+                           {rest >= 60 && rest % 60 === 0 
+                             ? `${rest / 60} min` 
+                             : `${rest} seg`}
+                         </p>
+                       </TooltipTrigger>
+                       <TooltipContent>
+                         {rest >= 60 
+                           ? `${rest} segundos` 
+                           : ''}
+                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>

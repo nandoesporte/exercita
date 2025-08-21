@@ -54,8 +54,8 @@ const Header: React.FC<HeaderProps> = ({
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const nome = profile.nome || '';
-    const firstLetter = nome.charAt(0).toUpperCase();
+    const firstName = profile.first_name || '';
+    const firstLetter = firstName.charAt(0).toUpperCase();
     
     return firstLetter || 'U';
   };
@@ -226,7 +226,7 @@ const Header: React.FC<HeaderProps> = ({
                 {avatarUrl ? (
                   <AvatarImage 
                     src={avatarUrl} 
-                    alt={`${profile?.nome || 'Usuário'}'s profile`}
+                    alt={`${profile?.first_name || 'Usuário'}'s profile`}
                     onError={handleImageError}
                   />
                 ) : null}

@@ -20,9 +20,10 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 const formSchema = z.object({
-  nome: z.string().min(2, {
+  first_name: z.string().min(2, {
     message: 'Nome deve ter pelo menos 2 caracteres.',
   }),
+  last_name: z.string().optional(),
 });
 
 const AccountInfo = () => {
@@ -35,7 +36,8 @@ const AccountInfo = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      nome: '',
+      first_name: '',
+      last_name: '',
     },
   });
   
@@ -92,7 +94,8 @@ const AccountInfo = () => {
     if (profile && !formInitialized) {
       console.log('Carregando dados do perfil no formulário:', profile);
       form.reset({
-        nome: profile.nome || '',
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
       });
       setFormInitialized(true);
     }
@@ -117,7 +120,8 @@ const AccountInfo = () => {
     try {
       // Send update to backend
       updateProfile({
-        nome: values.nome,
+        first_name: values.first_name || '',
+        last_name: values.last_name || '',
       });
       
       // Force a complete profile refresh after update to ensure we have the latest data
@@ -155,13 +159,31 @@ const AccountInfo = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="nome"
+            name="first_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome Completo</FormLabel>
+                <FormLabel>Nome</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Seu nome completo"
+                    placeholder="Seu primeiro nome"
+                    className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="last_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sobrenome</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Seu sobrenome"
                     className="bg-fitness-darkGray border-fitness-darkGray/50 text-white"
                     {...field}
                   />

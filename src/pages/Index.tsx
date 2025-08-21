@@ -54,17 +54,18 @@ const Index = () => {
   
   // Update timestamp when profile changes
   useEffect(() => {
-    if (profile?.nome) {
+    if (profile?.first_name) {
       setAvatarTimestamp(Date.now());
     }
-  }, [profile?.nome]);
+  }, [profile?.first_name]);
   
   // Function to get user initials for the avatar fallback
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const nome = profile.nome || '';
-    const words = nome.split(' ');
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    const words = [firstName, lastName].filter(Boolean);
     
     if (words.length >= 2) {
       return `${words[0].charAt(0)}${words[1].charAt(0)}`.toUpperCase();
@@ -83,7 +84,7 @@ const Index = () => {
           <Avatar className="h-24 w-24 border-4 border-fitness-green cursor-pointer hover:border-fitness-orange transition-all duration-300">
             <AvatarImage 
               src={undefined} 
-              alt={`${profile?.nome || 'Usuário'}'s profile`} 
+              alt={`${profile?.first_name || 'Usuário'}'s profile`} 
             />
             <AvatarFallback className="bg-fitness-dark text-white text-3xl">
               {getInitials()}
@@ -95,7 +96,7 @@ const Index = () => {
       {/* Seção de Boas-vindas */}
       <section className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-fitness-orange mb-2">
-          {greeting}, {profile?.nome?.split(' ')[0] || 'Atleta'}!
+          {greeting}, {profile?.first_name || 'Atleta'}!
         </h1>
         <p className="text-xl text-gray-200">
           {hasAssignedWorkout 

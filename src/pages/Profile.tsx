@@ -38,7 +38,7 @@ const Profile = () => {
   };
 
   const userData = {
-    name: profile?.nome || user?.email || 'User',
+    name: profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : profile?.first_name || user?.email || 'User',
     email: user?.email || '',
     avatar: undefined, // avatar_url doesn't exist in profiles table
     memberSince: user?.created_at 

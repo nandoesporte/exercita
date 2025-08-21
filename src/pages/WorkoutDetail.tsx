@@ -81,7 +81,7 @@ const WorkoutDetail = () => {
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const name = profile.nome || '';
+    const name = profile.first_name || '';
     return name.charAt(0).toUpperCase() || 'U';
   };
 
@@ -101,9 +101,9 @@ const WorkoutDetail = () => {
       result[day].push(exercise);
     });
     
-    // Sort exercises by order_index within each day
+    // Sort exercises by order_position within each day
     Object.keys(result).forEach(day => {
-      result[day].sort((a, b) => a.order_index - b.order_index);
+      result[day].sort((a, b) => (a.order_position || 0) - (b.order_position || 0));
     });
     
     // If we have days_of_week from the workout but no exercises for some days,
@@ -338,7 +338,7 @@ const WorkoutDetail = () => {
               <Avatar className="h-8 w-8 border-2 border-fitness-green">
                 <AvatarImage 
                   src={undefined}
-                  alt={`${profile?.nome || 'Usuário'}'s profile`} 
+                  alt={`${profile?.first_name || 'Usuário'}'s profile`} 
                 />
                 <AvatarFallback className="bg-fitness-dark text-white">
                   {getInitials()}

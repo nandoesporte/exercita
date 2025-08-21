@@ -23,9 +23,11 @@ const PaymentHistory: React.FC = () => {
       
       try {
         setIsLoading(true);
+        
+        // Since payment_history table doesn't exist, we'll use orders as a placeholder
         const { data, error } = await supabase
-          .from('payment_history')
-          .select('*')
+          .from('orders')
+          .select('id, created_at, total_amount, status')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
           
@@ -33,20 +35,16 @@ const PaymentHistory: React.FC = () => {
           throw error;
         }
         
-        // Map payment_history data to Payment format
-        setPayments((data || []).map(payment => ({
-          id: payment.id,
-          created_at: payment.created_at,
-          total_amount: Number(payment.amount),
-          status: payment.status,
-          payment_method: payment.payment_method,
-          description: payment.description || 'Pagamento'
+        // Map orders data to Payment format
+        setPayments((data || []).map(order => ({
+          id: order.id,
+          created_at: order.created_at || new Date().toISOString(),
+          total_amount: Number(order.total_amount),
+          status: order.status || 'pending'
         })));
       } catch (error) {
         console.error('Erro ao buscar pagamentos:', error);
-        toast("Erro ao carregar histórico", {
-          description: "Erro ao carregar histórico de pagamentos"
-        });
+        toast("Erro ao carregar histórico de pagamentos");
       } finally {
         setIsLoading(false);
       }

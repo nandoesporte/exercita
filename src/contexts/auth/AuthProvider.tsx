@@ -266,13 +266,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (profileData) {
             console.log("Saving profile data before logout:", profileData);
             // Update only existing profile fields
-            const { nome } = profileData as any;
-            if (nome) {
+            const { first_name, last_name } = profileData as any;
+            if (first_name || last_name) {
               await supabase
                 .from('profiles')
                 .update({ 
-                  nome,
-                  atualizado_em: new Date().toISOString()
+                  first_name,
+                  last_name,
+                  updated_at: new Date().toISOString()
                 })
                 .eq('id', user.id);
               console.log("Profile permanently saved to database before logout");

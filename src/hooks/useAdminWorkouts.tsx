@@ -71,10 +71,10 @@ export function useAdminWorkouts() {
       const { data, error } = await supabase
         .from('workouts')
         .insert({
-          name: formData.name,
+          title: formData.name,
           description: formData.description || null,
           duration: formData.duration,
-          difficulty_level: formData.difficulty_level,
+          level: (formData.difficulty_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
           category_id: formData.category_id || null,
         })
         .select()
@@ -100,10 +100,10 @@ export function useAdminWorkouts() {
       const { data, error } = await supabase
         .from('workouts')
         .update({
-          name: updateData.name,
+          title: updateData.name,
           description: updateData.description || null,
           duration: updateData.duration,
-          difficulty_level: updateData.difficulty_level,
+          level: (updateData.difficulty_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
           category_id: updateData.category_id || null,
         })
         .eq('id', updateData.id)
@@ -167,8 +167,8 @@ export function useAdminWorkouts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nome, email')
-        .order('nome');
+        .select('id, first_name, last_name')
+        .order('first_name');
       
       if (error) {
         throw new Error(`Error fetching users: ${error.message}`);
