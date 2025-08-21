@@ -86,7 +86,7 @@ const Dashboard = () => {
     queryKey: ['admin-dashboard-users'],
     queryFn: async () => {
       console.log("Fetching users with debug_get_all_users function");
-      const { data, error } = await supabase.rpc('debug_get_all_users');
+      const { data, error } = await supabase.rpc('debug_get_all_users' as any);
       
       if (error) {
         console.error("Error fetching users:", error);
@@ -119,7 +119,7 @@ const Dashboard = () => {
   // Toggle user active status
   const toggleUserActiveMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string, isActive: boolean }) => {
-      const { error } = await supabase.rpc('toggle_user_active_status', {
+      const { error } = await supabase.rpc('toggle_user_active_status' as any, {
         user_id: userId,
         is_active: isActive,
       });
@@ -145,7 +145,7 @@ const Dashboard = () => {
     mutationFn: async (userData: FormValues) => {
       console.log("Creating user from dashboard with:", userData.email);
       // Using the admin_create_user RPC function which runs with elevated privileges
-      const { data, error } = await supabase.rpc('admin_create_user', {
+      const { data, error } = await supabase.rpc('admin_create_user' as any, {
         user_email: userData.email,
         user_password: userData.password,
         user_metadata: {
@@ -176,7 +176,7 @@ const Dashboard = () => {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.rpc('admin_delete_user', {
+      const { error } = await supabase.rpc('admin_delete_user' as any, {
         user_id: userId,
       });
       
