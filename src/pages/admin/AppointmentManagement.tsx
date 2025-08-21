@@ -84,7 +84,7 @@ const AppointmentManagement = () => {
       return (data || []).map(appointment => ({
         ...appointment,
         title: 'Agendamento',
-        description: appointment.notes || 'Consulta agendada',
+        description: appointment.description || 'Consulta agendada',
         duration: 60, // Default 60 minutes
         trainer_name: 'Personal Trainer'
       })) as Appointment[];

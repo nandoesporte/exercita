@@ -79,11 +79,11 @@ const Workouts = () => {
     if (activeFilter === 'Todos') {
       matchesFilter = true;
     } else if (activeFilter === 'Iniciante') {
-      matchesFilter = workout.difficulty_level === 'beginner';
+      matchesFilter = workout.level === 'beginner';
     } else if (activeFilter === 'Intermediário') {
-      matchesFilter = workout.difficulty_level === 'intermediate';
+      matchesFilter = workout.level === 'intermediate';
     } else if (activeFilter === 'Avançado') {
-      matchesFilter = workout.difficulty_level === 'advanced';
+      matchesFilter = workout.level === 'advanced';
     } else if (activeFilter === 'Rápido') {
       matchesFilter = workout.duration < 30;
     } else {
@@ -92,7 +92,7 @@ const Workouts = () => {
     }
                           
     const matchesSearch = searchQuery === '' ||
-      workout.name.toLowerCase().includes(searchQuery.toLowerCase());
+      workout.title.toLowerCase().includes(searchQuery.toLowerCase());
                          
     return matchesFilter && matchesSearch;
   });
@@ -184,12 +184,12 @@ const Workouts = () => {
                 <WorkoutCard 
                   key={workout.id} 
                   id={workout.id}
-                  title={workout.name}
+                  title={workout.title}
                   image=""
                   duration={`${workout.duration || 0} min`}
-                  level={workout.difficulty_level === 'beginner' ? 'Iniciante' : 
-                         workout.difficulty_level === 'intermediate' ? 'Intermediário' : 
-                         workout.difficulty_level === 'advanced' ? 'Avançado' : workout.difficulty_level || 'N/A'}
+                  level={workout.level === 'beginner' ? 'Iniciante' : 
+                         workout.level === 'intermediate' ? 'Intermediário' : 
+                         workout.level === 'advanced' ? 'Avançado' : workout.level || 'N/A'}
                   calories={0}
                   daysOfWeek={workout.days_of_week}
                 />
