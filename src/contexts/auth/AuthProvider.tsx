@@ -230,26 +230,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const adminLogin = async (password: string) => {
     try {
-      // Check if the password matches the admin password
-      if (password !== 'Nando045+-') {
-        throw new Error('Invalid admin password');
+      // If no user is logged in, show an error
+      if (!user) {
+        throw new Error('You must be logged in to become an admin');
       }
 
-      // If there is a logged-in user, make them an admin
-      if (user) {
-        console.log("Setting admin status for user:", user.id);
-        // Remove admin status update since profiles doesn't have is_admin column
-        console.log("Admin status functionality needs proper implementation");
-        
-        setIsAdmin(true);
-        toast.success('Admin access granted!');
-        navigate('/admin');
-        return;
-      }
+      console.log("Attempting admin login for user:", user.id);
       
-      // If no user is logged in, show an error
-      throw new Error('You must be logged in to become an admin');
+      // Call the secure admin login function
+      const { data, error } = await supabase.rpc('admin_login', {
+        admin_password: password
+      });
+
+      if (error) {
+        console.error("Admin login error:", error);
+        throw new Error('Database error during admin login');
+      }
+
+      // Type the response data from the RPC function
+      const response = data as { success: boolean; message: string } | null;
+
+      if (!response?.success) {
+        throw new Error(response?.message || 'Invalid admin password');
+      }
+
+      // Update admin status and refresh profile
+      await updateAdminStatus(user.id);
+      refreshUserProfile();
+      
+      toast.success('Admin access granted!');
+      navigate('/admin');
     } catch (error: any) {
+      console.error("Admin login failed:", error);
       toast.error(error.message || 'Error granting admin access');
       throw error;
     }

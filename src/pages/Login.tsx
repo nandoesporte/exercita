@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Shield } from "lucide-react";
 import { toast } from "@/lib/toast";
 
 const loginSchema = z.object({
@@ -23,20 +23,26 @@ const registerSchema = z.object({
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
   confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
   firstName: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
-  lastName: z.string().min(2, "Sobrenome deve ter no mínimo 2 caracteres"),
+  lastName: z.string().min(2, "Sobrenome deve ter no mínimo 2 caractares"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
 });
 
+const adminSchema = z.object({
+  adminPassword: z.string().min(1, "Senha de admin é obrigatória"),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
+type AdminFormValues = z.infer<typeof adminSchema>;
 
 const Login = () => {
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, adminLogin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -58,6 +64,14 @@ const Login = () => {
       confirmPassword: "",
       firstName: "",
       lastName: "",
+    },
+  });
+
+  // Define the admin form
+  const adminForm = useForm<AdminFormValues>({
+    resolver: zodResolver(adminSchema),
+    defaultValues: {
+      adminPassword: "",
     },
   });
 
@@ -123,9 +137,24 @@ const Login = () => {
     }
   };
 
+  const onAdminSubmit = async (values: AdminFormValues) => {
+    setIsLoading(true);
+    
+    try {
+      await adminLogin(values.adminPassword);
+      toast.success("Acesso de admin concedido!");
+    } catch (error: any) {
+      console.error("Admin login error:", error);
+      toast.error(error.message || "Erro ao obter acesso de admin");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Helper to toggle password visibility
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+  const toggleAdminPasswordVisibility = () => setShowAdminPassword(!showAdminPassword);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background bg-gradient-to-b from-background to-muted/30">
@@ -145,9 +174,13 @@ const Login = () => {
         <Card className="border-muted/30 shadow-lg">
           <CardHeader>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="login">Entrar</TabsTrigger>
                 <TabsTrigger value="register">Cadastrar</TabsTrigger>
+                <TabsTrigger value="admin">
+                  <Shield className="w-4 h-4 mr-1" />
+                  Admin
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" className="mt-4">
@@ -338,6 +371,59 @@ const Login = () => {
                           Cadastrando...
                         </>
                       ) : "Cadastrar"}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+
+              <TabsContent value="admin" className="mt-4">
+                <Form {...adminForm}>
+                  <form onSubmit={adminForm.handleSubmit(onAdminSubmit)} className="space-y-4">
+                    <div className="text-center mb-4">
+                      <Shield className="w-8 h-8 mx-auto mb-2 text-fitness-green" />
+                      <p className="text-sm text-muted-foreground">
+                        Faça login primeiro, depois insira a senha de admin
+                      </p>
+                    </div>
+
+                    <FormField
+                      control={adminForm.control}
+                      name="adminPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha de Admin</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input 
+                                type={showAdminPassword ? "text" : "password"}
+                                placeholder="••••••••" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              onClick={toggleAdminPasswordVisibility}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                              {showAdminPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full bg-fitness-green hover:bg-fitness-darkGreen" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Verificando...
+                        </>
+                      ) : "Obter Acesso Admin"}
                     </Button>
                   </form>
                 </Form>

@@ -18,8 +18,7 @@ export const checkAdminStatus = async (userId: string): Promise<boolean> => {
     }
     
     console.log("Admin status check result:", data);
-    // Remove is_admin check since it doesn't exist in profiles
-    const adminStatus = false;
+    const adminStatus = data?.is_admin === true;
     
     if (adminStatus) {
       console.log("User has admin privileges!");
