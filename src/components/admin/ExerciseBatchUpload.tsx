@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Upload, File, X, Check, Loader2, ArrowRight, Compress } from 'lucide-react';
+import { Upload, File, X, Check, Loader2, ArrowRight, Archive } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { Button } from "@/components/ui/button";
 import {
@@ -90,9 +90,8 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
       const compressedFile = await imageCompression(file, options);
       console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
       
-      // Keep original filename
-      const newFile = new File([compressedFile], file.name, { type: compressedFile.type });
-      return newFile;
+      // Return the compressed file (it already has the correct name and type)
+      return compressedFile;
     } catch (error) {
       console.error('Error compressing image:', error);
       return file; // Return original if compression fails
@@ -379,7 +378,7 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
                        Suporta: GIF, PNG, JPG (máximo 10MB por arquivo)
                        <br />
                        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
-                         <Compress className="h-3 w-3" />
+                         <Archive className="h-3 w-3" />
                          Imagens serão compactadas automaticamente para economizar espaço
                        </span>
                      </p>
@@ -428,7 +427,7 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
                           }}
                         />
                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                           <Compress className="h-3 w-3" />
+                           <Archive className="h-3 w-3" />
                            {(file.file.size / 1024 / 1024).toFixed(2)} MB (compactado)
                          </span>
                         {file.status === 'error' && (
