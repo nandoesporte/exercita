@@ -3,22 +3,35 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory, ProductFormData } from '@/types/store';
 import { toast } from '@/lib/toast-wrapper';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 export const useAdminStore = () => {
   const queryClient = useQueryClient();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
 
   // Fetch all products (admin)
   const { 
     data: products = [], 
     isLoading: isLoadingProducts 
   } = useQuery({
-    queryKey: ['admin-products'],
+    queryKey: ['admin-products', adminId],
     queryFn: async () => {
+      if (!hasPermission('manage_products')) {
+        throw new Error('Você não tem permissão para gerenciar produtos');
+      }
+
       console.log('Fetching admin products');
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*, categories:product_categories(name)')
         .order('created_at', { ascending: false });
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching products:', error);
@@ -47,6 +60,7 @@ export const useAdminStore = () => {
         return product;
       });
     },
+    enabled: hasPermission('manage_products') && !!adminId,
   });
 
   // Fetch a specific product with cacheTime and staleTime to prevent repeated requests
@@ -91,12 +105,23 @@ export const useAdminStore = () => {
     data: categories = [], 
     isLoading: isLoadingCategories 
   } = useQuery({
-    queryKey: ['admin-product-categories'],
+    queryKey: ['admin-product-categories', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!hasPermission('manage_categories') && !hasPermission('manage_products')) {
+        throw new Error('Você não tem permissão para gerenciar categorias');
+      }
+
+      let query = supabase
         .from('product_categories')
         .select('*')
         .order('name');
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching categories:', error);
@@ -106,6 +131,7 @@ export const useAdminStore = () => {
 
       return data as ProductCategory[];
     },
+    enabled: (hasPermission('manage_categories') || hasPermission('manage_products')) && !!adminId,
   });
 
   // Create a category

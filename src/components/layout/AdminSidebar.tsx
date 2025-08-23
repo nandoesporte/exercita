@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useAdminPermissions } from "@/contexts/admin/AdminPermissionsContext";
 import {
   LineChart,
   Dumbbell,
@@ -40,6 +41,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isSuperAdmin, isAdmin } = useAdminRole();
+  const { hasPermission } = useAdminPermissions();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const toggleSidebar = () => {
@@ -71,51 +73,60 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       icon: <Shield className="h-4 w-4" />,
       to: '/admin/admins'
     }] : []),
-    {
+    // Only show if user has workouts permission
+    ...(hasPermission('manage_workouts') ? [{
       title: 'Gerenciamento de Treinos',
       icon: <Dumbbell className="h-4 w-4" />,
       to: '/admin/workouts'
-    },
-    {
+    }] : []),
+    // Only show if user has exercises permission
+    ...(hasPermission('manage_exercises') ? [{
       title: 'Biblioteca de Exercícios',
       icon: <ListVideo className="h-4 w-4" />,
       to: '/admin/exercises'
-    },
-    {
+    }] : []),
+    // Only show if user has categories permission
+    ...(hasPermission('manage_categories') ? [{
       title: 'Categorias de Exercícios',
       icon: <Dumbbell className="h-4 w-4" />,
       to: '/admin/exercises/categories'
-    },
-    {
+    }] : []),
+    // Only show if user has store permission
+    ...(hasPermission('manage_store') || hasPermission('manage_products') ? [{
       title: 'Produtos',
       icon: <ShoppingBag className="h-4 w-4" />,
       to: '/admin/products'
-    },
-    {
+    }] : []),
+    // Only show if user has categories permission
+    ...(hasPermission('manage_categories') ? [{
       title: 'Categorias',
       icon: <List className="h-4 w-4" />,
       to: '/admin/categories'
-    },
-    {
+    }] : []),
+    // Only show if user has gym photos permission
+    ...(hasPermission('manage_gym_photos') ? [{
       title: 'Fotos da Academia',
       icon: <Camera className="h-4 w-4" />,
       to: '/admin/photos'
-    },
-    {
+    }] : []),
+    // Only show if user has schedule permission
+    ...(hasPermission('manage_schedule') ? [{
       title: 'Horários',
       icon: <Calendar className="h-4 w-4" />,
       to: '/admin/schedule'
-    },
-    {
+    }] : []),
+    // Only show if user has appointments permission
+    ...(hasPermission('manage_appointments') ? [{
       title: 'Agendamentos',
       icon: <CalendarRange className="h-4 w-4" />,
       to: '/admin/appointments'
-    },
-    {
+    }] : []),
+    // Only show if user has payment methods permission
+    ...(hasPermission('manage_payment_methods') ? [{
       title: 'Métodos de Pagamento',
       icon: <CreditCard className="h-4 w-4" />,
       to: '/admin/payment-methods'
-    },
+    }] : []),
     // Only show user management for Super Admins
     ...(isSuperAdmin ? [{
       title: 'Gerenciamento de Usuários',

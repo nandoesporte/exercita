@@ -1,0 +1,21 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { toast } from '@/lib/toast-wrapper';
+import type { Database } from '@/integrations/supabase/types';
+
+type AdminPermission = Database['public']['Enums']['admin_permission'];
+
+export function usePermissionGuard(permission: AdminPermission, redirectTo = '/admin') {
+  const { hasPermission, isLoading } = useAdminPermissions();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !hasPermission(permission)) {
+      toast('Você não tem permissão para acessar esta página');
+      navigate(redirectTo);
+    }
+  }, [hasPermission, permission, isLoading, navigate, redirectTo]);
+
+  return { hasPermission, isLoading };
+}

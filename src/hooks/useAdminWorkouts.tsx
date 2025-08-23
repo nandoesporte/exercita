@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 export type AdminWorkout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -47,11 +48,16 @@ export type WorkoutRecommendation = {
 
 export function useAdminWorkouts() {
   const queryClient = useQueryClient();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
   
   const workoutsQuery = useQuery({
-    queryKey: ['admin-workouts'],
+    queryKey: ['admin-workouts', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!hasPermission('manage_workouts')) {
+        throw new Error('Você não tem permissão para gerenciar treinos');
+      }
+
+      let query = supabase
         .from('workouts')
         .select(`
           *,
@@ -63,6 +69,13 @@ export function useAdminWorkouts() {
           )
         `)
         .order('created_at', { ascending: false });
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         throw new Error(`Error fetching workouts: ${error.message}`);
@@ -88,6 +101,7 @@ export function useAdminWorkouts() {
       
       return workoutsWithDays as AdminWorkout[];
     },
+    enabled: hasPermission('manage_workouts') && !!adminId,
   });
 
   const createWorkout = useMutation({
@@ -298,12 +312,23 @@ export function useAdminWorkouts() {
   });
 
   const workoutCategoriesQuery = useQuery({
-    queryKey: ['admin-workout-categories'],
+    queryKey: ['admin-workout-categories', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!hasPermission('manage_categories')) {
+        throw new Error('Você não tem permissão para gerenciar categorias');
+      }
+
+      let query = supabase
         .from('workout_categories')
         .select('*')
         .order('name');
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         throw new Error(`Error fetching workout categories: ${error.message}`);
@@ -311,16 +336,24 @@ export function useAdminWorkouts() {
       
       return data;
     },
+    enabled: hasPermission('manage_categories') && !!adminId,
   });
 
   // Fetch simplified user data for assigning workouts
   const usersQuery = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: ['admin-users', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('profiles')
         .select('*')
         .order('first_name');
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         throw new Error(`Error fetching users: ${error.message}`);
@@ -328,16 +361,28 @@ export function useAdminWorkouts() {
       
       return data;
     },
+    enabled: !!adminId,
   });
 
   // Fetch all exercises for adding to workouts
   const exercisesQuery = useQuery({
-    queryKey: ['admin-exercises'],
+    queryKey: ['admin-exercises', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!hasPermission('manage_exercises')) {
+        throw new Error('Você não tem permissão para gerenciar exercícios');
+      }
+
+      let query = supabase
         .from('exercises')
         .select('*')
         .order('name');
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         throw new Error(`Error fetching exercises: ${error.message}`);
@@ -345,6 +390,7 @@ export function useAdminWorkouts() {
       
       return data;
     },
+    enabled: hasPermission('manage_exercises') && !!adminId,
   });
 
   // Get workout exercises

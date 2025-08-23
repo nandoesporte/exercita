@@ -1,5 +1,9 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from '@/contexts/auth';
+import { AdminPermissionsProvider } from '@/contexts/admin/AdminPermissionsContext';
+import { Toaster } from '@/components/ui/sonner';
+import { ReactQueryProvider } from '@/lib/react-query';
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/auth";
 
@@ -33,115 +37,108 @@ import HelpCenter from "@/pages/HelpCenter";
 
 // Admin pages
 import Dashboard from "@/pages/admin/Dashboard";
-import WorkoutManagement from "@/pages/admin/WorkoutManagement";
+import ProtectedWorkoutManagement from "@/pages/admin/ProtectedWorkoutManagement";
 import CreateWorkout from "@/pages/admin/CreateWorkout";
 import EditWorkout from "@/pages/admin/EditWorkout";
 import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
-import ExerciseManagement from "@/pages/admin/ExerciseManagement";
-import ProductManagement from "@/pages/admin/ProductManagement";
-import CategoryManagement from "@/pages/admin/CategoryManagement";
+import ProtectedExerciseManagement from "@/pages/admin/ProtectedExerciseManagement";
+import ProtectedProductManagement from "@/pages/admin/ProtectedProductManagement";
+import ProtectedCategoryManagement from "@/pages/admin/ProtectedCategoryManagement";
 import ExerciseCategoryManagement from "@/pages/admin/ExerciseCategoryManagement";
 import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
-import ScheduleManagement from "@/pages/admin/ScheduleManagement";
-import PaymentMethodManagement from "@/pages/admin/PaymentMethodManagement";
+import ProtectedScheduleManagement from "@/pages/admin/ProtectedScheduleManagement";
+import ProtectedPaymentMethodManagement from "@/pages/admin/ProtectedPaymentMethodManagement";
 import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
-import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
+import ProtectedGymPhotoManagement from "@/pages/admin/ProtectedGymPhotoManagement"; 
 import UserManagement from "@/pages/admin/UserManagement";
-import AppointmentManagement from "@/pages/admin/AppointmentManagement";
+import ProtectedAppointmentManagement from "@/pages/admin/ProtectedAppointmentManagement";
 import SuperAdminDashboard from "@/pages/admin/SuperAdminDashboard";
 import RLSChecker from "@/pages/admin/RLSChecker";
 import AdminManagement from "@/pages/admin/AdminManagement";
 import AdminPermissions from "@/pages/admin/AdminPermissions";
 
 const App = () => {
-  console.log("App component rendering");
-  const { user, loading } = useAuth();
-  
-  // Show loading state if auth context is loading
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-green"></div>
-      </div>
-    );
-  }
-  
   return (
-    <>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        
-        {/* User Routes */}
-        <Route element={
-          <ProtectedRoute>
-            <UserLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/" element={<Index />} />
-          <Route path="/workouts" element={<Workouts />} />
-          <Route path="/workout/:id" element={<WorkoutDetail />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/store" element={<Store />} />
-          <Route path="/store/:id" element={<ProductDetail />} />
-          <Route path="/schedule" element={<Schedule />} />
-          <Route path="/gym-photos" element={<GymPhotos />} />
-          <Route path="/appointments" element={<Appointments />} />
-          
-          {/* Profile related pages */}
-          <Route path="/account" element={<AccountInfo />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/workout-history" element={<WorkoutHistory />} />
-          <Route path="/reminders" element={<Reminders />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/payment" element={<PaymentMethods />} />
-          <Route path="/invite" element={<InviteFriends />} />
-          <Route path="/help" element={<HelpCenter />} />
-        </Route>
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute isAdminRoute={true}><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
-          {/* Workouts */}
-          <Route path="workouts" element={<WorkoutManagement />} />
-          <Route path="workouts/create" element={<CreateWorkout />} />
-          <Route path="workouts/:id/edit" element={<EditWorkout />} />
-          <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
-          {/* Exercises */}
-          <Route path="exercises" element={<ExerciseManagement />} />
-          <Route path="exercises/library" element={<ExerciseLibrary />} />
-          <Route path="exercises/categories" element={<ExerciseCategoryManagement />} />
-          {/* Products */}
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="products/create" element={<CreateProduct />} />
-          <Route path="products/:id/edit" element={<EditProduct />} />
-          {/* Categories */}
-          <Route path="categories" element={<CategoryManagement />} />
-          {/* Photos */}
-          <Route path="photos" element={<GymPhotoManagement />} />
-          {/* Scheduling */}
-          <Route path="schedule" element={<ScheduleManagement />} />
-          <Route path="appointments" element={<AppointmentManagement />} />
-          {/* Payment */}
-          <Route path="payment-methods" element={<PaymentMethodManagement />} />
-          {/* Users */}
-          <Route path="users" element={<UserManagement />} />
-          {/* Admin Management */}
-          <Route path="admins" element={<AdminManagement />} />
-          {/* Super Admin Dashboard */}
-          <Route path="super-dashboard" element={<SuperAdminDashboard />} />
-          {/* RLS Checker */}
-          <Route path="rls-checker" element={<RLSChecker />} />
-          {/* Admin Permissions */}
-          <Route path="permissions" element={<AdminPermissions />} />
-        </Route>
-        
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+    <ReactQueryProvider>
+      <AuthProvider>
+        <AdminPermissionsProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* User Routes */}
+            <Route element={
+              <ProtectedRoute>
+                <UserLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="/" element={<Index />} />
+              <Route path="/workouts" element={<Workouts />} />
+              <Route path="/workout/:id" element={<WorkoutDetail />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/store" element={<Store />} />
+              <Route path="/store/:id" element={<ProductDetail />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/gym-photos" element={<GymPhotos />} />
+              <Route path="/appointments" element={<Appointments />} />
+              
+              {/* Profile related pages */}
+              <Route path="/account" element={<AccountInfo />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/workout-history" element={<WorkoutHistory />} />
+              <Route path="/reminders" element={<Reminders />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/payment" element={<PaymentMethods />} />
+              <Route path="/invite" element={<InviteFriends />} />
+              <Route path="/help" element={<HelpCenter />} />
+            </Route>
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<ProtectedRoute isAdminRoute={true}><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Dashboard />} />
+              {/* Workouts */}
+              <Route path="workouts" element={<ProtectedWorkoutManagement />} />
+              <Route path="workouts/create" element={<CreateWorkout />} />
+              <Route path="workouts/:id/edit" element={<EditWorkout />} />
+              <Route path="workouts/:id/exercises" element={<EditWorkoutExercises />} />
+              {/* Exercises */}
+              <Route path="exercises" element={<ProtectedExerciseManagement />} />
+              <Route path="exercises/library" element={<ExerciseLibrary />} />
+              <Route path="exercises/categories" element={<ExerciseCategoryManagement />} />
+              {/* Products */}
+              <Route path="products" element={<ProtectedProductManagement />} />
+              <Route path="products/create" element={<CreateProduct />} />
+              <Route path="products/:id/edit" element={<EditProduct />} />
+              {/* Categories */}
+              <Route path="categories" element={<ProtectedCategoryManagement />} />
+              {/* Photos */}
+              <Route path="photos" element={<ProtectedGymPhotoManagement />} />
+              {/* Scheduling */}
+              <Route path="schedule" element={<ProtectedScheduleManagement />} />
+              <Route path="appointments" element={<ProtectedAppointmentManagement />} />
+              {/* Payment */}
+              <Route path="payment-methods" element={<ProtectedPaymentMethodManagement />} />
+              {/* Users */}
+              <Route path="users" element={<UserManagement />} />
+              {/* Admin Management */}
+              <Route path="admins" element={<AdminManagement />} />
+              {/* Super Admin Dashboard */}
+              <Route path="super-dashboard" element={<SuperAdminDashboard />} />
+              {/* RLS Checker */}
+              <Route path="rls-checker" element={<RLSChecker />} />
+              {/* Admin Permissions */}
+              <Route path="permissions" element={<AdminPermissions />} />
+            </Route>
+            
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </AdminPermissionsProvider>
+      </AuthProvider>
+    </ReactQueryProvider>
   );
 };
 
