@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from '@/lib/toast-wrapper';
 import { v4 as uuidv4 } from 'uuid';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 export type AdminExercise = Database['public']['Tables']['exercises']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -28,7 +28,7 @@ export type BatchExerciseFormData = {
 
 export function useAdminExercises() {
   const queryClient = useQueryClient();
-  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissionsContext();
   
   // Helper function to validate UUID format
   const isValidUUID = (uuid: string) => {

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Lock } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -19,7 +19,7 @@ export function PermissionGuard({
   fallback, 
   showFallback = true 
 }: PermissionGuardProps) {
-  const { hasPermission, isLoading, isSuperAdmin, permissions } = useAdminPermissions();
+  const { hasPermission, isLoading, isSuperAdmin, permissions } = useAdminPermissionsContext();
 
   // Show loading state while permissions are being fetched
   if (isLoading) {

@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 import { toast } from '@/lib/toast-wrapper';
 import type { Database } from '@/integrations/supabase/types';
 
 type AdminPermission = Database['public']['Enums']['admin_permission'];
 
 export function usePermissionGuard(permission: AdminPermission, redirectTo = '/admin') {
-  const { hasPermission, isLoading } = useAdminPermissions();
+  const { hasPermission, isLoading } = useAdminPermissionsContext();
   const navigate = useNavigate();
 
   useEffect(() => {

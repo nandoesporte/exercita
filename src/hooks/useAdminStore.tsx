@@ -3,11 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory, ProductFormData } from '@/types/store';
 import { toast } from '@/lib/toast-wrapper';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 export const useAdminStore = () => {
   const queryClient = useQueryClient();
-  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissionsContext();
 
   // Fetch all products (admin)
   const { 

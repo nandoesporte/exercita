@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Filter, Users, Crown } from 'lucide-react';
 import { useUsersByAdmin } from '@/hooks/useUsersByAdmin';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 interface AdminFilterProps {
   selectedAdminId: string | null;
@@ -12,7 +12,7 @@ interface AdminFilterProps {
 
 export function AdminFilter({ selectedAdminId, onAdminChange }: AdminFilterProps) {
   const { adminUsers } = useUsersByAdmin();
-  const { isSuperAdmin } = useAdminPermissions();
+  const { isSuperAdmin } = useAdminPermissionsContext();
 
   // Only show filter for Super Admin
   if (!isSuperAdmin) {

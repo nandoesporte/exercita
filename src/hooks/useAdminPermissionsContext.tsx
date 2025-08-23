@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { useAdminPermissions as useAdminPermissionsContext } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
 
 export function useAdminPermissionsContext() {
@@ -7,7 +7,7 @@ export function useAdminPermissionsContext() {
   
   try {
     // Try to use the context
-    const context = useAdminPermissionsContext();
+    const context = useAdminPermissions();
     return {
       hasPermission: context.hasPermission,
       isLoading: context.isLoading,

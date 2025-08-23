@@ -17,7 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/auth';
 import { useAdminRole } from '@/hooks/useAdminRole';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 import { useUsersByAdmin } from '@/hooks/useUsersByAdmin';
 
 // Define form schema for user creation exatamente como na página de login
@@ -39,7 +39,7 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
   const { signUp } = useAuth(); // Importando a função signUp do hook useAuth
   const { isSuperAdmin } = useAdminRole();
-  const { adminId, isAdmin } = useAdminPermissions();
+  const { adminId, isAdmin } = useAdminPermissionsContext();
   const { adminUsers, userProfiles, getUsersByAdmin, isLoading: usersLoading } = useUsersByAdmin();
 
   // Fetch statistics including real appointment data

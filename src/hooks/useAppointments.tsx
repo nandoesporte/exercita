@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 type Appointment = Database['public']['Tables']['appointments']['Row'];
 
 export function useAppointments() {
   const { user } = useAuth();
-  const { adminId, isSuperAdmin, isAdmin } = useAdminPermissions();
+  const { adminId, isSuperAdmin, isAdmin } = useAdminPermissionsContext();
   
   return useQuery({
     queryKey: ['appointments', user?.id, adminId],

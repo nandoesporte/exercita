@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 export type AdminWorkout = Database['public']['Tables']['workouts']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -48,7 +48,7 @@ export type WorkoutRecommendation = {
 
 export function useAdminWorkouts() {
   const queryClient = useQueryClient();
-  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissionsContext();
   
   const workoutsQuery = useQuery({
     queryKey: ['admin-workouts', adminId],

@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 export type GymPhoto = {
   id: string;
@@ -24,7 +24,7 @@ export function useGymPhotos() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
-  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissionsContext();
 
   // Get user's gym photos
   const { data: photos = [], isLoading } = useQuery({

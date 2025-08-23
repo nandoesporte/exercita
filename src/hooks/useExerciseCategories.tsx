@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast-wrapper';
-import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 
 export interface ExerciseCategory {
   id: string;
@@ -15,7 +15,7 @@ export interface ExerciseCategory {
 
 export const useExerciseCategories = () => {
   const queryClient = useQueryClient();
-  const { adminId, isSuperAdmin, isLoading: permissionsLoading } = useAdminPermissions();
+  const { adminId, isSuperAdmin, isLoading: permissionsLoading } = useAdminPermissionsContext();
 
   // Fetch exercise categories
   const { 
