@@ -113,8 +113,8 @@ export function useProfile() {
             .from('pix_keys')
             .select('*')
             .eq('admin_id', currentProfile.admin_id)
-            .eq('is_primary', true)
-            .maybeSingle();
+            .limit(1)
+            .single();
             
           console.log('🔍 PIX Key Debug - Admin PIX key result:', { adminPixKey, adminError });
             
