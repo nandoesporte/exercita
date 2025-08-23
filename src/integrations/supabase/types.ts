@@ -1108,6 +1108,10 @@ export type Database = {
         }
         Returns: Json
       }
+      current_user_has_admin_permission: {
+        Args: { _permission: Database["public"]["Enums"]["admin_permission"] }
+        Returns: boolean
+      }
       current_user_has_permission: {
         Args: { _permission: Database["public"]["Enums"]["admin_permission"] }
         Returns: boolean

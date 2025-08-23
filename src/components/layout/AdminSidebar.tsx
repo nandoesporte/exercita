@@ -168,31 +168,47 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       <ScrollArea className="flex-1 px-2">
         <nav className="space-y-1 py-2">
           {permissionsLoading ? (
-            <div className="flex justify-center items-center p-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <div className="flex flex-col items-center justify-center p-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-2"></div>
+              <span className="text-xs text-muted-foreground">Carregando permissões...</span>
             </div>
           ) : (
-            items.map((item) => (
-            <Button
-              key={item.title}
-              variant="ghost"
-              className={`flex items-center w-full justify-start py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
-                isExpanded ? "h-auto min-h-[44px]" : "justify-center h-12 w-12 mx-auto"
-              }`}
-              onClick={() => handleNavigation(item.to)}
-            >
-              <span className={`flex items-center w-full ${isExpanded ? "gap-3" : "justify-center"}`}>
-                <span className="flex-shrink-0">
-                  {item.icon}
-                </span>
-                {isExpanded && (
-                  <span className="flex-1 text-left leading-tight transition-opacity duration-300 opacity-100 overflow-hidden">
-                    {item.title}
+            items.map((item) => {
+              const hasAccess = item.to === '/admin' || item.to === '/admin/permissions' || 
+                              item.to === '/admin/super-dashboard' || item.to === '/admin/admins' || 
+                              item.to === '/admin/users' || item.to === '/admin/rls-checker' || 
+                              isSuperAdmin;
+              
+              console.log('Menu item permission check:', { 
+                title: item.title, 
+                to: item.to, 
+                hasAccess, 
+                isSuperAdmin,
+                permissionsLoading 
+              });
+
+              return (
+                <Button
+                  key={item.title}
+                  variant="ghost"
+                  className={`flex items-center w-full justify-start py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
+                    isExpanded ? "h-auto min-h-[44px]" : "justify-center h-12 w-12 mx-auto"
+                  }`}
+                  onClick={() => handleNavigation(item.to)}
+                >
+                  <span className={`flex items-center w-full ${isExpanded ? "gap-3" : "justify-center"}`}>
+                    <span className="flex-shrink-0">
+                      {item.icon}
+                    </span>
+                    {isExpanded && (
+                      <span className="flex-1 text-left leading-tight transition-opacity duration-300 opacity-100 overflow-hidden">
+                        {item.title}
+                      </span>
+                    )}
                   </span>
-                )}
-              </span>
-            </Button>
-            ))
+                </Button>
+              );
+            })
           )}
         </nav>
       </ScrollArea>
