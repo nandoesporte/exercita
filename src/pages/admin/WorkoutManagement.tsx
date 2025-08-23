@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Trash2, PenSquare, Dumbbell, Star, UserCheck, Users
+  Plus, Search, Trash2, PenSquare, Dumbbell, Star, UserCheck, Users, StarOff
 } from 'lucide-react';
 import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ import { DataTable } from '@/components/ui/data-table';
 
 const WorkoutManagement = () => {
   const navigate = useNavigate();
-  const { workouts, isLoading, deleteWorkout } = useAdminWorkouts();
+  const { workouts, isLoading, deleteWorkout, updateWorkout } = useAdminWorkouts();
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [recommendWorkoutId, setRecommendWorkoutId] = useState<string | null>(null);
@@ -63,6 +63,16 @@ const WorkoutManagement = () => {
   const handleOpenCloneDialog = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setCloneWorkoutId(id);
+  };
+
+  const handleToggleRecommendation = async (workout: any) => {
+    await updateWorkout({
+      id: workout.id,
+      title: workout.title,
+      duration: workout.duration,
+      level: workout.level,
+      is_recommended: !workout.is_recommended
+    });
   };
 
   return (
@@ -130,17 +140,29 @@ const WorkoutManagement = () => {
             accessorKey: "actions",
             header: "Ações",
             cell: ({ row }: { row: { original: any } }) => (
-              <div className="flex items-center justify-end gap-1 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => handleOpenCloneDialog(row.original.id, e)}
-                  title="Clonar para usuário"
-                  className="px-2"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="sr-only">Clonar para Usuário</span>
-                </Button>
+               <div className="flex items-center justify-end gap-1 flex-wrap">
+                 {row.original.is_recommended && (
+                   <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={() => handleToggleRecommendation(row.original)}
+                     title="Desrecomendar treino"
+                     className="px-2 border-amber-400 text-amber-500 hover:bg-amber-50"
+                   >
+                     <StarOff className="h-4 w-4" />
+                     <span className="sr-only">Desrecomendar</span>
+                   </Button>
+                 )}
+                 <Button
+                   variant="outline"
+                   size="sm"
+                   onClick={(e) => handleOpenCloneDialog(row.original.id, e)}
+                   title="Clonar para usuário"
+                   className="px-2"
+                 >
+                   <Users className="h-4 w-4" />
+                   <span className="sr-only">Clonar para Usuário</span>
+                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
