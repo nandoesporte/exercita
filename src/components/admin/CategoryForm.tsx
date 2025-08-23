@@ -1,9 +1,9 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAdminStore } from '@/hooks/useAdminStore';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -40,8 +40,7 @@ interface CategoryFormProps {
 }
 
 export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps) => {
-  // Category management is disabled since the functions don't exist in useAdminStore
-  const isLoading = false;
+  const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(formSchema),
@@ -71,8 +70,33 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
   
   const onSubmit = async (values: CategoryFormValues) => {
     try {
-      // Category management functionality is disabled
-      toast('Category management functionality is disabled');
+      if (category) {
+        // Atualizar categoria existente
+        const { error } = await supabase
+          .from('product_categories')
+          .update({
+            name: values.name,
+            color: values.color,
+            icon: values.icon,
+          })
+          .eq('id', category.id);
+
+        if (error) throw error;
+        toast('Categoria atualizada com sucesso!');
+      } else {
+        // Criar nova categoria
+        const { error } = await supabase
+          .from('product_categories')
+          .insert({
+            name: values.name,
+            color: values.color,
+            icon: values.icon,
+          });
+
+        if (error) throw error;
+        toast('Categoria criada com sucesso!');
+      }
+      
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving category:', error);

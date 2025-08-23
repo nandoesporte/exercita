@@ -32,12 +32,21 @@ export interface ProductFormData {
 export function useAdminStore(productId?: string) {
   const queryClient = useQueryClient();
 
-  // Products functionality is disabled since the table doesn't exist
+  // Fetch all products
   const { data: products, isLoading: isLoadingProducts, error: productsError } = useQuery({
     queryKey: ['admin-products'],
     queryFn: async (): Promise<Product[]> => {
-      console.log('Products functionality disabled - table does not exist');
-      return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+
+      return data as Product[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -45,51 +54,109 @@ export function useAdminStore(productId?: string) {
 
   const { data: singleProduct, isLoading: isLoadingSingleProduct } = useQuery({
     queryKey: ['admin-product', productId],
-    queryFn: (): Promise<Product> => {
-      throw new Error('Products table does not exist');
+    queryFn: async (): Promise<Product> => {
+      if (!productId) throw new Error('Product ID is required');
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .single();
+
+      if (error) throw error;
+      return data as Product;
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-  // Create a product - disabled
+  // Create a product
   const { mutateAsync: createProduct, isPending: isCreating } = useMutation({
     mutationFn: async (product: ProductFormData): Promise<Product> => {
-      throw new Error('Products table does not exist - cannot create product');
+      const { data, error } = await supabase
+        .from('products')
+        .insert(product)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      return data as Product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast('Produto criado com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Error creating product:', error);
+      toast('Erro ao criar produto');
     },
   });
 
-  // Update a product - disabled
+  // Update a product
   const { mutateAsync: updateProduct, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, ...product }: ProductFormData & { id: string }): Promise<Product> => {
-      throw new Error('Products table does not exist - cannot update product');
+      const { data, error } = await supabase
+        .from('products')
+        .update(product)
+        .eq('id', id)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      return data as Product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast('Produto atualizado com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Error updating product:', error);
+      toast('Erro ao atualizar produto');
     },
   });
 
-  // Delete a product - disabled
+  // Delete a product
   const { mutateAsync: deleteProduct, isPending: isDeleting } = useMutation({
     mutationFn: async (id: string): Promise<string> => {
-      throw new Error('Products table does not exist - cannot delete product');
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast('Produto excluído com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Error deleting product:', error);
+      toast('Erro ao excluir produto');
     },
   });
 
-  // Toggle product featured status - disabled
+  // Toggle product featured status
   const { mutateAsync: toggleFeaturedProduct } = useMutation({
     mutationFn: async (params: { id: string; isFeatured: boolean }) => {
-      throw new Error('Products table does not exist - cannot toggle featured status');
+      const { data, error } = await supabase
+        .from('products')
+        .update({ is_featured: params.isFeatured })
+        .eq('id', params.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast('Status destacado atualizado!');
+    },
+    onError: (error) => {
+      console.error('Error toggling featured status:', error);
+      toast('Erro ao atualizar status destacado');
     },
   });
 

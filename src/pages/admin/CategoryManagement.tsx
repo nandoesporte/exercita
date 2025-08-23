@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAdminStore } from '@/hooks/useAdminStore';
+import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -20,13 +20,7 @@ import { DataTable } from "@/components/ui/data-table";
 
 const CategoryManagement = () => {
   const navigate = useNavigate();
-  // Mock category management since categories are not in the admin store
-  const categories = [];
-  const isLoadingCategories = false;
-  const deleteCategory = async (id: string) => {
-    console.log('Delete category not implemented');
-  };
-  const isDeletingCategory = false;
+  const { categories, isLoadingCategories, deleteCategory, isDeleting: isDeletingCategory } = useCategories();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -51,7 +45,6 @@ const CategoryManagement = () => {
       try {
         setIsDeleting(true);
         await deleteCategory(deleteId);
-        toast('Categoria excluída com sucesso');
       } catch (error) {
         console.error('Error deleting category:', error);
         toast('Erro ao excluir categoria. Certifique-se de que não existem exercícios ou produtos usando esta categoria.');

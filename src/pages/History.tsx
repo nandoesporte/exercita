@@ -80,8 +80,10 @@ const History = () => {
     
     setIsDeleting(true);
     try {
-      // Note: user_workout_history table doesn't exist, so this is disabled
-      throw new Error('Delete functionality not available - table does not exist');
+      const { error } = await supabase
+        .from('user_workout_history')
+        .delete()
+        .eq('id', workoutToDelete);
       
       if (error) {
         throw error;
