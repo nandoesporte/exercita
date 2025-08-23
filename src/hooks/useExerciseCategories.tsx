@@ -15,7 +15,7 @@ export interface ExerciseCategory {
 
 export const useExerciseCategories = () => {
   const queryClient = useQueryClient();
-  const { adminId, isSuperAdmin } = useAdminPermissions();
+  const { adminId, isSuperAdmin, isLoading: permissionsLoading } = useAdminPermissions();
 
   // Fetch exercise categories
   const { 
@@ -24,12 +24,14 @@ export const useExerciseCategories = () => {
   } = useQuery({
     queryKey: ['admin-workout-categories', adminId],
     queryFn: async () => {
+      console.log('Fetching categories with adminId:', adminId, 'isSuperAdmin:', isSuperAdmin);
+      
       let query = supabase
         .from('workout_categories')
         .select('*');
 
       // Filter by admin_id for non-super admins
-      if (!isSuperAdmin && adminId) {
+      if (!isSuperAdmin && adminId && adminId !== 'super_admin') {
         query = query.eq('admin_id', adminId);
       }
 
@@ -41,9 +43,10 @@ export const useExerciseCategories = () => {
         return [];
       }
 
+      console.log('Categories fetched:', data);
       return data as ExerciseCategory[];
     },
-    enabled: !!adminId || isSuperAdmin,
+    enabled: !permissionsLoading && (!!adminId || isSuperAdmin),
   });
 
   // Create a category

@@ -65,6 +65,8 @@ export function useUsersByAdmin() {
   const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
     queryFn: async () => {
+      console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
+      
       if (isSuperAdmin) {
         // Super admin gets all users with email data
         const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
@@ -97,6 +99,7 @@ export function useUsersByAdmin() {
 
         if (profilesError) throw profilesError;
 
+        console.log('Fetched profiles for admin:', profiles.length, 'profiles');
         // For regular admins, we don't expose email addresses for security
         return profiles.map(profile => ({
           ...profile,
