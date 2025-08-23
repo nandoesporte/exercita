@@ -99,10 +99,16 @@ export function useProfile() {
       }
       
       const currentProfile = profileQuery.data;
+      console.log('🔍 PIX Key Debug - Current profile:', currentProfile);
+      console.log('🔍 PIX Key Debug - User ID:', user?.id);
+      console.log('🔍 PIX Key Debug - Admin ID:', currentProfile?.admin_id);
+      console.log('🔍 PIX Key Debug - Is Admin:', currentProfile?.is_admin);
       
       try {
         // First try to get PIX key from user's admin
         if (currentProfile?.admin_id) {
+          console.log('🔍 PIX Key Debug - Searching for admin PIX key with admin_id:', currentProfile.admin_id);
+          
           const { data: adminPixKey, error: adminError } = await supabase
             .from('pix_keys')
             .select('*')
@@ -110,7 +116,10 @@ export function useProfile() {
             .eq('is_primary', true)
             .maybeSingle();
             
+          console.log('🔍 PIX Key Debug - Admin PIX key result:', { adminPixKey, adminError });
+            
           if (!adminError && adminPixKey) {
+            console.log('✅ PIX Key Debug - Found admin PIX key:', adminPixKey);
             return {
               id: adminPixKey.id,
               key_type: adminPixKey.key_type as 'cpf' | 'email' | 'phone' | 'random',
@@ -118,16 +127,22 @@ export function useProfile() {
               recipient_name: adminPixKey.recipient_name,
               is_primary: adminPixKey.is_primary || false,
             } as PixKey;
+          } else {
+            console.log('❌ PIX Key Debug - No admin PIX key found or error:', adminError);
           }
         }
         
         // If user is admin, get their own PIX keys
         if (currentProfile?.is_admin) {
+          console.log('🔍 PIX Key Debug - User is admin, getting own PIX keys');
+          
           const { data: adminData } = await supabase
             .from('admins')
             .select('id')
             .eq('user_id', user.id)
             .maybeSingle();
+            
+          console.log('🔍 PIX Key Debug - Admin data:', adminData);
             
           if (adminData) {
             const { data: ownPixKey, error: ownError } = await supabase
@@ -137,7 +152,10 @@ export function useProfile() {
               .eq('is_primary', true)
               .maybeSingle();
               
+            console.log('🔍 PIX Key Debug - Own PIX key result:', { ownPixKey, ownError });
+              
             if (!ownError && ownPixKey) {
+              console.log('✅ PIX Key Debug - Found own PIX key:', ownPixKey);
               return {
                 id: ownPixKey.id,
                 key_type: ownPixKey.key_type as 'cpf' | 'email' | 'phone' | 'random',
@@ -149,6 +167,7 @@ export function useProfile() {
           }
         }
         
+        console.log('❌ PIX Key Debug - No PIX key found for this user');
         return null;
       } catch (error) {
         console.error('Exception in PIX key fetch:', error);
