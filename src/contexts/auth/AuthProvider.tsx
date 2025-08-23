@@ -17,9 +17,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   console.log("AuthProvider initializing");
 
-  // Monitor and update admin status
+  // Monitor and update admin status using the new role system
   const updateAdminStatus = useCallback(async (userId: string) => {
     const adminStatus = await checkAdminStatus(userId);
+    console.log("Admin status updated:", adminStatus);
     setIsAdmin(adminStatus);
     return adminStatus;
   }, []);

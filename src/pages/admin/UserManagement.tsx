@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2, UserPlus, UserCheck, UserX } from 'lucide-react';
+import { Loader2, UserPlus, UserCheck, UserX, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/auth';
+import { useAdminRole } from '@/hooks/useAdminRole';
 
 // Define o schema para validação do formulário exatamente como na página de login
 const formSchema = z.object({
@@ -50,6 +51,7 @@ const UserManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
+  const { isSuperAdmin } = useAdminRole();
   
   const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
     queryKey: ['admin-users'],
@@ -255,7 +257,14 @@ const UserManagement = () => {
   return (
     <div className="space-y-4 pb-16 md:pb-0">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Gerenciamento de Usuários</h1>
+        <div>
+          <h1 className="text-xl font-bold">Gerenciamento de Usuários</h1>
+          {isSuperAdmin && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Como Super Admin, você pode gerenciar todos os usuários do sistema
+            </p>
+          )}
+        </div>
         <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
           <DialogTrigger asChild>
             <Button size={isMobile ? "sm" : "default"}>
@@ -344,6 +353,23 @@ const UserManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Super Admin Info Card */}
+      {isSuperAdmin && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-600" />
+              <CardTitle className="text-lg text-yellow-800 dark:text-yellow-200">
+                Privilégios de Super Admin
+              </CardTitle>
+            </div>
+            <CardDescription className="text-yellow-700 dark:text-yellow-300">
+              Você possui acesso total ao sistema, incluindo criação de novos admins e gerenciamento de todos os usuários.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* User Table */}
       <Card>

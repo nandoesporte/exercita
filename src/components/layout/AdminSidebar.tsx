@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import {
   LineChart,
   Dumbbell,
@@ -14,6 +15,7 @@ import {
   ShieldCheck,
   Camera,
   List,
+  Crown,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminSidebarProps {
   onNavItemClick?: () => void;
@@ -33,6 +36,7 @@ interface AdminSidebarProps {
 const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAdminRole();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const toggleSidebar = () => {
@@ -97,16 +101,18 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       icon: <CreditCard className="mr-2 h-4 w-4" />,
       to: '/admin/payment-methods'
     },
-    {
+    // Only show user management for Super Admins
+    ...(isSuperAdmin ? [{
       title: 'Gerenciamento de Usuários',
       icon: <Users className="mr-2 h-4 w-4" />,
       to: '/admin/users'
-    },
-    {
+    }] : []),
+    // Only show RLS Checker for Super Admins
+    ...(isSuperAdmin ? [{
       title: 'RLS Checker',
       icon: <ShieldCheck className="mr-2 h-4 w-4" />,
       to: '/admin/rls-checker'
-    }
+    }] : [])
   ];
 
   return (
@@ -116,13 +122,16 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       } transition-width duration-300 ease-in-out`}
     >
       <div className="flex items-center justify-center py-4">
-        <span
-          className={`text-lg font-bold transition-opacity duration-300 ${
-            isExpanded ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          Painel Admin
-        </span>
+        <div className="flex items-center gap-2">
+          {isSuperAdmin && <Crown className="h-5 w-5 text-yellow-500" />}
+          <span
+            className={`text-lg font-bold transition-opacity duration-300 ${
+              isExpanded ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            Painel Admin
+          </span>
+        </div>
       </div>
       <nav className="flex-grow px-2 space-y-1">
         {items.map((item) => (
@@ -155,13 +164,20 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
                   {user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span
-                className={`font-semibold transition-opacity duration-300 truncate text-sm sm:text-base ${
-                  isExpanded ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {user?.email}
-              </span>
+              <div className="flex flex-col items-start">
+                <span
+                  className={`font-semibold transition-opacity duration-300 truncate text-sm sm:text-base ${
+                    isExpanded ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {user?.email}
+                </span>
+                {isSuperAdmin && (
+                  <Badge variant="secondary" className={`text-xs ${isExpanded ? "opacity-100" : "opacity-0"}`}>
+                    Super Admin
+                  </Badge>
+                )}
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
