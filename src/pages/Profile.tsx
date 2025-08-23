@@ -21,8 +21,8 @@ const Profile = () => {
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   
-  // Get admin name
-  const { data: adminData } = useQuery({
+  // Get admin name - only run once when profile.admin_id is available
+  const { data: adminData, isLoading: isLoadingAdmin } = useQuery({
     queryKey: ['admin', profile?.admin_id],
     queryFn: async () => {
       if (!profile?.admin_id) return null;
@@ -35,20 +35,16 @@ const Profile = () => {
       return data;
     },
     enabled: !!profile?.admin_id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   // Force refresh profile data ONCE when component mounts
   useEffect(() => {
-    let isMounted = true;
-    if (user && isMounted) {
+    if (user?.id && !profile) {
       console.log('Profile component mounted, refreshing profile data');
       refreshProfile();
     }
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [user, refreshProfile]);
+  }, [user?.id, profile, refreshProfile]);
   
   const formatDate = (date: Date | null) => {
     if (!date) return '';

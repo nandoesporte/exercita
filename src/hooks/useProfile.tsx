@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
@@ -285,7 +286,7 @@ export function useProfile() {
   });
 
   // Immediate refresh method that forces a full data reload
-  const refreshProfile = () => {
+  const refreshProfile = useCallback(() => {
     if (!user?.id) return;
     
     console.log('Forcing complete profile refresh');
@@ -303,7 +304,7 @@ export function useProfile() {
     
     // Force immediate refetch
     queryClient.refetchQueries({ queryKey: ['profile', user.id] });
-  };
+  }, [user?.id, queryClient]);
   
   // Function to ensure avatar URL has necessary cache busting for display
   const getDisplayAvatarUrl = (url?: string | null): string | null => {
