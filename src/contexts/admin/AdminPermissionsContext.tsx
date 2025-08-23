@@ -16,7 +16,7 @@ interface AdminPermissionsContextType {
   isAdmin: boolean;
 }
 
-const AdminPermissionsContext = createContext<AdminPermissionsContextType | undefined>(undefined);
+export const AdminPermissionsContext = createContext<AdminPermissionsContextType | undefined>(undefined);
 
 export function AdminPermissionsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
