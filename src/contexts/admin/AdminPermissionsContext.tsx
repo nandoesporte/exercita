@@ -27,6 +27,7 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
   const { data: adminData } = useQuery({
     queryKey: ['current-admin-id', user?.id],
     queryFn: async () => {
+      console.log('AdminPermissionsContext - Fetching admin ID for user:', user?.id, 'isAdmin:', isAdmin);
       if (!user?.id || !isAdmin) return null;
       
       const { data, error } = await supabase
@@ -40,16 +41,20 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
         return null;
       }
       
+      console.log('AdminPermissionsContext - Admin data fetched:', data);
       return data;
     },
-    enabled: !!user?.id && isAdmin, // Remove the !isSuperAdmin condition so it works for both
+    enabled: !!user?.id && isAdmin,
   });
 
   // Fetch admin permissions
   const { data: permissions = [], isLoading: permissionsLoading } = useQuery({
     queryKey: ['admin-permissions', adminData?.id, isSuperAdmin],
     queryFn: async () => {
+      console.log('AdminPermissionsContext - Fetching permissions. isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
+      
       if (isSuperAdmin) {
+        console.log('AdminPermissionsContext - Returning super admin permissions');
         // Return all possible permissions for Super Admin
         return [
           'manage_workouts', 
@@ -64,7 +69,12 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
         ] as AdminPermission[];
       }
       
-      if (!adminData?.id) return [];
+      if (!adminData?.id) {
+        console.log('AdminPermissionsContext - No admin ID, returning empty permissions');
+        return [];
+      }
+      
+      console.log('AdminPermissionsContext - Fetching permissions for admin ID:', adminData.id);
       
       const { data, error } = await supabase
         .from('admin_permissions')
@@ -76,6 +86,7 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
         return [];
       }
       
+      console.log('AdminPermissionsContext - Permissions fetched:', data);
       return data.map(p => p.permission);
     },
     enabled: (!!adminData?.id || isSuperAdmin) && isAdmin,
@@ -84,24 +95,36 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
   });
 
   useEffect(() => {
+    console.log('AdminPermissionsContext - Setting adminId. adminData:', adminData, 'isSuperAdmin:', isSuperAdmin);
     if (adminData?.id) {
       setAdminId(adminData.id);
+      console.log('AdminPermissionsContext - adminId set to:', adminData.id);
     } else if (isSuperAdmin) {
       setAdminId('super_admin');
+      console.log('AdminPermissionsContext - adminId set to: super_admin');
     } else {
       setAdminId(null);
+      console.log('AdminPermissionsContext - adminId set to: null');
     }
   }, [adminData?.id, isSuperAdmin]);
 
   const hasPermission = (permission: AdminPermission): boolean => {
     // During loading, return false to prevent premature access
-    if (roleLoading || permissionsLoading) return false;
+    if (roleLoading || permissionsLoading) {
+      console.log('AdminPermissionsContext - hasPermission returning false due to loading:', { roleLoading, permissionsLoading });
+      return false;
+    }
     
     // Super admin always has all permissions
-    if (isSuperAdmin) return true;
+    if (isSuperAdmin) {
+      console.log('AdminPermissionsContext - hasPermission returning true for super admin');
+      return true;
+    }
     
     // Regular admins need explicit permissions
-    return permissions.includes(permission);
+    const hasIt = permissions.includes(permission);
+    console.log('AdminPermissionsContext - hasPermission check:', { permission, permissions, hasIt });
+    return hasIt;
   };
 
   const value: AdminPermissionsContextType = {
