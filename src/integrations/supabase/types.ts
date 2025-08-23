@@ -1123,6 +1123,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          banned_until: string
+          created_at: string
+          email: string
+          id: string
+          last_sign_in_at: string
+          raw_user_meta_data: Json
+        }[]
+      }
       get_current_admin_id: {
         Args: Record<PropertyKey, never>
         Returns: string
