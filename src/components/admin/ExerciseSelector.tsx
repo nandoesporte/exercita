@@ -44,7 +44,7 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
   // Filter exercises based on search term and selected category
   const filteredExercises = exercises.filter(exercise => {
     const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === null || exercise.category?.id === selectedCategory;
+    const matchesCategory = selectedCategory === null || selectedCategory === 'all' || exercise.category?.id === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 

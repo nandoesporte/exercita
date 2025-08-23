@@ -156,19 +156,25 @@ const EditWorkoutExercises = () => {
   );
 
   return (
-    <div className="space-y-6 pb-16">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="space-y-4 sm:space-y-6 pb-16 px-2 sm:px-4 lg:px-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
           <button 
             onClick={handleBackClick}
-            className="p-2 hover:bg-muted rounded-full"
+            className="p-2 hover:bg-muted rounded-full flex-shrink-0"
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-2xl font-bold">
-            Editar Exercícios do Treino
-            {workout && <span className="ml-2 text-muted-foreground">- {workout.title}</span>}
-          </h1>
+          <div className="min-w-0 flex-1 sm:flex-none">
+            <h1 className="text-xl sm:text-2xl font-bold leading-tight">
+              Editar Exercícios do Treino
+            </h1>
+            {workout && (
+              <span className="text-sm sm:text-base text-muted-foreground block mt-1 sm:inline sm:mt-0 sm:ml-2 truncate">
+                - {workout.title}
+              </span>
+            )}
+          </div>
         </div>
         
         {/* Clone to User button at top right */}
@@ -240,9 +246,9 @@ const EditWorkoutExercises = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            <div className="bg-card rounded-lg border border-border p-6">
-              <h2 className="text-xl font-semibold mb-4">Lista de Exercícios</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-10">
+            <div className="bg-card rounded-lg border border-border p-3 sm:p-4 lg:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Lista de Exercícios</h2>
               <ExerciseList 
                 exercises={workoutExercises}
                 onRemove={handleRemoveExercise}
@@ -252,8 +258,8 @@ const EditWorkoutExercises = () => {
               />
             </div>
             
-            <div className="bg-card rounded-lg border border-border p-6">
-              <h2 className="text-xl font-semibold mb-4">Adicionar Exercício</h2>
+            <div className="bg-card rounded-lg border border-border p-3 sm:p-4 lg:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Adicionar Exercício</h2>
               <AddExerciseForm 
                 exercises={exercises}
                 onAddExercise={handleAddExercise}

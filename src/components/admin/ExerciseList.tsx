@@ -218,7 +218,8 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
             <div className="grid grid-cols-2 gap-2 text-sm">
               {(exercise.description || (exercise.exercise && exercise.exercise.description)) && (
                 <div className="col-span-2">
-                  <span className="text-muted-foreground">Descrição:</span> {exercise.description || (exercise.exercise && exercise.exercise.description)}
+                  <span className="text-muted-foreground font-medium">Descrição:</span> 
+                  <span className="text-foreground ml-1">{exercise.description || (exercise.exercise && exercise.exercise.description)}</span>
                 </div>
               )}
               {categoryName && (
@@ -228,15 +229,15 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               )}
               {exercise.sets && (
                 <div>
-                  <span className="font-semibold text-white">Séries:</span> <span className="font-medium text-white">{exercise.sets}</span>
+                  <span className="font-semibold text-foreground">Séries:</span> <span className="font-medium text-muted-foreground">{exercise.sets}</span>
                 </div>
               )}
               {exercise.reps && (
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold text-white">Repetições:</span> <span className="font-medium text-white">{exercise.reps}</span>
+                  <span className="font-semibold text-foreground">Repetições:</span> <span className="font-medium text-muted-foreground">{exercise.reps}</span>
                   {exercise.weight && exercise.weight > 0 && (
-                    <span className="flex items-center gap-0.5 bg-fitness-darkGray/30 px-2 py-0.5 rounded-full text-sm font-medium text-white">
-                      <Weight className="h-3 w-3 text-fitness-orange" />
+                    <span className="flex items-center gap-0.5 bg-muted px-2 py-0.5 rounded-full text-sm font-medium text-foreground">
+                      <Weight className="h-3 w-3 text-primary" />
                       {exercise.weight}kg
                     </span>
                   )}
@@ -244,12 +245,12 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               )}
               {exercise.duration !== undefined && exercise.duration !== null && exercise.duration > 0 && (
                 <div>
-                  <span className="font-semibold text-white">Duração:</span> <span className="font-medium text-white">{formatDuration(exercise.duration) || 'Não especificada'}</span>
+                  <span className="font-semibold text-foreground">Duração:</span> <span className="font-medium text-muted-foreground">{formatDuration(exercise.duration) || 'Não especificada'}</span>
                 </div>
               )}
               {exercise.rest !== undefined && exercise.rest !== null && (
                 <div>
-                  <span className="font-semibold text-white">Descanso:</span> <span className="font-medium text-white">{
+                  <span className="font-semibold text-foreground">Descanso:</span> <span className="font-medium text-muted-foreground">{
                     exercise.rest >= 60 && exercise.rest % 60 === 0
                       ? `${exercise.rest / 60} min`
                       : `${exercise.rest} seg`
@@ -258,16 +259,16 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               )}
               {exercise.weight && (
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold text-white">Peso:</span> 
-                  <span className="flex items-center gap-1 font-medium text-white">
-                    <Weight className="h-4 w-4 text-fitness-orange" />
+                  <span className="font-semibold text-foreground">Peso:</span> 
+                  <span className="flex items-center gap-1 font-medium text-muted-foreground">
+                    <Weight className="h-4 w-4 text-primary" />
                     {exercise.weight}kg
                   </span>
                 </div>
               )}
               {exercise.day_of_week && (
                 <div>
-                  <span className="font-semibold text-white">Dia:</span> <span className="font-medium text-white">{exercise.day_of_week}</span>
+                  <span className="font-semibold text-foreground">Dia:</span> <span className="font-medium text-muted-foreground">{exercise.day_of_week}</span>
                 </div>
               )}
             </div>
