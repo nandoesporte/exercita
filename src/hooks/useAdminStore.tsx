@@ -17,7 +17,7 @@ export const useAdminStore = () => {
       console.log('Fetching admin products');
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:workout_categories(name)')
+        .select('*, categories:product_categories(name)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -54,7 +54,7 @@ export const useAdminStore = () => {
     console.log('Fetching product with ID:', id);
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:workout_categories(name)')
+      .select('*, categories:product_categories(name)')
       .eq('id', id)
       .single();
 
@@ -94,7 +94,7 @@ export const useAdminStore = () => {
     queryKey: ['admin-product-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('workout_categories') // Using workout_categories instead of product_categories
+        .from('product_categories')
         .select('*')
         .order('name');
 
@@ -112,7 +112,7 @@ export const useAdminStore = () => {
   const { mutateAsync: createCategory, isPending: isCreatingCategory } = useMutation({
     mutationFn: async (categoryData: Omit<ProductCategory, 'id'>) => {
       const { data, error } = await supabase
-        .from('workout_categories')
+        .from('product_categories')
         .insert([categoryData])
         .select()
         .single();
@@ -134,7 +134,7 @@ export const useAdminStore = () => {
   const { mutateAsync: updateCategory, isPending: isUpdatingCategory } = useMutation({
     mutationFn: async (category: ProductCategory) => {
       const { data, error } = await supabase
-        .from('workout_categories')
+        .from('product_categories')
         .update({
           name: category.name,
           color: category.color,
@@ -185,7 +185,7 @@ export const useAdminStore = () => {
         
         // Finally, delete the category
         const { error } = await supabase
-          .from('workout_categories')
+          .from('product_categories')
           .delete()
           .eq('id', id);
 

@@ -63,6 +63,11 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       to: '/admin/exercises'
     },
     {
+      title: 'Categorias de Exercícios',
+      icon: <Dumbbell className="mr-2 h-4 w-4" />,
+      to: '/admin/exercises/categories'
+    },
+    {
       title: 'Produtos',
       icon: <ShoppingBag className="mr-2 h-4 w-4" />,
       to: '/admin/products'

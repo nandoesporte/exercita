@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Search } from 'lucide-react';
 
 interface ExerciseFilterProps {
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; color?: string; icon?: string; created_at?: string; updated_at?: string }[];
   searchTerm: string;
   onSearchChange: (value: string) => void;
 }

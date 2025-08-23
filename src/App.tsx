@@ -40,6 +40,7 @@ import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
 import ExerciseManagement from "@/pages/admin/ExerciseManagement";
 import ProductManagement from "@/pages/admin/ProductManagement";
 import CategoryManagement from "@/pages/admin/CategoryManagement";
+import ExerciseCategoryManagement from "@/pages/admin/ExerciseCategoryManagement";
 import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
 import ScheduleManagement from "@/pages/admin/ScheduleManagement";
@@ -108,6 +109,7 @@ const App = () => {
           {/* Exercises */}
           <Route path="exercises" element={<ExerciseManagement />} />
           <Route path="exercises/library" element={<ExerciseLibrary />} />
+          <Route path="exercises/categories" element={<ExerciseCategoryManagement />} />
           {/* Products */}
           <Route path="products" element={<ProductManagement />} />
           <Route path="products/create" element={<CreateProduct />} />

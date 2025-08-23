@@ -48,7 +48,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface ExerciseBatchUploadProps {
   onSubmit: (data: any[]) => Promise<void>;
-  categories: { id: string; name: string; color: string; icon: string; created_at: string; updated_at: string }[];
+  categories: { id: string; name: string; color?: string; icon?: string; created_at?: string; updated_at?: string }[];
 }
 
 export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploadProps) {
@@ -72,27 +72,72 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
   }, [categories]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => {
-      // Extract name from filename (remove extension)
-      const fileName = file.name.split('.')[0]
-        .replace(/_/g, ' ')
-        .replace(/-/g, ' ')
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-        
+    console.log('Files dropped:', acceptedFiles);
+    
+    const newFiles = acceptedFiles.map((file, index) => {
+      // Extract exercise name from filename (remove extension)
+      const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
+      const exerciseName = nameWithoutExtension.charAt(0).toUpperCase() + nameWithoutExtension.slice(1);
+      
+      // Try to detect category from filename or path
+      let detectedCategory = null;
+      const fileName = file.name.toLowerCase();
+      const filePath = file.webkitRelativePath ? file.webkitRelativePath.toLowerCase() : fileName;
+      
+      // Common category mappings for gym exercises
+      const categoryMappings = [
+        { keywords: ['bicep', 'bíceps', 'biceps'], name: 'Bíceps' },
+        { keywords: ['tricep', 'tríceps', 'triceps'], name: 'Tríceps' },
+        { keywords: ['peito', 'chest', 'pectoral'], name: 'Peito' },
+        { keywords: ['ombro', 'shoulder', 'deltoid'], name: 'Ombros' },
+        { keywords: ['costa', 'back', 'dorsal', 'lat'], name: 'Costas' },
+        { keywords: ['perna', 'leg', 'quadricep', 'femoral'], name: 'Pernas' },
+        { keywords: ['panturrilha', 'calf', 'sural'], name: 'Panturrilhas' },
+        { keywords: ['glúteo', 'glute', 'bumbum'], name: 'Glúteos' },
+        { keywords: ['trapézio', 'trap', 'trapezio'], name: 'Trapézio' },
+        { keywords: ['antebraço', 'forearm', 'antebraco'], name: 'Antebraços' },
+        { keywords: ['erator', 'lombar', 'lower back'], name: 'Eratores da Espinha' },
+        { keywords: ['cardio', 'aerobic', 'esteira', 'bike'], name: 'Cardio Academia' }
+      ];
+      
+      // Find matching category
+      for (const mapping of categoryMappings) {
+        if (mapping.keywords.some(keyword => filePath.includes(keyword))) {
+          const matchingCategory = categories.find(cat => 
+            cat.name.toLowerCase().includes(mapping.name.toLowerCase()) ||
+            mapping.name.toLowerCase().includes(cat.name.toLowerCase())
+          );
+          if (matchingCategory) {
+            detectedCategory = matchingCategory.id;
+            break;
+          }
+        }
+      }
+      
       return {
+        id: `${Date.now()}-${index}`,
         file,
-        name: fileName,
-        status: 'pending',
-        uploadProgress: 0,
+        name: exerciseName,
+        status: 'pending' as const,
+        progress: 0,
+        detectedCategory
       };
     });
     
     setFileList(prev => [...prev, ...newFiles]);
-    form.setValue('files', [...fileList, ...newFiles]);
     
-  }, [fileList, form]);
+    // Update form with new files
+    const currentFiles = form.getValues('files') || [];
+    form.setValue('files', [...currentFiles, ...newFiles]);
+    
+    // Auto-select category if all files have the same detected category
+    const detectedCategories = newFiles.map(f => f.detectedCategory).filter(Boolean);
+    if (detectedCategories.length > 0 && new Set(detectedCategories).size === 1) {
+      form.setValue('category_id', detectedCategories[0]);
+      setIsCategoryValid(true);
+      toast.success(`Categoria "${categories.find(c => c.id === detectedCategories[0])?.name}" detectada automaticamente!`);
+    }
+  }, [form, categories]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -100,6 +145,8 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
       'image/gif': ['.gif'],
       'image/png': ['.png'],
       'image/jpeg': ['.jpg', '.jpeg'],
+      'video/mp4': ['.mp4'],
+      'video/webm': ['.webm'],
     },
     multiple: true
   });

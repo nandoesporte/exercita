@@ -42,7 +42,7 @@ const formSchema = z.object({
 interface ExerciseFormProps {
   onSubmit: (data: ExerciseFormData) => void;
   isLoading: boolean;
-  categories: Database['public']['Tables']['workout_categories']['Row'][];
+  categories: { id: string; name: string; color?: string; icon?: string; created_at?: string; updated_at?: string }[];
   initialData?: {
     name: string;
     description?: string | null;

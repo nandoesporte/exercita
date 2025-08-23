@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAdminExercises } from '@/hooks/useAdminExercises';
+import { useExerciseCategories } from '@/hooks/useExerciseCategories';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseFilter } from '@/components/admin/ExerciseFilter';
@@ -9,7 +10,7 @@ import ExerciseList from '@/components/admin/ExerciseList';
 import ExerciseForm from '@/components/admin/ExerciseForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Upload } from 'lucide-react';
+import { Plus, Upload, Dumbbell } from 'lucide-react';
 import { toast } from '@/lib/toast-wrapper';
 
 export default function ExerciseLibrary() {
@@ -31,9 +32,10 @@ export default function ExerciseLibrary() {
     isUpdating,
     deleteExercise,
     isDeleting,
-    categories,
     batchCreateExercises
   } = useAdminExercises();
+
+  const { categories, createDefaultCategories } = useExerciseCategories();
 
   const selectedExercise = selectedExerciseId 
     ? exercises.find(exercise => exercise.id === selectedExerciseId) 
@@ -90,6 +92,34 @@ export default function ExerciseLibrary() {
     return (
       <div className="p-4 bg-destructive/20 rounded-md">
         <p className="text-destructive">Erro: {error.message}</p>
+      </div>
+    );
+  }
+
+  // Show a helpful message if no categories exist
+  if (categories.length === 0 && !isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Biblioteca de Exercícios</h1>
+        </div>
+        <div className="text-center py-12">
+          <Dumbbell className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">Nenhuma categoria encontrada</h3>
+          <p className="text-muted-foreground mb-6">
+            Você precisa criar categorias antes de adicionar exercícios. 
+            Clique no botão abaixo para criar as categorias padrão.
+          </p>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => createDefaultCategories()} className="gap-2">
+              <Dumbbell className="h-4 w-4" />
+              Criar Categorias Padrão
+            </Button>
+            <Button variant="outline" onClick={() => window.location.href = '/admin/exercises/categories'}>
+              Gerenciar Categorias
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
