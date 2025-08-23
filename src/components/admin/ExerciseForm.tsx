@@ -32,7 +32,7 @@ import { toast } from '@/lib/toast-wrapper';
 
 // Define form schema with Zod
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  name: z.string().min(2, { message: "Nome deve ter pelo menos 2 caracteres." }),
   description: z.string().optional().nullable(),
   category_id: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
@@ -77,7 +77,7 @@ const ExerciseForm = ({
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     if (uploadError) {
-      toast.error("Please fix upload errors before submitting");
+      toast.error("Corrija os erros de upload antes de enviar");
       return;
     }
     onSubmit(values as ExerciseFormData);
@@ -91,8 +91,8 @@ const ExerciseForm = ({
     
     // Validate file type
     if (!file.type.includes('gif') && !file.type.includes('image')) {
-      setUploadError("Please upload a GIF or image file");
-      toast.error("Please upload a GIF or image file");
+      setUploadError("Por favor, faça upload de um arquivo GIF ou imagem");
+      toast.error("Por favor, faça upload de um arquivo GIF ou imagem");
       return;
     }
     
@@ -128,12 +128,12 @@ const ExerciseForm = ({
       // Update form
       form.setValue('image_url', publicUrl);
       setGifPreview(publicUrl);
-      toast.success("GIF uploaded successfully");
+      toast.success("GIF enviado com sucesso");
       
     } catch (error: any) {
       console.error('Error uploading GIF:', error);
-      setUploadError(error.message || "Failed to upload GIF");
-      toast.error("Failed to upload GIF: " + (error.message || "Unknown error"));
+      setUploadError(error.message || "Falha ao enviar GIF");
+      toast.error("Falha ao enviar GIF: " + (error.message || "Erro desconhecido"));
     } finally {
       setIsUploading(false);
     }
@@ -141,15 +141,15 @@ const ExerciseForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 px-1 sm:px-0">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel className="text-sm sm:text-base">Nome</FormLabel>
               <FormControl>
-                <Input placeholder="Enter exercise name" {...field} />
+                <Input placeholder="Digite o nome do exercício" {...field} className="text-sm sm:text-base" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -161,12 +161,13 @@ const ExerciseForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel className="text-sm sm:text-base">Descrição</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Enter exercise description" 
+                  placeholder="Digite a descrição do exercício" 
                   {...field} 
                   value={field.value || ""}
+                  className="text-sm sm:text-base min-h-[80px] sm:min-h-[100px]"
                 />
               </FormControl>
               <FormMessage />
@@ -179,14 +180,14 @@ const ExerciseForm = ({
           name="category_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel className="text-sm sm:text-base">Categoria</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value || undefined}
               >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                  <SelectTrigger className="text-sm sm:text-base">
+                    <SelectValue placeholder="Selecionar categoria" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -207,16 +208,16 @@ const ExerciseForm = ({
           name="image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Exercise GIF/Image</FormLabel>
+              <FormLabel className="text-sm sm:text-base">GIF/Imagem do Exercício</FormLabel>
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                   <FormControl>
                     <Input 
                       type="text"
-                      placeholder="https://example.com/image.gif" 
+                      placeholder="https://exemplo.com/imagem.gif" 
                       {...field}
                       value={field.value || ""}
-                      className={isUploading ? "opacity-50" : ""}
+                      className={`text-sm sm:text-base flex-1 ${isUploading ? "opacity-50" : ""}`}
                     />
                   </FormControl>
                   <div className="relative">
@@ -232,16 +233,17 @@ const ExerciseForm = ({
                       type="button" 
                       variant="outline"
                       disabled={isUploading}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
                     >
                       {isUploading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
+                          Enviando...
                         </>
                       ) : (
                         <>
                           <Upload className="mr-2 h-4 w-4" />
-                          Upload GIF
+                          Enviar GIF
                         </>
                       )}
                     </Button>
@@ -262,14 +264,14 @@ const ExerciseForm = ({
                       alt="Exercise preview" 
                       className="max-h-40 object-contain mx-auto"
                       onError={() => {
-                        setUploadError("Failed to load image preview. The URL might be invalid.");
+                        setUploadError("Falha ao carregar a visualização da imagem. A URL pode ser inválida.");
                       }}
                     />
                   </div>
                 )}
                 
-                <FormDescription>
-                  Upload a GIF demonstrating the exercise or enter a URL. Supported formats: GIF, PNG, JPG.
+                <FormDescription className="text-xs sm:text-sm">
+                  Envie um GIF demonstrando o exercício ou digite uma URL. Formatos suportados: GIF, PNG, JPG.
                 </FormDescription>
                 <FormMessage />
               </div>
@@ -282,16 +284,17 @@ const ExerciseForm = ({
           name="video_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Video URL (optional)</FormLabel>
+              <FormLabel className="text-sm sm:text-base">URL do Vídeo (opcional)</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="https://example.com/video.mp4" 
+                  placeholder="https://exemplo.com/video.mp4" 
                   {...field}
                   value={field.value || ""}
+                  className="text-sm sm:text-base"
                 />
               </FormControl>
-              <FormDescription>
-                Enter a URL for an instructional video
+              <FormDescription className="text-xs sm:text-sm">
+                Digite uma URL para um vídeo instrutivo
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -301,15 +304,15 @@ const ExerciseForm = ({
         <Button 
           type="submit" 
           disabled={isLoading || isUploading || !!uploadError} 
-          className="w-full"
+          className="w-full text-sm sm:text-base py-2 sm:py-3"
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {initialData ? 'Updating...' : 'Creating...'}
+              {initialData ? 'Atualizando...' : 'Criando...'}
             </>
           ) : (
-            initialData ? 'Update Exercise' : 'Create Exercise'
+            initialData ? 'Atualizar Exercício' : 'Criar Exercício'
           )}
         </Button>
       </form>

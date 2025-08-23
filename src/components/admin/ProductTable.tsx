@@ -103,11 +103,12 @@ export const ProductTable = ({
       accessorKey: 'actions',
       header: 'Ações',
       cell: ({ row }: { row: { original: any } }) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1 sm:gap-2">
           <Button
             variant="outline"
             size="sm"
             asChild
+            className="px-2 sm:px-3"
           >
             <a href={row.original.sale_url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4" />
@@ -118,6 +119,7 @@ export const ProductTable = ({
             variant="outline"
             size="sm"
             onClick={() => onEdit(row.original.id)}
+            className="px-2 sm:px-3"
           >
             <PenSquare className="h-4 w-4" />
             <span className="sr-only">Editar</span>
@@ -126,6 +128,7 @@ export const ProductTable = ({
             variant="outline"
             size="sm"
             onClick={() => handleDeleteClick(row.original.id)}
+            className="px-2 sm:px-3"
           >
             <Trash2 className="h-4 w-4" />
             <span className="sr-only">Excluir</span>

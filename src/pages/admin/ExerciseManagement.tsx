@@ -36,7 +36,7 @@ const ExerciseManagement = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this exercise?')) {
+    if (window.confirm('Tem certeza que deseja excluir este exercício?')) {
       deleteExercise(id);
     }
   };
@@ -48,32 +48,34 @@ const ExerciseManagement = () => {
   const columns = [
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Nome",
     },
     {
       accessorKey: "category.name",
-      header: "Category",
-      cell: ({ row }: any) => row.original.category?.name || 'Uncategorized'
+      header: "Categoria",
+      cell: ({ row }: any) => row.original.category?.name || 'Sem categoria'
     },
     {
       accessorKey: "actions",
-      header: "Actions",
+      header: "Ações",
       cell: ({ row }: any) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => handleEdit(row.original.id)}
+            className="text-xs sm:text-sm px-2 sm:px-3"
           >
-            Edit
+            Editar
           </Button>
           <Button 
             variant="destructive" 
             size="sm"
             onClick={() => handleDelete(row.original.id)}
             disabled={isDeleting}
+            className="text-xs sm:text-sm px-2 sm:px-3"
           >
-            Delete
+            Excluir
           </Button>
         </div>
       )
@@ -83,18 +85,18 @@ const ExerciseManagement = () => {
   if (error) {
     return (
       <div className="p-4 bg-destructive/20 rounded-md">
-        <p className="text-destructive">Error: {error.message}</p>
+        <p className="text-destructive">Erro: {error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Exercise Management</h1>
-        <Button onClick={handleCreate}>
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-bold">Gerenciamento de Exercícios</h1>
+        <Button onClick={handleCreate} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
-          Create Exercise
+          Criar Exercício
         </Button>
       </div>
 
@@ -106,9 +108,9 @@ const ExerciseManagement = () => {
 
       {/* Create Exercise Dialog - Updated with ScrollArea */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+        <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] p-3 sm:p-6">
           <DialogHeader>
-            <DialogTitle>Create New Exercise</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Criar Novo Exercício</DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] pr-4">
             <ExerciseForm 
@@ -125,9 +127,9 @@ const ExerciseManagement = () => {
 
       {/* Edit Exercise Dialog - Updated with ScrollArea */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+        <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] p-3 sm:p-6">
           <DialogHeader>
-            <DialogTitle>Edit Exercise</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Editar Exercício</DialogTitle>
           </DialogHeader>
           {selectedExercise && (
             <ScrollArea className="max-h-[70vh] pr-4">

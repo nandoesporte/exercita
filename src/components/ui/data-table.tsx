@@ -38,19 +38,19 @@ export function DataTable<TData>({
 
   if (data.length === 0) {
     return (
-      <div className="w-full py-12 text-center border rounded-md">
-        <p className="text-muted-foreground">Nenhum dado disponível</p>
+      <div className="w-full py-8 sm:py-12 text-center border rounded-md">
+        <p className="text-muted-foreground text-sm sm:text-base">Nenhum dado disponível</p>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-md border overflow-x-auto ${isMobile ? "max-w-[100%]" : ""}`}>
-      <Table className={isMobile ? "w-full table-auto" : ""}>
+    <div className={`rounded-md border overflow-x-auto ${isMobile ? "max-w-[100vw] -mx-2" : ""}`}>
+      <Table className={isMobile ? "w-full table-auto min-w-[600px]" : ""}>
         <TableHeader>
           <TableRow>
             {columns.map((column, i) => (
-              <TableHead key={i} className={isMobile ? "px-2 py-2 text-xs whitespace-nowrap" : ""}>
+              <TableHead key={i} className={isMobile ? "px-1 py-2 text-xs whitespace-nowrap font-medium" : "px-4 py-3"}>
                 {column.header}
               </TableHead>
             ))}
@@ -58,11 +58,11 @@ export function DataTable<TData>({
         </TableHeader>
         <TableBody>
           {data.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
+            <TableRow key={rowIndex} className={isMobile ? "border-b" : ""}>
               {columns.map((column, colIndex) => (
                 <TableCell 
                   key={`${rowIndex}-${colIndex}`}
-                  className={isMobile ? "px-2 py-2 text-xs" : ""}
+                  className={isMobile ? "px-1 py-2 text-xs" : "px-4 py-3"}
                 >
                   {column.cell
                     ? column.cell({ row: { original: row } })

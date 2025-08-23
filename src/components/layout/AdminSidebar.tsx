@@ -121,22 +121,22 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
             isExpanded ? "opacity-100" : "opacity-0"
           }`}
         >
-          Admin Panel
+          Painel Admin
         </span>
       </div>
-      <nav className="flex-grow px-2">
+      <nav className="flex-grow px-2 space-y-1">
         {items.map((item) => (
           <Button
             key={item.title}
             variant="ghost"
-            className={`flex items-center w-full justify-start py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
+            className={`flex items-center w-full justify-start py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-sm sm:text-base ${
               isExpanded ? "pl-4" : "justify-center"
             }`}
             onClick={() => handleNavigation(item.to)}
           >
             {item.icon}
             <span
-              className={`transition-opacity duration-300 ${
+              className={`transition-opacity duration-300 truncate ${
                 isExpanded ? "opacity-100" : "opacity-0"
               }`}
             >
@@ -145,18 +145,18 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
           </Button>
         ))}
       </nav>
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center space-x-2">
-              <Avatar className="h-8 w-8">
+            <Button variant="ghost" className="flex items-center space-x-2 w-full justify-start">
+              <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback>
                   {user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <span
-                className={`font-semibold transition-opacity duration-300 ${
+                className={`font-semibold transition-opacity duration-300 truncate text-sm sm:text-base ${
                   isExpanded ? "opacity-100" : "opacity-0"
                 }`}
               >
