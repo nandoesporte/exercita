@@ -122,90 +122,25 @@ const Index = () => {
       {/* Card Principal de Treino ou Botão Agendar Consultoria */}
       <section className="mb-8">
         {hasAssignedWorkout ? (
-          // Card com treino recomendado - exibido quando o usuário tem treino atribuído
-          <Card className="bg-fitness-darkGray border-none text-white">
-            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-              {/* Seletor de Academia */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl sm:text-2xl font-bold">Seu Treino</h2>
-                </div>
-                
-                <div className="flex items-center">
-                  <span className="bg-fitness-orange text-white px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center">
-                    <Activity size={14} className="mr-1 sm:mr-1" /> ATIVO
-                  </span>
-                </div>
-              </div>
-              
-              {/* Detalhes do Treino */}
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold">
-                  {recommendedWorkout?.title || 'Treino Personalizado'}
-                </h3>
-                <div className="flex justify-between mt-1">
-                  <Link to="/workouts" className="text-xs sm:text-sm text-gray-300 hover:text-fitness-orange">
-                    Ver todos os treinos <span>&gt;</span>
-                  </Link>
-                </div>
-                
-                {/* Áreas Alvo */}
-                <div className="mt-4">
-                  <div className="bg-fitness-dark p-3 sm:p-4 rounded-md">
-                    <div className="mb-2">
-                      <span className="font-bold text-sm sm:text-base">Alvo</span>
-                      <span className="ml-2 text-gray-300 text-sm sm:text-base">{targetMuscles}</span>
-                    </div>
-                    
-                    {/* Estatísticas do Treino - usando dados reais */}
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4">
-                      <div className="text-center">
-                        <div className="flex justify-center mb-1 sm:mb-2">
-                          <Dumbbell size={20} className="text-gray-300 sm:w-7 sm:h-7" />
-                        </div>
-                        <div className="text-sm sm:text-lg font-bold">
-                          {recommendedWorkout?.workout_exercises?.length || 0}
-                        </div>
-                        <div className="text-xs text-gray-400">exercícios</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="flex justify-center mb-1 sm:mb-2">
-                          <Clock size={20} className="text-gray-300 sm:w-7 sm:h-7" />
-                        </div>
-                        <div className="text-sm sm:text-lg font-bold">
-                          {recommendedWorkout?.duration || 0}
-                        </div>
-                        <div className="text-xs text-gray-400">minutos</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="flex justify-center mb-1 sm:mb-2">
-                          <Activity size={20} className="text-gray-300 sm:w-7 sm:h-7" />
-                        </div>
-                        <div className="text-sm sm:text-lg font-bold">
-                          {recommendedWorkout?.calories || 0}
-                        </div>
-                        <div className="text-xs text-gray-400">kcal</div>
-                      </div>
-                    </div>
-                    
-                    {/* Botão Iniciar Treino */}
-                    <Button 
-                      className="w-full mt-4 sm:mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-sm sm:text-lg font-semibold h-12 sm:h-14 rounded-xl"
-                      asChild
-                      disabled={isLoading || !recommendedWorkout}
-                    >
-                      <Link to={`/workout/${recommendedWorkout?.id || ''}`}>
-                        <Dumbbell className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                        {isLoading ? 'Carregando...' : 'Iniciar Treino'}
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          // Card com treino recomendado usando o mesmo estilo dos cards recomendados
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Seu Treino</h2>
+              <span className="bg-fitness-orange text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center">
+                <Activity size={14} className="mr-1" /> ATIVO
+              </span>
+            </div>
+            
+            <WorkoutCard 
+              id={recommendedWorkout?.id || ''}
+              title={recommendedWorkout?.title || 'Treino Personalizado'}
+              image={recommendedWorkout?.image_url || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop"}
+              duration={`${recommendedWorkout?.duration || 30} min`}
+              level={recommendedWorkout?.level === 'beginner' ? 'Iniciante' : recommendedWorkout?.level === 'intermediate' ? 'Intermediário' : 'Avançado'}
+              calories={recommendedWorkout?.calories}
+              daysOfWeek={recommendedWorkout?.days_of_week}
+            />
+          </div>
         ) : (
           // Card para agendar consultoria - exibido quando não há treinos atribuídos
           <Card className="bg-fitness-darkGray border-none text-white">
@@ -244,50 +179,6 @@ const Index = () => {
             </CardContent>
           </Card>
         )}
-      </section>
-      
-      {/* Seção de Treinos Recomendados */}
-      <section className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Treinos Recomendados</h2>
-          <Link to="/workouts" className="text-fitness-orange text-sm">Ver todos</Link>
-        </div>
-        
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="py-2">
-            {hasAssignedWorkout ? (
-              userWorkouts?.map((workout) => (
-                <CarouselItem key={workout.id} className="md:basis-1/2 lg:basis-1/3">
-                  <WorkoutCard 
-                    id={workout.id}
-                    title={workout.title}
-                    image={workout.image_url || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop"}
-                    duration={`${workout.duration || 30} min`}
-                    level={workout.level === 'beginner' ? 'Iniciante' : workout.level === 'intermediate' ? 'Intermediário' : 'Avançado'}
-                    calories={workout.calories}
-                    daysOfWeek={workout.days_of_week}
-                  />
-                </CarouselItem>
-              ))
-            ) : (
-              <>
-                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-                  <div className="bg-fitness-darkGray/30 rounded-xl p-8 text-center">
-                    <p className="text-gray-300">Nenhum treino disponível. Agende uma consultoria.</p>
-                  </div>
-                </CarouselItem>
-              </>
-            )}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
-        </Carousel>
       </section>
       
       {/* Nova Seção: Consultoria Online */}
