@@ -14,6 +14,7 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel";
 import { WorkoutCard } from '@/components/ui/workout-card';
+import { WorkoutHistoryDisplay } from '@/components/ui/workout-history-display';
 import { useStore } from '@/hooks/useStore';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -152,6 +153,11 @@ const Index = () => {
                 {isLoading ? 'Carregando...' : 'Iniciar Treino'}
               </Link>
             </Button>
+            
+            {/* Histórico de Treinos */}
+            <div className="mt-6">
+              <WorkoutHistoryDisplay workoutHistory={workoutHistory} />
+            </div>
           </div>
         ) : (
           // Card para agendar consultoria - exibido quando não há treinos atribuídos
