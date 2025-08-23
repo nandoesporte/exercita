@@ -1097,6 +1097,14 @@ export type Database = {
         Args: { source_workout_id: string; target_user_id: string }
         Returns: Json
       }
+      create_admin_user: {
+        Args: {
+          admin_email: string
+          admin_name: string
+          admin_password: string
+        }
+        Returns: Json
+      }
       current_user_has_permission: {
         Args: { _permission: Database["public"]["Enums"]["admin_permission"] }
         Returns: boolean
