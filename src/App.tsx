@@ -40,6 +40,7 @@ import EditWorkoutExercises from "@/pages/admin/EditWorkoutExercises";
 import ExerciseManagement from "@/pages/admin/ExerciseManagement";
 import ProductManagement from "@/pages/admin/ProductManagement";
 import CategoryManagement from "@/pages/admin/CategoryManagement";
+import WorkoutCategoryManagement from "@/pages/admin/WorkoutCategoryManagement";
 import CreateProduct from "@/pages/admin/CreateProduct";
 import EditProduct from "@/pages/admin/EditProduct";
 import ScheduleManagement from "@/pages/admin/ScheduleManagement";
@@ -114,6 +115,7 @@ const App = () => {
           <Route path="products/:id/edit" element={<EditProduct />} />
           {/* Categories */}
           <Route path="categories" element={<CategoryManagement />} />
+          <Route path="exercise-categories" element={<WorkoutCategoryManagement />} />
           {/* Photos */}
           <Route path="photos" element={<GymPhotoManagement />} />
           {/* Scheduling */}
