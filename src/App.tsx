@@ -51,6 +51,7 @@ import UserManagement from "@/pages/admin/UserManagement";
 import AppointmentManagement from "@/pages/admin/AppointmentManagement";
 import SuperAdminDashboard from "@/pages/admin/SuperAdminDashboard";
 import RLSChecker from "@/pages/admin/RLSChecker";
+import AdminManagement from "@/pages/admin/AdminManagement";
 import AdminPermissions from "@/pages/admin/AdminPermissions";
 
 const App = () => {
