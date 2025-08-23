@@ -98,45 +98,27 @@ const AdminManagement = () => {
   // Criar admin
   const createAdminMutation = useMutation({
     mutationFn: async (adminData: AdminFormValues) => {
-      // Primeiro criar o usuário no auth
-      const { data: userData, error: authError } = await supabase.auth.admin.createUser({
-        email: adminData.email,
-        password: adminData.password,
-        user_metadata: {
-          first_name: adminData.name.split(' ')[0],
-          last_name: adminData.name.split(' ').slice(1).join(' ') || '',
-        }
+      // Usar a função de banco de dados segura para criar admin
+      const { data, error } = await supabase.rpc('create_admin_user', {
+        admin_email: adminData.email,
+        admin_name: adminData.name,
+        admin_password: adminData.password,
       });
 
-      if (authError) throw new Error(authError.message);
+      if (error) {
+        throw new Error(error.message);
+      }
 
-      // Depois criar o registro na tabela admins
-      const { data, error } = await supabase
-        .from('admins')
-        .insert({
-          user_id: userData.user.id,
-          name: adminData.name,
-          email: adminData.email,
-        })
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-
-      // Adicionar role de admin
-      await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userData.user.id,
-          role: 'admin',
-        });
+      if (!data.success) {
+        throw new Error(data.message);
+      }
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admins'] });
       setIsCreateAdminOpen(false);
-      toast.success('Admin criado com sucesso!');
+      toast.success(`Admin criado! Instrua ${adminForm.getValues().email} a fazer signup com este email para ativar a conta.`);
       adminForm.reset();
     },
     onError: (error: Error) => {
@@ -444,6 +426,8 @@ const AdminManagement = () => {
           <CardDescription className="text-yellow-700 dark:text-yellow-300">
             Como Super Admin, você pode criar novos administradores e definir suas permissões específicas.
             Cada admin terá acesso apenas aos dados de seus próprios usuários.
+            <br /><br />
+            <strong>Como funciona:</strong> Quando você criar um admin, a conta ficará inativa até que o usuário faça o signup usando o mesmo email. Depois disso, a conta será ativada automaticamente com as permissões de admin.
           </CardDescription>
         </CardHeader>
       </Card>
