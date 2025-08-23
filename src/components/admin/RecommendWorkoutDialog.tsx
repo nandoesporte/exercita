@@ -126,17 +126,17 @@ export function RecommendWorkoutDialog({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Manage Workout Recommendations</DialogTitle>
+          <DialogTitle>Gerenciar Recomendações de Treino</DialogTitle>
           <DialogDescription>
-            Mark this workout as recommended for all users or assign it to specific users.
+            Marque este treino como recomendado para todos os usuários ou atribua para usuários específicos.
           </DialogDescription>
         </DialogHeader>
         
         <div className="flex items-center space-x-4 py-4 border-y">
           <div className="flex-1">
-            <h3 className="font-medium">Mark as Featured Workout</h3>
+            <h3 className="font-medium">Marcar como Treino em Destaque</h3>
             <p className="text-sm text-muted-foreground">
-              This workout will be marked as recommended for all users in the app
+              Este treino será marcado como recomendado para todos os usuários do app
             </p>
           </div>
           <Switch 
@@ -147,7 +147,7 @@ export function RecommendWorkoutDialog({
         </div>
 
         <div className="py-4 space-y-4 flex-1 overflow-hidden flex flex-col">
-          <h3 className="font-medium">Recommend to Specific Users</h3>
+          <h3 className="font-medium">Recomendar para Usuários Específicos</h3>
           
           <div className="flex items-center gap-2 mb-4">
             <Button
@@ -158,14 +158,14 @@ export function RecommendWorkoutDialog({
               className={isRecommendedToAll ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
             >
               <Users className="h-4 w-4 mr-2" />
-              {isRecommendedToAll ? "Recommended to All" : "Recommend to All Users"}
+              {isRecommendedToAll ? "Recomendado para Todos" : "Recomendar para Todos os Usuários"}
             </Button>
           </div>
 
           <div className="relative mb-2">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input 
-              placeholder="Search users..." 
+              placeholder="Buscar usuários..." 
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -176,7 +176,7 @@ export function RecommendWorkoutDialog({
             {recommendationsLoading ? (
               <div className="p-4 flex items-center justify-center">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">Loading recommendations...</span>
+                <span className="ml-2 text-sm text-muted-foreground">Carregando recomendações...</span>
               </div>
             ) : filteredUsers.length > 0 ? (
               <div className="p-0">
@@ -202,12 +202,12 @@ export function RecommendWorkoutDialog({
                         {isRecommended ? (
                           <>
                             <UserX className="h-4 w-4 mr-2" />
-                            Remove
+                            Remover
                           </>
                         ) : (
                           <>
                             <UserPlus className="h-4 w-4 mr-2" />
-                            Recommend
+                            Recomendar
                           </>
                         )}
                       </Button>
@@ -217,7 +217,7 @@ export function RecommendWorkoutDialog({
               </div>
             ) : (
               <div className="p-4 text-center">
-                <p className="text-sm text-muted-foreground">No users found</p>
+                <p className="text-sm text-muted-foreground">Nenhum usuário encontrado</p>
               </div>
             )}
           </ScrollArea>
@@ -225,7 +225,7 @@ export function RecommendWorkoutDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Done
+            Concluído
           </Button>
         </DialogFooter>
       </DialogContent>
