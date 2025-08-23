@@ -34,7 +34,7 @@ const WorkoutManagement = () => {
   );
 
   const handleCreateNew = () => {
-    navigate('/admin/workouts/new');
+    navigate('/admin/workouts/create');
   };
 
   const handleEdit = (id: string) => {
