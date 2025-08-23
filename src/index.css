@@ -99,61 +99,108 @@
     padding: 0;
   }
   
-  /* Typography scale improvements */
+  /* Enhanced Typography for Better Readability */
   h1 {
-    @apply text-3xl md:text-4xl font-bold tracking-tight;
+    @apply text-3xl md:text-5xl font-bold tracking-tight;
     letter-spacing: -0.02em;
+    line-height: 1.2;
   }
   
   h2 {
-    @apply text-2xl md:text-3xl font-semibold tracking-tight;
+    @apply text-2xl md:text-4xl font-semibold tracking-tight;
     letter-spacing: -0.01em;
+    line-height: 1.3;
   }
   
   h3 {
-    @apply text-xl md:text-2xl font-medium;
+    @apply text-xl md:text-3xl font-medium;
+    line-height: 1.4;
+  }
+  
+  h4 {
+    @apply text-lg md:text-xl font-medium;
+    line-height: 1.4;
   }
   
   p, li {
-    @apply text-base leading-relaxed;
+    @apply text-base md:text-lg leading-relaxed;
   }
   
   label, input, select, button {
-    @apply text-base;
+    @apply text-base md:text-lg;
+    min-height: 44px; /* Better touch targets */
   }
   
   .text-sm {
-    @apply text-[0.95rem] leading-relaxed;
+    @apply text-base md:text-lg leading-relaxed;
   }
   
   .text-xs {
-    @apply text-[0.85rem] leading-relaxed;
+    @apply text-sm md:text-base leading-relaxed;
+  }
+  
+  /* Enhanced button text */
+  .btn-text {
+    @apply text-base md:text-lg font-medium;
   }
 }
 
 @layer utilities {
+  /* Enhanced Cards with Better Spacing */
   .fitness-card {
-    @apply rounded-xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-md transition-shadow;
+    @apply rounded-xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-lg transition-all duration-300;
+    padding: 1.5rem;
   }
   
+  /* Enhanced Buttons for Better Usability */
   .fitness-btn {
-    @apply rounded-full font-medium transition-all duration-200;
+    @apply rounded-lg font-medium transition-all duration-200 active:scale-[0.98];
+    min-height: 48px;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    line-height: 1.2;
   }
   
   .fitness-btn-primary {
-    @apply bg-fitness-green text-white hover:bg-fitness-green/90 fitness-btn;
+    @apply bg-fitness-green text-white hover:bg-fitness-green/90 hover:shadow-md fitness-btn;
   }
   
   .fitness-btn-secondary {
-    @apply bg-fitness-lightGray text-fitness-dark hover:bg-gray-200 fitness-btn;
+    @apply bg-fitness-lightGray text-fitness-dark hover:bg-gray-200 hover:shadow-sm fitness-btn;
   }
   
+  /* Enhanced List Items */
   .workout-list-item {
-    @apply flex items-center gap-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors;
+    @apply flex items-center gap-6 p-6 rounded-lg hover:bg-secondary/50 transition-colors;
+    min-height: 64px;
   }
   
+  /* Better Mobile Sections */
   .mobile-section {
-    @apply px-4 py-6 md:p-6;
+    @apply px-6 py-8 md:p-8;
+  }
+  
+  /* Admin Panel Specific Improvements */
+  .admin-btn {
+    @apply inline-flex items-center justify-center gap-3 rounded-lg font-medium transition-all duration-200;
+    min-height: 52px;
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    touch-action: manipulation;
+  }
+  
+  .admin-btn:active {
+    transform: scale(0.98);
+  }
+  
+  .admin-card {
+    @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-300;
+    padding: 2rem;
+  }
+  
+  .admin-section {
+    @apply space-y-8 p-6 md:p-8;
   }
 
   /* Native app animations */
@@ -174,17 +221,30 @@
     @apply bg-fitness-darkGray border-fitness-darkGray/50 text-white rounded-lg;
   }
   
-  /* Improved form labels and small text */
+  /* Enhanced Form Elements */
   .form-label {
-    @apply text-base font-medium mb-1.5;
+    @apply text-lg font-medium mb-3;
+  }
+  
+  .form-input {
+    @apply min-h-[52px] px-4 py-3 text-base rounded-lg;
   }
   
   .text-info {
-    @apply text-[0.95rem] text-muted-foreground;
+    @apply text-base text-muted-foreground leading-relaxed;
   }
   
   .text-meta {
-    @apply text-[0.9rem] text-muted-foreground/80;
+    @apply text-sm text-muted-foreground/80 leading-relaxed;
+  }
+  
+  /* Enhanced Touch Targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .touch-target-large {
+    @apply min-h-[52px] min-w-[52px];
   }
   
   /* Corrigir margens no admin layout */

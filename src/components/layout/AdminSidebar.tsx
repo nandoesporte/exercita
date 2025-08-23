@@ -134,11 +134,11 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
         isExpanded ? "w-64" : "w-20"
       } transition-width duration-300 ease-in-out`}
     >
-      <div className="flex items-center justify-center py-4">
-        <div className="flex items-center gap-2">
-          {isSuperAdmin && <Crown className="h-5 w-5 text-yellow-500" />}
+      <div className="flex items-center justify-center py-6">
+        <div className="flex items-center gap-3">
+          {isSuperAdmin && <Crown className="h-6 w-6 text-yellow-500" />}
           <span
-            className={`text-lg font-bold transition-opacity duration-300 ${
+            className={`text-xl font-bold transition-opacity duration-300 ${
               isExpanded ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -146,47 +146,49 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
           </span>
         </div>
       </div>
-      <nav className="flex-grow px-2 space-y-1">
+      <nav className="flex-grow px-3 space-y-2">
         {items.map((item) => (
           <Button
             key={item.title}
             variant="ghost"
-            className={`flex items-center w-full justify-start py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-sm sm:text-base ${
-              isExpanded ? "pl-4" : "justify-center"
+            className={`flex items-center w-full justify-start py-4 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-base font-medium min-h-[52px] transition-all duration-200 active:scale-[0.98] ${
+              isExpanded ? "pl-5" : "justify-center"
             }`}
             onClick={() => handleNavigation(item.to)}
           >
-            {item.icon}
-            <span
-              className={`transition-opacity duration-300 truncate ${
-                isExpanded ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {item.title}
+            <span className="flex items-center gap-3 w-full">
+              {item.icon}
+              <span
+                className={`transition-opacity duration-300 truncate ${
+                  isExpanded ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                {item.title}
+              </span>
             </span>
           </Button>
         ))}
       </nav>
-      <div className="p-2 sm:p-4">
+      <div className="p-3 sm:p-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center space-x-2 w-full justify-start">
-              <Avatar className="h-8 w-8 flex-shrink-0">
+            <Button variant="ghost" className="flex items-center space-x-3 w-full justify-start py-4 px-4 min-h-[60px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Avatar className="h-10 w-10 flex-shrink-0">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback>
+                <AvatarFallback className="text-base font-medium">
                   {user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start">
                 <span
-                  className={`font-semibold transition-opacity duration-300 truncate text-sm sm:text-base ${
+                  className={`font-semibold transition-opacity duration-300 truncate text-base ${
                     isExpanded ? "opacity-100" : "opacity-0"
                   }`}
                 >
                   {user?.email}
                 </span>
                 {isSuperAdmin && (
-                  <Badge variant="secondary" className={`text-xs ${isExpanded ? "opacity-100" : "opacity-0"}`}>
+                  <Badge variant="secondary" className={`text-sm ${isExpanded ? "opacity-100" : "opacity-0"}`}>
                     Super Admin
                   </Badge>
                 )}

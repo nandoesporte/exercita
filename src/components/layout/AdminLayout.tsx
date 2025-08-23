@@ -75,20 +75,20 @@ const AdminLayout = () => {
       </div>
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-card border-b border-border h-16 flex items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-4 w-full">
+        <header className="bg-card border-b border-border h-20 flex items-center justify-between px-6 md:px-8">
+          <div className="flex items-center gap-6 w-full">
             {/* Mobile navigation */}
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-3 md:hidden">
               {location.pathname !== '/admin' && (
-                <Button variant="ghost" size="icon" onClick={handleBackClick} className="mr-1">
-                  <ArrowLeft size={20} />
+                <Button variant="ghost" size="icon" onClick={handleBackClick} className="mr-2 touch-target">
+                  <ArrowLeft size={24} />
                 </Button>
               )}
               
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu size={24} />
+                  <Button variant="ghost" size="icon" className="md:hidden touch-target-large">
+                    <Menu size={28} />
                     <span className="sr-only">Menu</span>
                   </Button>
                 </SheetTrigger>
@@ -99,36 +99,36 @@ const AdminLayout = () => {
             </div>
             
             {/* App logo and title */}
-            <div className="flex items-center gap-3 w-full justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 w-full justify-between">
+              <div className="flex items-center gap-4">
                 <img 
                   src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
                   alt="Mais Saúde Logo"
-                  className="h-8 w-8"
+                  className="h-10 w-10"
                 />
                 <div className="flex flex-col">
-                  <span className="font-bold text-base">Mais Saúde</span>
-                  <span className="text-xs text-muted-foreground hidden sm:inline-block">
+                  <span className="font-bold text-lg md:text-xl">Mais Saúde</span>
+                  <span className="text-sm text-muted-foreground hidden sm:inline-block">
                     {getCurrentPageTitle()}
                   </span>
                 </div>
               </div>
               
               {/* Current page title and home button (mobile only) */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Button 
                   variant="outline" 
-                  size="sm"
+                  size="default"
                   asChild
                   className="hidden sm:flex"
                 >
                   <Link to="/">
-                    <Home className="h-4 w-4 mr-2" />
+                    <Home className="h-5 w-5 mr-2" />
                     Início
                   </Link>
                 </Button>
                 
-                <div className="md:hidden text-sm font-medium">
+                <div className="md:hidden text-base font-medium">
                   {getCurrentPageTitle()}
                 </div>
               </div>
@@ -136,7 +136,7 @@ const AdminLayout = () => {
           </div>
         </header>
         
-        <main className="flex-1 overflow-y-auto p-3 md:p-6">
+        <main className="flex-1 overflow-y-auto admin-section">
           <Outlet />
         </main>
       </div>
