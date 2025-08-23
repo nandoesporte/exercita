@@ -81,6 +81,7 @@ export type Database = {
       }
       appointments: {
         Row: {
+          admin_id: string | null
           appointment_date: string
           created_at: string | null
           description: string | null
@@ -93,6 +94,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_id?: string | null
           appointment_date: string
           created_at?: string | null
           description?: string | null
@@ -105,6 +107,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_id?: string | null
           appointment_date?: string
           created_at?: string | null
           description?: string | null
@@ -118,6 +121,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "appointments_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "appointments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -128,6 +138,7 @@ export type Database = {
       }
       equipment_based_workouts: {
         Row: {
+          admin_id: string | null
           available_time: number | null
           created_at: string
           equipment_list: Json | null
@@ -139,6 +150,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_id?: string | null
           available_time?: number | null
           created_at?: string
           equipment_list?: Json | null
@@ -150,6 +162,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_id?: string | null
           available_time?: number | null
           created_at?: string
           equipment_list?: Json | null
@@ -162,6 +175,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "equipment_based_workouts_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "equipment_based_workouts_photo_analysis_id_fkey"
             columns: ["photo_analysis_id"]
             isOneToOne: false
@@ -172,6 +192,7 @@ export type Database = {
       }
       exercises: {
         Row: {
+          admin_id: string | null
           category_id: string | null
           created_at: string | null
           description: string | null
@@ -182,6 +203,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -192,6 +214,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -202,6 +225,13 @@ export type Database = {
           video_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "exercises_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "exercises_category_id_fkey"
             columns: ["category_id"]
@@ -284,6 +314,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_id: string | null
           created_at: string | null
           id: string
           kiwify_order_id: string | null
@@ -293,6 +324,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           kiwify_order_id?: string | null
@@ -302,6 +334,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           kiwify_order_id?: string | null
@@ -310,13 +343,22 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_settings: {
         Row: {
           accept_card_payments: boolean | null
           accept_monthly_fee: boolean | null
           accept_pix_payments: boolean | null
+          admin_id: string | null
           created_at: string | null
           id: string
           monthly_fee_amount: number | null
@@ -326,6 +368,7 @@ export type Database = {
           accept_card_payments?: boolean | null
           accept_monthly_fee?: boolean | null
           accept_pix_payments?: boolean | null
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           monthly_fee_amount?: number | null
@@ -335,15 +378,25 @@ export type Database = {
           accept_card_payments?: boolean | null
           accept_monthly_fee?: boolean | null
           accept_pix_payments?: boolean | null
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           monthly_fee_amount?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payment_settings_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       personal_trainers: {
         Row: {
+          admin_id: string | null
           bio: string | null
           created_at: string | null
           credentials: string | null
@@ -355,6 +408,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          admin_id?: string | null
           bio?: string | null
           created_at?: string | null
           credentials?: string | null
@@ -366,6 +420,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          admin_id?: string | null
           bio?: string | null
           created_at?: string | null
           credentials?: string | null
@@ -376,10 +431,19 @@ export type Database = {
           updated_at?: string | null
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "personal_trainers_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pix_keys: {
         Row: {
+          admin_id: string | null
           created_at: string | null
           id: string
           is_primary: boolean | null
@@ -388,6 +452,7 @@ export type Database = {
           recipient_name: string
         }
         Insert: {
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           is_primary?: boolean | null
@@ -396,6 +461,7 @@ export type Database = {
           recipient_name: string
         }
         Update: {
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           is_primary?: boolean | null
@@ -403,10 +469,19 @@ export type Database = {
           key_value?: string
           recipient_name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pix_keys_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_categories: {
         Row: {
+          admin_id: string | null
           color: string | null
           created_at: string | null
           icon: string | null
@@ -415,6 +490,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          admin_id?: string | null
           color?: string | null
           created_at?: string | null
           icon?: string | null
@@ -423,6 +499,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          admin_id?: string | null
           color?: string | null
           created_at?: string | null
           icon?: string | null
@@ -430,10 +507,19 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
+          admin_id: string | null
           category_id: string | null
           created_at: string | null
           description: string | null
@@ -447,6 +533,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -460,6 +547,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -474,6 +562,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "products_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
@@ -484,6 +579,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_id: string | null
           avatar_url: string | null
           birthdate: string | null
           created_at: string | null
@@ -499,6 +595,7 @@ export type Database = {
           weight: number | null
         }
         Insert: {
+          admin_id?: string | null
           avatar_url?: string | null
           birthdate?: string | null
           created_at?: string | null
@@ -514,6 +611,7 @@ export type Database = {
           weight?: number | null
         }
         Update: {
+          admin_id?: string | null
           avatar_url?: string | null
           birthdate?: string | null
           created_at?: string | null
@@ -528,10 +626,19 @@ export type Database = {
           updated_at?: string | null
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_gym_photos: {
         Row: {
+          admin_id: string | null
           approved: boolean | null
           created_at: string | null
           description: string | null
@@ -542,6 +649,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_id?: string | null
           approved?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -552,6 +660,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_id?: string | null
           approved?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -561,7 +670,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_gym_photos_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -597,6 +714,7 @@ export type Database = {
       }
       user_workout_history: {
         Row: {
+          admin_id: string | null
           calories_burned: number | null
           completed_at: string | null
           created_at: string | null
@@ -609,6 +727,7 @@ export type Database = {
           workout_id: string | null
         }
         Insert: {
+          admin_id?: string | null
           calories_burned?: number | null
           completed_at?: string | null
           created_at?: string | null
@@ -621,6 +740,7 @@ export type Database = {
           workout_id?: string | null
         }
         Update: {
+          admin_id?: string | null
           calories_burned?: number | null
           completed_at?: string | null
           created_at?: string | null
@@ -633,6 +753,13 @@ export type Database = {
           workout_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_workout_history_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_workout_history_user_id_fkey"
             columns: ["user_id"]
@@ -651,6 +778,7 @@ export type Database = {
       }
       workout_categories: {
         Row: {
+          admin_id: string | null
           color: string | null
           created_at: string | null
           icon: string | null
@@ -659,6 +787,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          admin_id?: string | null
           color?: string | null
           created_at?: string | null
           icon?: string | null
@@ -667,6 +796,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          admin_id?: string | null
           color?: string | null
           created_at?: string | null
           icon?: string | null
@@ -674,7 +804,15 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "workout_categories_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_clone_history: {
         Row: {
@@ -821,24 +959,34 @@ export type Database = {
       }
       workout_recommendations: {
         Row: {
+          admin_id: string | null
           created_at: string | null
           id: string
           user_id: string | null
           workout_id: string
         }
         Insert: {
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           user_id?: string | null
           workout_id: string
         }
         Update: {
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           user_id?: string | null
           workout_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "workout_recommendations_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workout_recommendations_workout_id_fkey"
             columns: ["workout_id"]
@@ -850,6 +998,7 @@ export type Database = {
       }
       workouts: {
         Row: {
+          admin_id: string | null
           calories: number | null
           category_id: string | null
           created_at: string | null
@@ -864,6 +1013,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          admin_id?: string | null
           calories?: number | null
           category_id?: string | null
           created_at?: string | null
@@ -878,6 +1028,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          admin_id?: string | null
           calories?: number | null
           category_id?: string | null
           created_at?: string | null
@@ -892,6 +1043,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "workouts_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workouts_category_id_fkey"
             columns: ["category_id"]
@@ -956,6 +1114,10 @@ export type Database = {
       }
       get_current_admin_id: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_user_admin_id: {
+        Args: { _user_id: string }
         Returns: string
       }
       has_role: {
