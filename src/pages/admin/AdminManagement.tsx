@@ -275,13 +275,21 @@ const AdminManagement = () => {
       header: 'Status',
       cell: ({ row }: { row: { original: any } }) => (
         <div className="flex items-center gap-2">
-          <Switch
-            checked={row.original.is_active}
-            onCheckedChange={() => handleToggleAdminActive(row.original.id, row.original.is_active)}
-          />
-          <Badge variant={row.original.is_active ? "default" : "secondary"}>
-            {row.original.is_active ? 'Ativo' : 'Inativo'}
-          </Badge>
+          {row.original.status === 'pending' ? (
+            <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50">
+              Pendente
+            </Badge>
+          ) : (
+            <>
+              <Switch
+                checked={row.original.is_active}
+                onCheckedChange={() => handleToggleAdminActive(row.original.id, row.original.is_active)}
+              />
+              <Badge variant={row.original.is_active ? "default" : "secondary"}>
+                {row.original.is_active ? 'Ativo' : 'Inativo'}
+              </Badge>
+            </>
+          )}
         </div>
       )
     },
@@ -290,25 +298,33 @@ const AdminManagement = () => {
       header: 'Ações',
       cell: ({ row }: { row: { original: any } }) => (
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleOpenPermissions(row.original)}
-          >
-            <Settings className="h-4 w-4" />
-            {!isMobile && 'Permissões'}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => {
-              setSelectedAdmin(row.original);
-              setIsDeleteDialogOpen(true);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-            {!isMobile && 'Excluir'}
-          </Button>
+          {row.original.status === 'pending' ? (
+            <span className="text-sm text-muted-foreground italic">
+              Aguardando ativação
+            </span>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenPermissions(row.original)}
+              >
+                <Settings className="h-4 w-4" />
+                {!isMobile && 'Permissões'}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  setSelectedAdmin(row.original);
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                {!isMobile && 'Excluir'}
+              </Button>
+            </>
+          )}
         </div>
       )
     },
