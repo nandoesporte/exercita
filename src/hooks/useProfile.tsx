@@ -180,23 +180,6 @@ export function useProfile() {
       
       console.log('Fazendo upload da imagem do perfil:', filePath);
       
-      try {
-        // Check if bucket exists and create it if needed
-        const { data: bucketList } = await supabase.storage.listBuckets();
-        const bucketExists = bucketList?.some(bucket => bucket.name === 'profile_images');
-        
-        if (!bucketExists) {
-          console.log('Creating profile_images bucket');
-          await supabase.storage.createBucket('profile_images', {
-            public: true,
-            fileSizeLimit: 10485760 // 10MB
-          });
-        }
-      } catch (bucketError) {
-        console.error('Error checking/creating bucket:', bucketError);
-        // Continue with upload attempt even if bucket check fails
-      }
-      
       // Upload file to storage with caching disabled
       const { error: uploadError } = await supabase.storage
         .from('profile_images')
