@@ -837,9 +837,9 @@ export type Database = {
           banned_until: string
           created_at: string
           email: string
-          id: string
           last_sign_in_at: string
           raw_user_meta_data: Json
+          user_id: string
         }[]
       }
       is_admin: {

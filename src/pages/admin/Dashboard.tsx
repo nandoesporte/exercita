@@ -105,7 +105,7 @@ const Dashboard = () => {
     if (!recentUsersData) return [];
     
     return recentUsersData.slice(0, 5).map(user => ({
-      id: user.user_id,
+      id: user.user_id, // Updated to use user_id instead of id
       email: user.email,
       user: (user.raw_user_meta_data?.first_name || '') + ' ' + (user.raw_user_meta_data?.last_name || ''),
       time: user.created_at,
