@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_permissions: {
+        Row: {
+          admin_id: string
+          created_at: string
+          granted_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["admin_permission"]
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["admin_permission"]
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["admin_permission"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_permissions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_date: string
@@ -498,6 +563,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_workout_history: {
         Row: {
           calories_burned: number | null
@@ -818,6 +915,13 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_has_permission: {
+        Args: {
+          _admin_id: string
+          _permission: Database["public"]["Enums"]["admin_permission"]
+        }
+        Returns: boolean
+      }
       admin_login: {
         Args: { admin_password: string }
         Returns: Json
@@ -835,6 +939,10 @@ export type Database = {
         Args: { source_workout_id: string; target_user_id: string }
         Returns: Json
       }
+      current_user_has_permission: {
+        Args: { _permission: Database["public"]["Enums"]["admin_permission"] }
+        Returns: boolean
+      }
       debug_get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -846,12 +954,40 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_current_admin_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
     }
     Enums: {
+      admin_permission:
+        | "manage_workouts"
+        | "manage_exercises"
+        | "manage_categories"
+        | "manage_products"
+        | "manage_store"
+        | "manage_appointments"
+        | "manage_schedule"
+        | "manage_payment_methods"
+        | "manage_gym_photos"
+        | "manage_users"
+        | "view_analytics"
+      user_role: "super_admin" | "admin" | "user"
       workout_level: "beginner" | "intermediate" | "advanced"
     }
     CompositeTypes: {
@@ -980,6 +1116,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      admin_permission: [
+        "manage_workouts",
+        "manage_exercises",
+        "manage_categories",
+        "manage_products",
+        "manage_store",
+        "manage_appointments",
+        "manage_schedule",
+        "manage_payment_methods",
+        "manage_gym_photos",
+        "manage_users",
+        "view_analytics",
+      ],
+      user_role: ["super_admin", "admin", "user"],
       workout_level: ["beginner", "intermediate", "advanced"],
     },
   },
