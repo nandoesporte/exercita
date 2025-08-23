@@ -222,12 +222,49 @@ const WorkoutDetail = () => {
         return;
       }
       
+      // Get user profile to get admin_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('admin_id, is_admin')
+        .eq('id', user.user.id)
+        .maybeSingle();
+        
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        toast.error("Erro ao buscar dados do perfil.");
+        return;
+      }
+      
+      // Determine admin_id - if user is admin, they can use their own ID, otherwise need to be assigned to an admin
+      let adminId: string | null = null;
+      
+      if (profile?.is_admin) {
+        // If user is admin, they can register workouts using their own user ID as admin
+        const { data: adminData, error: adminError } = await supabase
+          .from('admins')
+          .select('id')
+          .eq('user_id', user.user.id)
+          .maybeSingle();
+          
+        if (!adminError && adminData) {
+          adminId = adminData.id;
+        }
+      } else if (profile?.admin_id) {
+        adminId = profile.admin_id;
+      }
+      
+      if (!adminId) {
+        toast.error("Você precisa estar associado a um administrador para registrar treinos.");
+        return;
+      }
+      
       // Record the workout in history
       const { error } = await supabase
         .from('user_workout_history')
         .insert({
           user_id: user.user.id,
           workout_id: workout.id,
+          admin_id: adminId,
           completed_at: new Date().toISOString(),
           duration: workout.duration,
           calories_burned: workout.calories
