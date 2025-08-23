@@ -260,8 +260,9 @@ const UserManagement = () => {
             <Switch
               checked={isActive}
               onCheckedChange={() => handleToggleUserActive(row.original.user_id, isActive)}
+              className="data-[state=checked]:bg-success data-[state=unchecked]:bg-destructive"
             />
-            <span className={`${isActive ? 'text-green-600' : 'text-red-600'} text-sm`}>
+            <span className={`text-sm font-medium ${isActive ? 'text-success' : 'text-destructive'}`}>
               {isActive ? 'Ativo' : 'Inativo'}
             </span>
           </div>
@@ -333,8 +334,11 @@ const UserManagement = () => {
           )}
           <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
             <DialogTrigger asChild>
-              <Button size={isMobile ? "sm" : "default"}>
-                <UserPlus className="h-4 w-4 mr-2" />
+              <Button 
+                size={isMobile ? "sm" : "default"}
+                className="w-full md:w-auto whitespace-nowrap"
+              >
+                <UserPlus className="h-4 w-4 mr-2 flex-shrink-0" />
                 Novo Aluno
               </Button>
             </DialogTrigger>
