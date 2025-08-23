@@ -1076,6 +1076,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_delete_user: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
       admin_has_permission: {
         Args: {
           _admin_id: string
