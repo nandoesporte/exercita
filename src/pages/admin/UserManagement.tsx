@@ -274,16 +274,17 @@ const UserManagement = () => {
       header: 'Ações',
       cell: ({ row }: { row: { original: any } }) => {
         return (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => {
-              setSelectedUser(row.original);
-              setIsDeleteDialogOpen(true);
-            }}
-          >
-            Excluir
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 rounded-md"
+              onClick={() => {
+                setSelectedUser(row.original);
+                setIsDeleteDialogOpen(true);
+              }}
+            >
+              Excluir
+            </Button>
         );
       },
     },
@@ -316,7 +317,7 @@ const UserManagement = () => {
             </p>
           )}
         </div>
-        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto md:justify-end">
           {isSuperAdmin && adminsData && adminsData.length > 0 && (
             <Select value={selectedAdminFilter} onValueChange={setSelectedAdminFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
@@ -336,7 +337,7 @@ const UserManagement = () => {
             <DialogTrigger asChild>
               <Button 
                 size={isMobile ? "sm" : "default"}
-                className="w-full md:w-auto whitespace-nowrap"
+                className={`${isMobile ? "ml-0 w-auto px-3" : "w-auto"} whitespace-nowrap`}
               >
                 <UserPlus className="h-4 w-4 mr-2 flex-shrink-0" />
                 Novo Aluno

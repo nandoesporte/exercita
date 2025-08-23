@@ -269,7 +269,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-4 pb-16 md:pb-0">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-xl font-bold">Dashboard</h1>
+        <div></div>
         <div className="flex items-center space-x-2">
           {isSuperAdmin && (
             <Button 
@@ -293,7 +293,11 @@ const Dashboard = () => {
               {!isMobile && "Início"}
             </Link>
           </Button>
-          <Button onClick={() => setIsCreateUserOpen(true)} size={isMobile ? "sm" : "default"}>
+          <Button 
+            onClick={() => setIsCreateUserOpen(true)} 
+            size={isMobile ? "sm" : "default"}
+            className={isMobile ? "ml-0" : ""}
+          >
             <UserPlus className="h-4 w-4 mr-2" />
             Novo Aluno
           </Button>
@@ -302,35 +306,52 @@ const Dashboard = () => {
       
       {/* Stats Cards - Responsive Grid (without revenue) */}
       <div className="grid grid-cols-3 gap-3">
-        {stats.map((stat) => (
-          <div key={stat.title} className="bg-card rounded-lg border border-border p-3">
-            <div className="flex items-center justify-between">
-              <div className="p-2 rounded-md bg-secondary">
-                <stat.icon className="h-4 w-4" />
+        {stats.map((stat) => {
+          const getNavigationPath = (title: string) => {
+            switch (title) {
+              case 'Usuários': return '/admin/users';
+              case 'Treinos': return '/admin/workouts';
+              case 'Consultas': return '/admin/appointments';
+              default: return '#';
+            }
+          };
+
+          const StatCard = () => (
+            <div className="bg-card rounded-lg border border-border p-3 hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-md bg-secondary">
+                  <stat.icon className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-muted-foreground">{stat.title}</p>
+                <h3 className="text-lg font-bold mt-0.5">
+                  {stat.isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (
+                    stat.value
+                  )}
+                </h3>
+              </div>
+              <div className="flex items-center mt-1">
+                {stat.trend === 'up' ? (
+                  <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                ) : (
+                  <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
+                )}
+                <span className={`text-xs ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  {stat.change}
+                </span>
               </div>
             </div>
-            <div className="mt-2">
-              <p className="text-xs text-muted-foreground">{stat.title}</p>
-              <h3 className="text-lg font-bold mt-0.5">
-                {stat.isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                ) : (
-                  stat.value
-                )}
-              </h3>
-            </div>
-            <div className="flex items-center mt-1">
-              {stat.trend === 'up' ? (
-                <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
-              ) : (
-                <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
-              )}
-              <span className={`text-xs ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                {stat.change}
-              </span>
-            </div>
-          </div>
-        ))}
+          );
+
+          return (
+            <Link key={stat.title} to={getNavigationPath(stat.title)}>
+              <StatCard />
+            </Link>
+          );
+        })}
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -389,9 +410,9 @@ const Dashboard = () => {
                       </span>
                     </div>
                     <Button
-                      variant="destructive"
+                      variant="outline"
                       size="sm"
-                      className="h-7 text-xs px-2"
+                      className="h-7 text-xs px-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 rounded-md"
                       onClick={() => {
                         setSelectedUser(user);
                         setIsDeleteDialogOpen(true);
