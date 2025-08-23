@@ -33,6 +33,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/auth';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Define o schema para validação do formulário exatamente como na página de login
 const formSchema = z.object({
@@ -53,23 +54,72 @@ const UserManagement = () => {
   const { signUp } = useAuth();
   const { isSuperAdmin } = useAdminRole();
   
+  // Fetch admins for filtering (only for super admin)
+  const { data: adminsData } = useQuery({
+    queryKey: ['admins-list'],
+    queryFn: async () => {
+      if (!isSuperAdmin) return [];
+      
+      const { data, error } = await supabase
+        .from('admins')
+        .select('id, name, email')
+        .eq('is_active', true);
+      
+      if (error) throw new Error(error.message);
+      return data || [];
+    },
+    enabled: isSuperAdmin,
+  });
+
+  const [selectedAdminFilter, setSelectedAdminFilter] = useState<string>('');
+
   const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: ['admin-users', selectedAdminFilter],
     queryFn: async () => {
       console.log("Fetching users for user management page...");
-      const { data, error } = await supabase.rpc('debug_get_all_users');
       
-      if (error) {
-        console.error("Erro ao carregar usuários:", error);
-        throw new Error(`Erro ao carregar usuários: ${error.message}`);
+      if (isSuperAdmin && selectedAdminFilter) {
+        // Filter by specific admin
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(`
+            id,
+            first_name,
+            last_name,
+            created_at,
+            admin_id
+          `)
+          .eq('admin_id', selectedAdminFilter);
+        
+        if (error) throw new Error(error.message);
+        
+        // Transform to match expected structure
+        return data?.map(profile => ({
+          user_id: profile.id,
+          email: 'Email não disponível', // Profiles table doesn't have email
+          raw_user_meta_data: {
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+          },
+          created_at: profile.created_at,
+          banned_until: null, // Assume active for profiles
+        })) || [];
+      } else {
+        // Get all users (existing logic)
+        const { data, error } = await supabase.rpc('debug_get_all_users');
+        
+        if (error) {
+          console.error("Erro ao carregar usuários:", error);
+          throw new Error(`Erro ao carregar usuários: ${error.message}`);
+        }
+        
+        console.log("User data received:", data?.length || 0, "users");
+        if (data && data.length > 0) {
+          console.log("First user data structure:", data[0]);
+        }
+        
+        return data || [];
       }
-      
-      console.log("User data received:", data?.length || 0, "users");
-      if (data && data.length > 0) {
-        console.log("First user data structure:", data[0]);
-      }
-      
-      return data || [];
     },
   });
 
@@ -256,7 +306,7 @@ const UserManagement = () => {
 
   return (
     <div className="space-y-4 pb-16 md:pb-0">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-xl font-bold">Gerenciamento de Usuários</h1>
           {isSuperAdmin && (
@@ -265,13 +315,29 @@ const UserManagement = () => {
             </p>
           )}
         </div>
-        <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
-          <DialogTrigger asChild>
-            <Button size={isMobile ? "sm" : "default"}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Novo Aluno
-            </Button>
-          </DialogTrigger>
+        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+          {isSuperAdmin && adminsData && adminsData.length > 0 && (
+            <Select value={selectedAdminFilter} onValueChange={setSelectedAdminFilter}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Filtrar por admin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos os usuários</SelectItem>
+                {adminsData.map((admin) => (
+                  <SelectItem key={admin.id} value={admin.id}>
+                    {admin.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+            <DialogTrigger asChild>
+              <Button size={isMobile ? "sm" : "default"}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Novo Aluno
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Adicionar novo aluno</DialogTitle>
@@ -351,7 +417,8 @@ const UserManagement = () => {
               </form>
             </Form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Super Admin Info Card */}

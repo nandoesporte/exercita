@@ -50,6 +50,8 @@ import GymPhotoManagement from "@/pages/admin/GymPhotoManagement";
 import UserManagement from "@/pages/admin/UserManagement";
 import AppointmentManagement from "@/pages/admin/AppointmentManagement";
 import RLSChecker from './pages/admin/RLSChecker';
+import AdminManagement from './pages/admin/AdminManagement';
+import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
 
 const App = () => {
   console.log("App component rendering");
@@ -125,6 +127,10 @@ const App = () => {
           <Route path="payment-methods" element={<PaymentMethodManagement />} />
           {/* Users */}
           <Route path="users" element={<UserManagement />} />
+          {/* Admin Management */}
+          <Route path="admins" element={<AdminManagement />} />
+          {/* Super Admin Dashboard */}
+          <Route path="super-dashboard" element={<SuperAdminDashboard />} />
           {/* RLS Checker */}
           <Route path="rls-checker" element={<RLSChecker />} />
         </Route>

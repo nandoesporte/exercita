@@ -16,6 +16,7 @@ import {
   Camera,
   List,
   Crown,
+  Shield,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -52,10 +53,22 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
 
   const items = [
     {
-      title: 'Dashboard',
+      title: isSuperAdmin ? 'Dashboard Geral' : 'Dashboard',
       icon: <LineChart className="mr-2 h-4 w-4" />,
       to: '/admin'
     },
+    // Only show super admin dashboard for Super Admins
+    ...(isSuperAdmin ? [{
+      title: 'Super Admin',
+      icon: <Crown className="mr-2 h-4 w-4" />,
+      to: '/admin/super-dashboard'
+    }] : []),
+    // Only show admin management for Super Admins
+    ...(isSuperAdmin ? [{
+      title: 'Gerenciar Admins',
+      icon: <Shield className="mr-2 h-4 w-4" />,
+      to: '/admin/admins'
+    }] : []),
     {
       title: 'Gerenciamento de Treinos',
       icon: <Dumbbell className="mr-2 h-4 w-4" />,

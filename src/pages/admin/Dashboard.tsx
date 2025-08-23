@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus, Gift, ImageIcon, CalendarIcon, Home } from 'lucide-react';
+import { BarChart3, Users, Dumbbell, CalendarCheck, ArrowUp, ArrowDown, Loader2, UserPlus, Gift, ImageIcon, CalendarIcon, Home, Crown, Shield } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow, parseISO } from 'date-fns';
@@ -16,6 +16,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/auth';
+import { useAdminRole } from '@/hooks/useAdminRole';
 
 // Define form schema for user creation exatamente como na página de login
 const formSchema = z.object({
@@ -35,6 +36,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
   const { signUp } = useAuth(); // Importando a função signUp do hook useAuth
+  const { isSuperAdmin } = useAdminRole();
 
   // Fetch statistics including real appointment data
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -269,6 +271,18 @@ const Dashboard = () => {
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-xl font-bold">Dashboard</h1>
         <div className="flex items-center space-x-2">
+          {isSuperAdmin && (
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"} 
+              asChild
+            >
+              <Link to="/admin/super-dashboard">
+                <Crown className="h-4 w-4 mr-2" />
+                {!isMobile && "Super Admin"}
+              </Link>
+            </Button>
+          )}
           <Button 
             variant="outline" 
             size={isMobile ? "sm" : "default"} 
