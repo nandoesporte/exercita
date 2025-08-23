@@ -83,7 +83,7 @@ export const fetchWorkoutHistory = async (): Promise<WorkoutHistoryItem[]> => {
         ? item.workout[0] 
         : { 
             id: item.workout_id, 
-            title: 'Treino não encontrado', 
+            title: 'Treino Personalizado', 
             level: 'beginner', 
             duration: 0, 
             calories: 0, 
