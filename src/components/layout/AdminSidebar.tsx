@@ -17,6 +17,7 @@ import {
   List,
   Crown,
   Shield,
+  Lock,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -126,7 +127,13 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       title: 'RLS Checker',
       icon: <ShieldCheck className="h-4 w-4" />,
       to: '/admin/rls-checker'
-    }] : [])
+    }] : []),
+    // Show admin permissions for all admins
+    {
+      title: 'Permissões e Isolamento',
+      icon: <Lock className="h-4 w-4" />,
+      to: '/admin/permissions'
+    }
   ];
 
   return (

@@ -49,9 +49,9 @@ import ExerciseLibrary from "@/pages/admin/ExerciseLibrary";
 import GymPhotoManagement from "@/pages/admin/GymPhotoManagement"; 
 import UserManagement from "@/pages/admin/UserManagement";
 import AppointmentManagement from "@/pages/admin/AppointmentManagement";
-import RLSChecker from './pages/admin/RLSChecker';
-import AdminManagement from './pages/admin/AdminManagement';
-import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
+import SuperAdminDashboard from "@/pages/admin/SuperAdminDashboard";
+import RLSChecker from "@/pages/admin/RLSChecker";
+import AdminPermissions from "@/pages/admin/AdminPermissions";
 
 const App = () => {
   console.log("App component rendering");
@@ -133,6 +133,8 @@ const App = () => {
           <Route path="super-dashboard" element={<SuperAdminDashboard />} />
           {/* RLS Checker */}
           <Route path="rls-checker" element={<RLSChecker />} />
+          {/* Admin Permissions */}
+          <Route path="permissions" element={<AdminPermissions />} />
         </Route>
         
         {/* 404 */}
