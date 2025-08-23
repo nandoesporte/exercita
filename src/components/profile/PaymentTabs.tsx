@@ -22,29 +22,14 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({ pixKey, isLoadingPixKey }) =>
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-3">Pagamentos</h3>
-      <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4 w-full">
-          <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
-            <Wallet size={16} />
-            <span>Informações</span>
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
-            <CreditCard size={16} />
-            <span>Histórico</span>
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="info" className="space-y-4">
-          <PaymentInfo pixKey={pixKey} isLoading={isLoadingPixKey} />
-          <MonthlyFeeSection 
-            savedMonthlyFee={savedMonthlyFee} 
-            setSavedMonthlyFee={setSavedMonthlyFee} 
-          />
-        </TabsContent>
-        <TabsContent value="history">
-          <PaymentHistory />
-        </TabsContent>
-      </Tabs>
+      <h3 className="text-lg font-semibold mb-3">Pagamento ao Personal</h3>
+      <div className="space-y-4">
+        <PaymentInfo pixKey={pixKey} isLoading={isLoadingPixKey} />
+        <MonthlyFeeSection 
+          savedMonthlyFee={savedMonthlyFee} 
+          setSavedMonthlyFee={setSavedMonthlyFee} 
+        />
+      </div>
     </div>
   );
 };

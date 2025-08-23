@@ -170,12 +170,15 @@ const Profile = () => {
         
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8 w-full">
-          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full">
+          <Link
+            to="/account"
+            className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full hover:bg-fitness-dark/50 transition-colors cursor-pointer"
+          >
             <div className="text-2xl font-bold text-fitness-orange">
-              {adminData?.name || 'N/A'}
+              {profile?.height ? `${profile?.height} cm` : 'N/A'}
             </div>
-            <p className="text-sm text-gray-500">Personal Trainer</p>
-          </div>
+            <p className="text-sm text-gray-500">Altura</p>
+          </Link>
           <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full">
             <div className="text-2xl font-bold text-fitness-orange">
               {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
