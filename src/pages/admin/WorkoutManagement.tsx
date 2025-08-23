@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Trash2, PenSquare, Dumbbell, Star, UserCheck, Users, StarOff, UserMinus
+  Plus, Search, Trash2, PenSquare, Dumbbell, Users
 } from 'lucide-react';
 import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
 import { Input } from "@/components/ui/input";
@@ -17,19 +17,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { RecommendWorkoutDialog } from '@/components/admin/RecommendWorkoutDialog';
 import { CloneWorkoutDialog } from '@/components/admin/CloneWorkoutDialog';
-import { QuickUserRecommendDialog } from '@/components/admin/QuickUserRecommendDialog';
 import { DataTable } from '@/components/ui/data-table';
 
 const WorkoutManagement = () => {
   const navigate = useNavigate();
-  const { workouts, isLoading, deleteWorkout, updateWorkout } = useAdminWorkouts();
+  const { workouts, isLoading, deleteWorkout } = useAdminWorkouts();
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [recommendWorkoutId, setRecommendWorkoutId] = useState<string | null>(null);
   const [cloneWorkoutId, setCloneWorkoutId] = useState<string | null>(null);
-  const [quickRecommendWorkoutId, setQuickRecommendWorkoutId] = useState<string | null>(null);
   
   const filteredWorkouts = workouts.filter(workout => 
     workout.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -58,27 +54,9 @@ const WorkoutManagement = () => {
     }
   };
 
-  const handleOpenRecommendDialog = (id: string) => {
-    setRecommendWorkoutId(id);
-  };
-
   const handleOpenCloneDialog = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setCloneWorkoutId(id);
-  };
-
-  const handleToggleRecommendation = async (workout: any) => {
-    await updateWorkout({
-      id: workout.id,
-      title: workout.title,
-      duration: workout.duration,
-      level: workout.level,
-      is_recommended: !workout.is_recommended
-    });
-  };
-
-  const handleOpenQuickRecommendDialog = (id: string) => {
-    setQuickRecommendWorkoutId(id);
   };
 
   return (
@@ -133,32 +111,10 @@ const WorkoutManagement = () => {
             )
           },
           {
-            accessorKey: "is_recommended",
-            header: "Recomendado",
-            hideOnMobile: true,
-            cell: ({ row }: { row: { original: any } }) => (
-              <div className="text-center">
-                {row.original.is_recommended && <Star className="h-4 w-4 text-amber-400 inline" />}
-              </div>
-            )
-          },
-          {
             accessorKey: "actions",
             header: "Ações",
             cell: ({ row }: { row: { original: any } }) => (
                <div className="flex items-center justify-end gap-1 flex-wrap">
-                 {row.original.is_recommended && (
-                   <Button
-                     variant="outline"
-                     size="sm"
-                     onClick={() => handleToggleRecommendation(row.original)}
-                     title="Desrecomendar treino"
-                     className="px-2 border-amber-400 text-amber-500 hover:bg-amber-50"
-                   >
-                     <StarOff className="h-4 w-4" />
-                     <span className="sr-only">Desrecomendar</span>
-                   </Button>
-                 )}
                  <Button
                    variant="outline"
                    size="sm"
@@ -172,52 +128,33 @@ const WorkoutManagement = () => {
                  <Button
                    variant="outline"
                    size="sm"
-                   onClick={() => handleOpenQuickRecommendDialog(row.original.id)}
-                   title="Remover recomendações específicas"
-                   className="px-2 text-red-600 border-red-200 hover:bg-red-50"
+                   onClick={() => handleEditExercises(row.original.id)}
+                   className="px-2"
                  >
-                   <UserMinus className="h-4 w-4" />
-                   <span className="sr-only">Remover Recomendações</span>
+                   <Dumbbell className="h-4 w-4" />
+                   <span className="sr-only">Editar Exercícios</span>
                  </Button>
                  <Button
                    variant="outline"
                    size="sm"
-                   onClick={() => handleOpenRecommendDialog(row.original.id)}
-                   className={`px-2 ${row.original.is_recommended ? "border-amber-400 text-amber-500" : ""}`}
+                   onClick={() => handleEdit(row.original.id)}
+                   className="px-2"
                  >
-                   <UserCheck className="h-4 w-4" />
-                   <span className="sr-only">Gerenciar Recomendações</span>
+                   <PenSquare className="h-4 w-4" />
+                   <span className="sr-only">Editar</span>
                  </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEditExercises(row.original.id)}
-                  className="px-2"
-                >
-                  <Dumbbell className="h-4 w-4" />
-                  <span className="sr-only">Editar Exercícios</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(row.original.id)}
-                  className="px-2"
-                >
-                  <PenSquare className="h-4 w-4" />
-                  <span className="sr-only">Editar</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteClick(row.original.id)}
-                  className="px-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Excluir</span>
-                </Button>
-              </div>
-            )
-          }
+                 <Button
+                   variant="outline"
+                   size="sm"
+                   onClick={() => handleDeleteClick(row.original.id)}
+                   className="px-2"
+                 >
+                   <Trash2 className="h-4 w-4" />
+                   <span className="sr-only">Excluir</span>
+                 </Button>
+               </div>
+             )
+           }
         ]}
         data={filteredWorkouts}
         isLoading={isLoading}
@@ -251,26 +188,11 @@ const WorkoutManagement = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {recommendWorkoutId && (
-        <RecommendWorkoutDialog
-          workoutId={recommendWorkoutId}
-          onClose={() => setRecommendWorkoutId(null)}
-        />
-      )}
-
       {cloneWorkoutId && (
         <CloneWorkoutDialog
           workoutId={cloneWorkoutId}
           workoutTitle={filteredWorkouts.find(w => w.id === cloneWorkoutId)?.title}
           onClose={() => setCloneWorkoutId(null)}
-        />
-      )}
-
-      {quickRecommendWorkoutId && (
-        <QuickUserRecommendDialog
-          workoutId={quickRecommendWorkoutId}
-          workoutTitle={filteredWorkouts.find(w => w.id === quickRecommendWorkoutId)?.title}
-          onClose={() => setQuickRecommendWorkoutId(null)}
         />
       )}
     </div>
