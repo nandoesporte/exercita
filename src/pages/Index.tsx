@@ -166,18 +166,8 @@ const Index = () => {
           </div>
         ) : (
           // Card para agendar consultoria - exibido quando não há treinos atribuídos
-          <Card className="bg-fitness-darkGray border-none text-white">
+           <Card className="bg-fitness-darkGray border-none text-white">
             <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
-                <h2 className="text-xl sm:text-2xl font-bold">Primeira Consultoria</h2>
-                
-                <div className="flex items-center">
-                  <span className="bg-fitness-orange text-white px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center">
-                    <Activity size={14} className="mr-1" /> GRATUITO
-                  </span>
-                </div>
-              </div>
-              
               <div className="bg-fitness-dark p-4 sm:p-6 rounded-md text-center">
                 <div className="mb-4 sm:mb-6">
                   <div className="mx-auto bg-fitness-darkGray/50 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-3 sm:mb-4">
