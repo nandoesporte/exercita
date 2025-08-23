@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminWorkouts, WorkoutFormData } from '@/hooks/useAdminWorkouts';
 import WorkoutForm from '@/components/admin/WorkoutForm';
 import { toast } from '@/lib/toast-wrapper';
+import { AdminDataRefresh } from '@/components/admin/AdminDataRefresh';
 
 const CreateWorkout = () => {
   const navigate = useNavigate();
@@ -38,14 +39,17 @@ const CreateWorkout = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => navigate('/admin/workouts')}
-          className="p-2 hover:bg-muted rounded-full"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-2xl font-bold">Criar Novo Treino</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/admin/workouts')}
+            className="p-2 hover:bg-muted rounded-full"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-2xl font-bold">Criar Novo Treino</h1>
+        </div>
+        <AdminDataRefresh />
       </div>
       
       <div className="bg-card rounded-lg border border-border p-6">

@@ -1,6 +1,8 @@
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast-wrapper';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 export interface ExerciseCategory {
   id: string;
@@ -13,18 +15,25 @@ export interface ExerciseCategory {
 
 export const useExerciseCategories = () => {
   const queryClient = useQueryClient();
+  const { adminId, isSuperAdmin } = useAdminPermissions();
 
   // Fetch exercise categories
   const { 
     data: categories = [], 
     isLoading: isLoadingCategories 
   } = useQuery({
-    queryKey: ['exercise-categories'],
+    queryKey: ['admin-workout-categories', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('workout_categories')
-        .select('*')
-        .order('name');
+        .select('*');
+
+      // Filter by admin_id for non-super admins
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+
+      const { data, error } = await query.order('name');
 
       if (error) {
         console.error('Error fetching exercise categories:', error);
@@ -34,14 +43,21 @@ export const useExerciseCategories = () => {
 
       return data as ExerciseCategory[];
     },
+    enabled: !!adminId || isSuperAdmin,
   });
 
   // Create a category
   const { mutateAsync: createCategory, isPending: isCreatingCategory } = useMutation({
     mutationFn: async (categoryData: Omit<ExerciseCategory, 'id'>) => {
+      // Add admin_id to the category data
+      const categoryWithAdmin = {
+        ...categoryData,
+        admin_id: adminId
+      };
+
       const { data, error } = await supabase
         .from('workout_categories')
-        .insert([categoryData])
+        .insert([categoryWithAdmin])
         .select()
         .single();
 
@@ -55,7 +71,7 @@ export const useExerciseCategories = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-workout-categories', adminId] });
     }
   });
 
@@ -83,7 +99,7 @@ export const useExerciseCategories = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-workout-categories', adminId] });
     }
   });
 
@@ -122,7 +138,7 @@ export const useExerciseCategories = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-workout-categories', adminId] });
     }
   });
 
@@ -130,18 +146,18 @@ export const useExerciseCategories = () => {
   const { mutateAsync: createDefaultCategories } = useMutation({
     mutationFn: async () => {
       const defaultCategories = [
-        { name: 'Bíceps', color: '#FF6B6B', icon: 'dumbbell' },
-        { name: 'Tríceps', color: '#4ECDC4', icon: 'dumbbell' },
-        { name: 'Peito', color: '#45B7D1', icon: 'dumbbell' },
-        { name: 'Ombros', color: '#96CEB4', icon: 'dumbbell' },
-        { name: 'Costas', color: '#FECA57', icon: 'dumbbell' },
-        { name: 'Pernas', color: '#FF9FF3', icon: 'dumbbell' },
-        { name: 'Panturrilhas', color: '#54A0FF', icon: 'dumbbell' },
-        { name: 'Glúteos', color: '#5F27CD', icon: 'dumbbell' },
-        { name: 'Trapézio', color: '#00D2D3', icon: 'dumbbell' },
-        { name: 'Antebraços', color: '#FF9F43', icon: 'dumbbell' },
-        { name: 'Eratores da Espinha', color: '#10AC84', icon: 'dumbbell' },
-        { name: 'Cardio Academia', color: '#EE5A24', icon: 'heart' }
+        { name: 'Bíceps', color: '#FF6B6B', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Tríceps', color: '#4ECDC4', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Peito', color: '#45B7D1', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Ombros', color: '#96CEB4', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Costas', color: '#FECA57', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Pernas', color: '#FF9FF3', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Panturrilhas', color: '#54A0FF', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Glúteos', color: '#5F27CD', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Trapézio', color: '#00D2D3', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Antebraços', color: '#FF9F43', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Eratores da Espinha', color: '#10AC84', icon: 'dumbbell', admin_id: adminId },
+        { name: 'Cardio Academia', color: '#EE5A24', icon: 'heart', admin_id: adminId }
       ];
 
       const results = [];
@@ -167,9 +183,22 @@ export const useExerciseCategories = () => {
       return results;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-workout-categories', adminId] });
     }
   });
+
+  // Force refresh data
+  const refreshData = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin-workout-categories'] });
+    queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
+  };
+
+  // Auto refresh when adminId changes
+  React.useEffect(() => {
+    if (adminId) {
+      refreshData();
+    }
+  }, [adminId]);
 
   return {
     categories,
@@ -181,5 +210,6 @@ export const useExerciseCategories = () => {
     deleteCategory,
     isDeletingCategory,
     createDefaultCategories,
+    refreshData,
   };
 };

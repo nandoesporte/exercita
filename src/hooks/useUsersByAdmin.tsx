@@ -22,6 +22,31 @@ interface AdminUser {
 export function useUsersByAdmin() {
   const { isSuperAdmin, isAdmin } = useAdminRole();
 
+  // Fetch current admin ID first
+  const { data: adminData } = useQuery({
+    queryKey: ['current-admin-id'],
+    queryFn: async () => {
+      if (isSuperAdmin || !isAdmin) return null;
+      
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser.user) return null;
+      
+      const { data, error } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', currentUser.user.id)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching admin ID:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: isAdmin && !isSuperAdmin,
+  });
+
   const { data: adminUsers, isLoading: isLoadingAdmins } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
@@ -38,7 +63,7 @@ export function useUsersByAdmin() {
   });
 
   const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['users-by-admin'],
+    queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
     queryFn: async () => {
       if (isSuperAdmin) {
         // Super admin gets all users with email data
@@ -62,23 +87,8 @@ export function useUsersByAdmin() {
         });
 
         return combinedData as UserProfile[];
-      } else if (isAdmin) {
+      } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their users (no email access for security)
-        const { data: currentUser } = await supabase.auth.getUser();
-        if (!currentUser.user) throw new Error('Usuário não autenticado');
-        
-        // Get current admin ID from the admins table
-        const { data: adminData } = await supabase
-          .from('admins')
-          .select('id')
-          .eq('user_id', currentUser.user.id)
-          .single();
-
-        if (!adminData?.id) {
-          throw new Error('Admin ID não encontrado');
-        }
-
-        // Get only profiles for this admin
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, admin_id, created_at, avatar_url')
@@ -96,7 +106,7 @@ export function useUsersByAdmin() {
       
       return [];
     },
-    enabled: isSuperAdmin || isAdmin,
+    enabled: (isSuperAdmin || (isAdmin && !!adminData?.id)),
   });
 
   const getUsersByAdmin = (adminId?: string) => {
