@@ -113,46 +113,51 @@ export function ExerciseSelector({ onSelectExercise, onClose }: ExerciseSelector
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : filteredExercises.length > 0 ? (
-          <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
-            {filteredExercises.map((exercise) => (
-              <div key={exercise.id} className="border rounded-md overflow-hidden bg-card hover:border-primary transition-colors">
-                <div 
-                  className="cursor-pointer"
-                  onClick={() => handlePreview(exercise)}
-                >
-                  <div className="aspect-square relative bg-muted">
-                    {exercise.image_url ? (
-                      <img 
-                        src={exercise.image_url} 
-                        alt={exercise.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground">
-                        Sem imagem
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h4 className="font-medium text-sm">{exercise.name}</h4>
-                    <p className="text-xs text-muted-foreground">{exercise.category?.name || 'Sem categoria'}</p>
-                    <div className="flex justify-between items-center mt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectAndClose(exercise.id, exercise.name);
-                        }}
-                      >
-                        Selecionar
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+           <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-2 md:gap-3`}>
+             {filteredExercises.map((exercise) => (
+               <div key={exercise.id} className="border rounded-md overflow-hidden bg-card hover:border-primary transition-colors">
+                 <div 
+                   className="cursor-pointer"
+                   onClick={() => handlePreview(exercise)}
+                 >
+                   <div className={`${isMobile ? "aspect-[4/3]" : "aspect-square"} relative bg-muted`}>
+                     {exercise.image_url ? (
+                       <img 
+                         src={exercise.image_url} 
+                         alt={exercise.name}
+                         loading="lazy"
+                         className="w-full h-full object-cover"
+                       />
+                     ) : (
+                       <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
+                         Sem imagem
+                       </div>
+                     )}
+                   </div>
+                   <div className={`${isMobile ? "p-2" : "p-3"}`}>
+                     <h4 className={`font-medium ${isMobile ? "text-xs" : "text-sm"} line-clamp-2 leading-tight`}>
+                       {exercise.name}
+                     </h4>
+                     <p className={`${isMobile ? "text-xs" : "text-xs"} text-muted-foreground mt-1 line-clamp-1`}>
+                       {exercise.category?.name || 'Sem categoria'}
+                     </p>
+                     <div className={`flex justify-center mt-2`}>
+                       <Button 
+                         variant="outline" 
+                         size={isMobile ? "sm" : "sm"}
+                         className={`${isMobile ? "text-xs px-2 py-1 h-7" : ""} w-full`}
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleSelectAndClose(exercise.id, exercise.name);
+                         }}
+                       >
+                         Selecionar
+                       </Button>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             ))}
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
