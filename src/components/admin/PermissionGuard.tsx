@@ -19,8 +19,9 @@ export function PermissionGuard({
   fallback, 
   showFallback = true 
 }: PermissionGuardProps) {
-  const { hasPermission, isLoading } = useAdminPermissions();
+  const { hasPermission, isLoading, isSuperAdmin, permissions } = useAdminPermissions();
 
+  // Show loading state while permissions are being fetched
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -28,6 +29,14 @@ export function PermissionGuard({
       </div>
     );
   }
+
+  // Debug log for permission checking
+  console.log('PermissionGuard check:', { 
+    permission, 
+    hasPermission: hasPermission(permission),
+    isSuperAdmin,
+    userPermissions: permissions 
+  });
 
   if (!hasPermission(permission)) {
     if (fallback) {

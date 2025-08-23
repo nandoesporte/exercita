@@ -47,9 +47,23 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
 
   // Fetch admin permissions
   const { data: permissions = [], isLoading: permissionsLoading } = useQuery({
-    queryKey: ['admin-permissions', adminData?.id],
+    queryKey: ['admin-permissions', adminData?.id, isSuperAdmin],
     queryFn: async () => {
-      if (isSuperAdmin) return []; // Super admin has all permissions by default
+      if (isSuperAdmin) {
+        // Return all possible permissions for Super Admin
+        return [
+          'manage_workouts', 
+          'manage_exercises', 
+          'manage_categories', 
+          'manage_products', 
+          'manage_store',
+          'manage_gym_photos', 
+          'manage_schedule', 
+          'manage_appointments', 
+          'manage_payment_methods'
+        ] as AdminPermission[];
+      }
+      
       if (!adminData?.id) return [];
       
       const { data, error } = await supabase
@@ -64,7 +78,9 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
       
       return data.map(p => p.permission);
     },
-    enabled: !!adminData?.id && !isSuperAdmin,
+    enabled: (!!adminData?.id || isSuperAdmin) && isAdmin,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   useEffect(() => {
@@ -78,6 +94,9 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
   }, [adminData?.id, isSuperAdmin]);
 
   const hasPermission = (permission: AdminPermission): boolean => {
+    // During loading, return false to prevent premature access
+    if (roleLoading || permissionsLoading) return false;
+    
     // Super admin always has all permissions
     if (isSuperAdmin) return true;
     

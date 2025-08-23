@@ -41,7 +41,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isSuperAdmin, isAdmin } = useAdminRole();
-  const { hasPermission } = useAdminPermissions();
+  const { hasPermission, isLoading: permissionsLoading } = useAdminPermissions();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const toggleSidebar = () => {
@@ -167,7 +167,12 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       </div>
       <ScrollArea className="flex-1 px-2">
         <nav className="space-y-1 py-2">
-          {items.map((item) => (
+          {permissionsLoading ? (
+            <div className="flex justify-center items-center p-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            items.map((item) => (
             <Button
               key={item.title}
               variant="ghost"
@@ -187,7 +192,8 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
                 )}
               </span>
             </Button>
-          ))}
+            ))
+          )}
         </nav>
       </ScrollArea>
       <div className="p-3 sm:p-5">
