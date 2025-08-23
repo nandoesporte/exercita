@@ -247,15 +247,17 @@ const EditWorkoutExercises = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-10">
-            <div className="bg-card rounded-lg border border-border p-3 sm:p-4 lg:p-6">
+            <div className="bg-card rounded-lg border border-border p-3 sm:p-4 lg:p-6 min-w-0">
               <h2 className="text-lg sm:text-xl font-semibold mb-4">Lista de Exercícios</h2>
-              <ExerciseList 
-                exercises={workoutExercises}
-                onRemove={handleRemoveExercise}
-                onMoveUp={handleMoveUp}
-                onMoveDown={handleMoveDown}
-                isLoading={areWorkoutExercisesLoading}
-              />
+              <div className="overflow-hidden">
+                <ExerciseList 
+                  exercises={workoutExercises}
+                  onRemove={handleRemoveExercise}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                  isLoading={areWorkoutExercisesLoading}
+                />
+              </div>
             </div>
             
             <div className="bg-card rounded-lg border border-border p-3 sm:p-4 lg:p-6">
