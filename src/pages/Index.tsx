@@ -124,76 +124,80 @@ const Index = () => {
         {hasAssignedWorkout ? (
           // Card com treino recomendado - exibido quando o usuário tem treino atribuído
           <Card className="bg-fitness-darkGray border-none text-white">
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Seletor de Academia */}
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold">Academia</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold">Seu Treino</h2>
                 </div>
                 
                 <div className="flex items-center">
-                  <span className="bg-fitness-orange text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
-                    <Activity size={16} className="mr-1" /> PREMIUM
+                  <span className="bg-fitness-orange text-white px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center">
+                    <Activity size={14} className="mr-1 sm:mr-1" /> ATIVO
                   </span>
                 </div>
               </div>
               
               {/* Detalhes do Treino */}
               <div>
-                <h3 className="text-xl font-bold">
+                <h3 className="text-lg sm:text-xl font-bold">
                   {recommendedWorkout?.title || 'Treino Personalizado'}
                 </h3>
                 <div className="flex justify-between mt-1">
-                  <Link to="/workouts" className="text-sm text-gray-300 hover:text-fitness-orange">
-                    Ver mais <span>&gt;</span>
+                  <Link to="/workouts" className="text-xs sm:text-sm text-gray-300 hover:text-fitness-orange">
+                    Ver todos os treinos <span>&gt;</span>
                   </Link>
                 </div>
                 
                 {/* Áreas Alvo */}
                 <div className="mt-4">
-                  <div className="bg-fitness-dark p-4 rounded-md">
+                  <div className="bg-fitness-dark p-3 sm:p-4 rounded-md">
                     <div className="mb-2">
-                      <span className="font-bold">Alvo</span>
-                      <span className="ml-2 text-gray-300">{targetMuscles}</span>
+                      <span className="font-bold text-sm sm:text-base">Alvo</span>
+                      <span className="ml-2 text-gray-300 text-sm sm:text-base">{targetMuscles}</span>
                     </div>
                     
                     {/* Estatísticas do Treino - usando dados reais */}
-                    <div className="flex justify-between mt-4">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4">
                       <div className="text-center">
-                        <div className="flex justify-center mb-2">
-                          <Dumbbell size={28} className="text-gray-300" />
+                        <div className="flex justify-center mb-1 sm:mb-2">
+                          <Dumbbell size={20} className="text-gray-300 sm:w-7 sm:h-7" />
                         </div>
-                        <div className="text-lg font-bold">
-                          {recommendedWorkout?.workout_exercises?.length || 0} exercícios
+                        <div className="text-sm sm:text-lg font-bold">
+                          {recommendedWorkout?.workout_exercises?.length || 0}
                         </div>
+                        <div className="text-xs text-gray-400">exercícios</div>
                       </div>
                       
                       <div className="text-center">
-                        <div className="flex justify-center mb-2">
-                          <Clock size={28} className="text-gray-300" />
+                        <div className="flex justify-center mb-1 sm:mb-2">
+                          <Clock size={20} className="text-gray-300 sm:w-7 sm:h-7" />
                         </div>
-                        <div className="text-lg font-bold">
-                          {recommendedWorkout?.duration || 0} min
+                        <div className="text-sm sm:text-lg font-bold">
+                          {recommendedWorkout?.duration || 0}
                         </div>
+                        <div className="text-xs text-gray-400">minutos</div>
                       </div>
                       
                       <div className="text-center">
-                        <div className="flex justify-center mb-2">
-                          <Activity size={28} className="text-gray-300" />
+                        <div className="flex justify-center mb-1 sm:mb-2">
+                          <Activity size={20} className="text-gray-300 sm:w-7 sm:h-7" />
                         </div>
-                        <div className="text-lg font-bold">
-                          {recommendedWorkout?.calories || 0} kcal
+                        <div className="text-sm sm:text-lg font-bold">
+                          {recommendedWorkout?.calories || 0}
                         </div>
+                        <div className="text-xs text-gray-400">kcal</div>
                       </div>
                     </div>
                     
                     {/* Botão Iniciar Treino */}
                     <Button 
-                      className="w-full mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
+                      className="w-full mt-4 sm:mt-6 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-sm sm:text-lg font-semibold h-12 sm:h-14 rounded-xl"
                       asChild
                       disabled={isLoading || !recommendedWorkout}
                     >
                       <Link to={`/workout/${recommendedWorkout?.id || ''}`}>
+                        <Dumbbell className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                         {isLoading ? 'Carregando...' : 'Iniciar Treino'}
                       </Link>
                     </Button>
@@ -205,34 +209,34 @@ const Index = () => {
         ) : (
           // Card para agendar consultoria - exibido quando não há treinos atribuídos
           <Card className="bg-fitness-darkGray border-none text-white">
-            <CardContent className="p-6 space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Primeira Consultoria</h2>
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+                <h2 className="text-xl sm:text-2xl font-bold">Primeira Consultoria</h2>
                 
                 <div className="flex items-center">
-                  <span className="bg-fitness-orange text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
-                    <Activity size={16} className="mr-1" /> GRATUITO
+                  <span className="bg-fitness-orange text-white px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center">
+                    <Activity size={14} className="mr-1" /> GRATUITO
                   </span>
                 </div>
               </div>
               
-              <div className="bg-fitness-dark p-6 rounded-md text-center">
-                <div className="mb-6">
-                  <div className="mx-auto bg-fitness-darkGray/50 w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                    <Calendar size={36} className="text-fitness-orange" />
+              <div className="bg-fitness-dark p-4 sm:p-6 rounded-md text-center">
+                <div className="mb-4 sm:mb-6">
+                  <div className="mx-auto bg-fitness-darkGray/50 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                    <Calendar size={28} className="text-fitness-orange sm:w-9 sm:h-9" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Você ainda não tem um treino personalizado</h3>
-                  <p className="text-gray-300">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2">Você ainda não tem um treino personalizado</h3>
+                  <p className="text-gray-300 text-sm sm:text-base">
                     Agende uma consultoria com nossos especialistas e receba um plano de treino personalizado para suas necessidades.
                   </p>
                 </div>
                 
                 <Button 
-                  className="w-full mt-4 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-14 rounded-xl"
+                  className="w-full mt-3 sm:mt-4 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-sm sm:text-lg font-semibold h-12 sm:h-14 rounded-xl"
                   asChild
                 >
                   <Link to="/schedule">
-                    <Calendar className="mr-2 h-5 w-5" />
+                    <Calendar className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     Agendar Consultoria
                   </Link>
                 </Button>
