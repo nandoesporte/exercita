@@ -44,8 +44,8 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
         .rpc('debug_get_all_users');
       
       if (error) {
-        toast.error(`Error fetching users: ${error.message}`);
-        throw new Error(`Error fetching users: ${error.message}`);
+        toast.error(`Erro ao buscar usuários: ${error.message}`);
+        throw new Error(`Erro ao buscar usuários: ${error.message}`);
       }
       
       return data || [];
@@ -54,7 +54,7 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
 
   const handleCloneWorkout = async () => {
     if (!selectedUserId || !workoutId) {
-      toast.error('Please select a user');
+      toast.error('Por favor, selecione um usuário');
       return;
     }
     
@@ -73,11 +73,11 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
         throw error;
       }
       
-      toast.success(`Workout cloned successfully for user!`);
+      toast.success(`Treino clonado com sucesso para o usuário!`);
       onClose();
     } catch (error: any) {
       console.error('Error cloning workout:', error);
-      toast.error(`Failed to clone workout: ${error.message}`);
+      toast.error(`Falha ao clonar treino: ${error.message}`);
     } finally {
       setIsCloning(false);
     }
@@ -87,18 +87,18 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Clone Workout for User</DialogTitle>
+          <DialogTitle>Clonar Treino para Usuário</DialogTitle>
           <DialogDescription>
             {workoutTitle 
-              ? `Clone "${workoutTitle}" workout to another user`
-              : "Select a user to clone this workout to their account"}
+              ? `Clonar treino "${workoutTitle}" para outro usuário`
+              : "Selecione um usuário para clonar este treino para sua conta"}
           </DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
           <div className="mb-2">
             <label htmlFor="user-select" className="text-sm font-medium block mb-1">
-              Select User
+              Selecionar Usuário
             </label>
             <Select
               disabled={isLoadingUsers || isCloning}
@@ -106,13 +106,13 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
               onValueChange={setSelectedUserId}
             >
               <SelectTrigger id="user-select" className="w-full">
-                <SelectValue placeholder="Select a user" />
+                <SelectValue placeholder="Selecionar um usuário" />
               </SelectTrigger>
               <SelectContent>
                 {isLoadingUsers ? (
                   <div className="flex items-center justify-center p-2">
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span>Loading users...</span>
+                    <span>Carregando usuários...</span>
                   </div>
                 ) : (
                   users.map(user => (
@@ -139,20 +139,20 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
           {selectedUserId && (
             <div className="mt-4 p-3 bg-muted rounded-md">
               <p className="text-sm mb-2">
-                <strong>Important:</strong> Cloning will:
+                <strong>Importante:</strong> Clonar irá:
               </p>
               <ul className="text-xs space-y-1">
                 <li className="flex items-center">
                   <Check className="h-3 w-3 mr-1 text-green-500" />
-                  Create a new workout in the user's account
+                  Criar um novo treino na conta do usuário
                 </li>
                 <li className="flex items-center">
                   <Check className="h-3 w-3 mr-1 text-green-500" />
-                  Copy all exercises and schedule days
+                  Copiar todos os exercícios e dias programados
                 </li>
                 <li className="flex items-center">
                   <Check className="h-3 w-3 mr-1 text-green-500" />
-                  Add it as a recommended workout for the user
+                  Adicionar como treino recomendado para o usuário
                 </li>
               </ul>
             </div>
@@ -161,7 +161,7 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
         
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isCloning}>
-            Cancel
+            Cancelar
           </Button>
           <Button 
             onClick={handleCloneWorkout}
@@ -170,10 +170,10 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
             {isCloning ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cloning...
+                Clonando...
               </>
             ) : (
-              'Clone Workout'
+              'Clonar Treino'
             )}
           </Button>
         </DialogFooter>
