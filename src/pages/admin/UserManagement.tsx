@@ -72,14 +72,14 @@ const UserManagement = () => {
     enabled: isSuperAdmin,
   });
 
-  const [selectedAdminFilter, setSelectedAdminFilter] = useState<string>('');
+  const [selectedAdminFilter, setSelectedAdminFilter] = useState<string>('all');
 
   // Use the useUsersByAdmin hook instead of custom query
   const { userProfiles, getUsersByAdmin, isLoading: isLoadingUsers } = useUsersByAdmin();
   
   // Get users for the selected admin (or current admin's users)
   const usersData = React.useMemo(() => {
-    if (isSuperAdmin && selectedAdminFilter) {
+    if (isSuperAdmin && selectedAdminFilter && selectedAdminFilter !== 'all') {
       // Filter by specific admin
       return getUsersByAdmin(selectedAdminFilter).map(profile => ({
         user_id: profile.id,
@@ -188,7 +188,7 @@ const UserManagement = () => {
       let adminId = null;
       if (isSuperAdmin) {
         // Super admin can assign to specific admin if filter is selected
-        adminId = selectedAdminFilter || null;
+        adminId = selectedAdminFilter !== 'all' ? selectedAdminFilter : null;
       } else {
         // Regular admin assigns to their own admin_id
         adminId = currentProfile?.admin_id;
@@ -330,7 +330,7 @@ const UserManagement = () => {
                 <SelectValue placeholder="Filtrar por admin" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os usuários</SelectItem>
+                <SelectItem value="all">Todos os usuários</SelectItem>
                 {adminsData.map((admin) => (
                   <SelectItem key={admin.id} value={admin.id}>
                     {admin.name}
