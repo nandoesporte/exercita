@@ -237,10 +237,28 @@ const Dashboard = () => {
     setIsLoading(true);
     
     try {
-      // Usando exatamente a mesma função de cadastro da página de login
+      // Get current admin ID to associate user with admin
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser.user) throw new Error('Usuário não autenticado');
+
+      // Get current admin ID from profiles
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('admin_id')
+        .eq('id', currentUser.user.id)
+        .single();
+
+      let adminId = null;
+      if (!isSuperAdmin && currentProfile?.admin_id) {
+        // Regular admin assigns to their own admin_id
+        adminId = currentProfile.admin_id;
+      }
+
+      // Include admin_id in metadata
       const metadata = {
         first_name: values.firstName,
-        last_name: values.lastName
+        last_name: values.lastName,
+        created_by_admin_id: adminId
       };
       
       await signUp(values.email, values.password, metadata);

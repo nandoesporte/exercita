@@ -174,10 +174,31 @@ const UserManagement = () => {
     setIsLoading(true);
     
     try {
-      // Usando exatamente a mesma função de cadastro da página de login
+      // Get current admin ID to associate user with admin
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser.user) throw new Error('Usuário não autenticado');
+
+      // Get current admin ID from profiles
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('admin_id')
+        .eq('id', currentUser.user.id)
+        .single();
+
+      let adminId = null;
+      if (isSuperAdmin) {
+        // Super admin can assign to specific admin if filter is selected
+        adminId = selectedAdminFilter || null;
+      } else {
+        // Regular admin assigns to their own admin_id
+        adminId = currentProfile?.admin_id;
+      }
+
+      // Include admin_id in metadata
       const metadata = {
         first_name: values.firstName,
-        last_name: values.lastName
+        last_name: values.lastName,
+        created_by_admin_id: adminId
       };
       
       await signUp(values.email, values.password, metadata);
@@ -281,7 +302,7 @@ const UserManagement = () => {
       <div className="p-4 md:p-8 bg-red-50 border border-red-200 rounded-lg text-center">
         <p className="text-red-600 mb-4 text-sm md:text-base">Erro ao carregar usuários: {(error as Error).message}</p>
         <Button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-users'] })}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['users-by-admin'] })}
           variant="outline"
           size={isMobile ? "sm" : "default"}
         >
