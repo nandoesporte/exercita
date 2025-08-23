@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Upload, File, X, Check, Loader2, ArrowRight } from 'lucide-react';
+import { Upload, File, X, Check, Loader2, ArrowRight, Compress } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -71,10 +72,48 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
     }
   }, [categories]);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const compressImage = async (file: File): Promise<File> => {
+    // Only compress images, not videos or GIFs
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+      return file;
+    }
+
+    try {
+      const options = {
+        maxSizeMB: 0.5, // Compress to max 500KB
+        maxWidthOrHeight: 1080, // Max dimension 1080px
+        useWebWorker: true,
+        fileType: file.type,
+        quality: 0.8, // 80% quality
+      };
+
+      const compressedFile = await imageCompression(file, options);
+      console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+      
+      // Keep original filename
+      const newFile = new File([compressedFile], file.name, { type: compressedFile.type });
+      return newFile;
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      return file; // Return original if compression fails
+    }
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     console.log('Files dropped:', acceptedFiles);
     
-    const newFiles = acceptedFiles.map((file, index) => {
+    // Show compression progress
+    toast.success(`Compactando ${acceptedFiles.length} arquivo(s)...`);
+    
+    // Compress all images in parallel
+    const compressedFiles = await Promise.all(
+      acceptedFiles.map(async (file) => {
+        const compressedFile = await compressImage(file);
+        return compressedFile;
+      })
+    );
+    
+    const newFiles = compressedFiles.map((file, index) => {
       // Extract exercise name from filename (remove extension)
       const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
       const exerciseName = nameWithoutExtension.charAt(0).toUpperCase() + nameWithoutExtension.slice(1);
@@ -136,6 +175,18 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
       form.setValue('category_id', detectedCategories[0]);
       setIsCategoryValid(true);
       toast.success(`Categoria "${categories.find(c => c.id === detectedCategories[0])?.name}" detectada automaticamente!`);
+    }
+    
+    // Show compression results
+    const totalOriginalSize = acceptedFiles.reduce((sum, file) => sum + file.size, 0);
+    const totalCompressedSize = compressedFiles.reduce((sum, file) => sum + file.size, 0);
+    const compressionRatio = ((totalOriginalSize - totalCompressedSize) / totalOriginalSize * 100).toFixed(1);
+    
+    if (totalOriginalSize !== totalCompressedSize) {
+      toast.success(
+        `Compactação concluída! Economizou ${compressionRatio}% de espaço ` +
+        `(${(totalOriginalSize / 1024 / 1024).toFixed(1)}MB → ${(totalCompressedSize / 1024 / 1024).toFixed(1)}MB)`
+      );
     }
   }, [form, categories]);
 
@@ -324,9 +375,14 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
                         ? "Solte os arquivos aqui..."
                         : "Arraste e solte arquivos aqui, ou clique para selecionar"}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Suporta: GIF, PNG, JPG (máximo 10MB por arquivo)
-                    </p>
+                     <p className="text-xs text-muted-foreground mt-1">
+                       Suporta: GIF, PNG, JPG (máximo 10MB por arquivo)
+                       <br />
+                       <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
+                         <Compress className="h-3 w-3" />
+                         Imagens serão compactadas automaticamente para economizar espaço
+                       </span>
+                     </p>
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -371,9 +427,10 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
                             form.setValue('files', newFiles);
                           }}
                         />
-                        <span className="text-xs text-muted-foreground">
-                          {(file.file.size / 1024 / 1024).toFixed(2)} MB
-                        </span>
+                         <span className="text-xs text-muted-foreground flex items-center gap-1">
+                           <Compress className="h-3 w-3" />
+                           {(file.file.size / 1024 / 1024).toFixed(2)} MB (compactado)
+                         </span>
                         {file.status === 'error' && (
                           <span className="text-xs text-destructive">{file.error}</span>
                         )}
