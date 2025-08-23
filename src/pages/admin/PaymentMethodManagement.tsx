@@ -60,9 +60,24 @@ const PaymentMethodManagement = () => {
   const fetchPixKeys = async () => {
     try {
       console.log("Fetching PIX keys...");
+      
+      // Get current admin's ID first
+      const { data: adminData, error: adminError } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+        
+      if (adminError || !adminData) {
+        console.error("Error fetching admin data:", adminError);
+        setPixKeys([]);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('pix_keys')
         .select('*')
+        .eq('admin_id', adminData.id)
         .order('is_primary', { ascending: false });
 
       if (error) {
@@ -91,10 +106,23 @@ const PaymentMethodManagement = () => {
 
   const fetchPaymentSettings = async () => {
     try {
+      // Get current admin's ID first
+      const { data: adminData, error: adminError } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+        
+      if (adminError || !adminData) {
+        console.error("Error fetching admin data:", adminError);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('payment_settings')
         .select('*')
-        .single();
+        .eq('admin_id', adminData.id)
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
       

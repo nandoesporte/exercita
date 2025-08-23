@@ -91,40 +91,71 @@ export function useProfile() {
   });
 
   const pixKeyQuery = useQuery({
-    queryKey: ['pixKey', 'primary', user?.id],
+    queryKey: ['pixKey', 'primary', user?.id, profileQuery.data?.admin_id, profileQuery.data?.is_admin],
     queryFn: async () => {
       if (!user) {
         console.log('PIX key fetch skipped: No authenticated user');
         return null;
       }
       
+      const currentProfile = profileQuery.data;
+      
       try {
-        const { data, error } = await supabase
-          .from('pix_keys')
-          .select('*')
-          .eq('is_primary', true)
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Erro ao buscar chave PIX:', error);
-          return null;
+        // First try to get PIX key from user's admin
+        if (currentProfile?.admin_id) {
+          const { data: adminPixKey, error: adminError } = await supabase
+            .from('pix_keys')
+            .select('*')
+            .eq('admin_id', currentProfile.admin_id)
+            .eq('is_primary', true)
+            .maybeSingle();
+            
+          if (!adminError && adminPixKey) {
+            return {
+              id: adminPixKey.id,
+              key_type: adminPixKey.key_type as 'cpf' | 'email' | 'phone' | 'random',
+              key_value: adminPixKey.key_value,
+              recipient_name: adminPixKey.recipient_name,
+              is_primary: adminPixKey.is_primary || false,
+            } as PixKey;
+          }
         }
         
-        if (!data) return null;
+        // If user is admin, get their own PIX keys
+        if (currentProfile?.is_admin) {
+          const { data: adminData } = await supabase
+            .from('admins')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+            
+          if (adminData) {
+            const { data: ownPixKey, error: ownError } = await supabase
+              .from('pix_keys')
+              .select('*')
+              .eq('admin_id', adminData.id)
+              .eq('is_primary', true)
+              .maybeSingle();
+              
+            if (!ownError && ownPixKey) {
+              return {
+                id: ownPixKey.id,
+                key_type: ownPixKey.key_type as 'cpf' | 'email' | 'phone' | 'random',
+                key_value: ownPixKey.key_value,
+                recipient_name: ownPixKey.recipient_name,
+                is_primary: ownPixKey.is_primary || false,
+              } as PixKey;
+            }
+          }
+        }
         
-        return {
-          id: data.id,
-          key_type: data.key_type as 'cpf' | 'email' | 'phone' | 'random',
-          key_value: data.key_value,
-          recipient_name: data.recipient_name,
-          is_primary: data.is_primary || false,
-        } as PixKey;
+        return null;
       } catch (error) {
         console.error('Exception in PIX key fetch:', error);
         return null;
       }
     },
-    enabled: !!user,
+    enabled: !!user && !!profileQuery.data,
     staleTime: 1000 * 60, // Consider data stale after 1 minute
   });
   
