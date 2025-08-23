@@ -22,13 +22,15 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({ pixKey, isLoadingPixKey }) =>
 
   return (
     <div className="mb-8">
-      <h3 className="text-lg font-semibold mb-3">Pagamento ao Personal</h3>
-      <div className="space-y-4">
-        <PaymentInfo pixKey={pixKey} isLoading={isLoadingPixKey} />
-        <MonthlyFeeSection 
-          savedMonthlyFee={savedMonthlyFee} 
-          setSavedMonthlyFee={setSavedMonthlyFee} 
-        />
+      <div className="bg-green-600 rounded-xl p-6 mx-auto max-w-md">
+        <h3 className="text-lg font-semibold mb-4 text-white text-center">Pagamento ao Personal</h3>
+        <div className="space-y-4">
+          <PaymentInfo pixKey={pixKey} isLoading={isLoadingPixKey} />
+          <MonthlyFeeSection 
+            savedMonthlyFee={savedMonthlyFee} 
+            setSavedMonthlyFee={setSavedMonthlyFee} 
+          />
+        </div>
       </div>
     </div>
   );
