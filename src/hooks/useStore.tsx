@@ -15,7 +15,7 @@ export const useStore = () => {
         // Try to fetch products with is_featured=true
         const { data, error } = await supabase
           .from('products')
-          .select('*, categories:workout_categories(name)')
+          .select('*, categories:product_categories(name)')
           .eq('is_active', true)
           .eq('is_featured', true)
           .order('created_at', { ascending: false })
@@ -30,7 +30,7 @@ export const useStore = () => {
             
             const { data: regularProducts, error: regularError } = await supabase
               .from('products')
-              .select('*, categories:workout_categories(name)')
+              .select('*, categories:product_categories(name)')
               .eq('is_active', true)
               .order('created_at', { ascending: false })
               .limit(6);
@@ -63,7 +63,7 @@ export const useStore = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:workout_categories(name)')
+        .select('*, categories:product_categories(name)')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -85,7 +85,7 @@ export const useStore = () => {
     queryKey: ['product-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('workout_categories')
+        .from('product_categories')
         .select('*')
         .order('name');
 
@@ -103,7 +103,7 @@ export const useStore = () => {
   const fetchProduct = async (id: string): Promise<Product> => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:workout_categories(name)')
+      .select('*, categories:product_categories(name)')
       .eq('id', id)
       .single();
 

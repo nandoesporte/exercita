@@ -13,7 +13,7 @@ export type WorkoutFormData = {
   title: string;
   description?: string;
   duration: number;
-  level: Database['public']['Enums']['difficulty_level'];
+  level: Database['public']['Enums']['workout_level'];
   category_id?: string | null;
   image_url?: string | null;
   calories?: number | null;
