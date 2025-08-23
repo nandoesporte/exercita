@@ -33,6 +33,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/auth';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { useUsersByAdmin } from '@/hooks/useUsersByAdmin';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Define o schema para validação do formulário exatamente como na página de login
@@ -73,55 +74,39 @@ const UserManagement = () => {
 
   const [selectedAdminFilter, setSelectedAdminFilter] = useState<string>('');
 
-  const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
-    queryKey: ['admin-users', selectedAdminFilter],
-    queryFn: async () => {
-      console.log("Fetching users for user management page...");
-      
-      if (isSuperAdmin && selectedAdminFilter) {
-        // Filter by specific admin
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(`
-            id,
-            first_name,
-            last_name,
-            created_at,
-            admin_id
-          `)
-          .eq('admin_id', selectedAdminFilter);
-        
-        if (error) throw new Error(error.message);
-        
-        // Transform to match expected structure
-        return data?.map(profile => ({
-          user_id: profile.id,
-          email: 'Email não disponível', // Profiles table doesn't have email
-          raw_user_meta_data: {
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-          },
-          created_at: profile.created_at,
-          banned_until: null, // Assume active for profiles
-        })) || [];
-      } else {
-        // Get all users (existing logic)
-        const { data, error } = await supabase.rpc('debug_get_all_users');
-        
-        if (error) {
-          console.error("Erro ao carregar usuários:", error);
-          throw new Error(`Erro ao carregar usuários: ${error.message}`);
-        }
-        
-        console.log("User data received:", data?.length || 0, "users");
-        if (data && data.length > 0) {
-          console.log("First user data structure:", data[0]);
-        }
-        
-        return data || [];
-      }
-    },
-  });
+  // Use the useUsersByAdmin hook instead of custom query
+  const { userProfiles, getUsersByAdmin, isLoading: isLoadingUsers } = useUsersByAdmin();
+  
+  // Get users for the selected admin (or current admin's users)
+  const usersData = React.useMemo(() => {
+    if (isSuperAdmin && selectedAdminFilter) {
+      // Filter by specific admin
+      return getUsersByAdmin(selectedAdminFilter).map(profile => ({
+        user_id: profile.id,
+        email: profile.email,
+        raw_user_meta_data: {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+        },
+        created_at: profile.created_at,
+        banned_until: null, // Profiles don't have banned_until, assume active
+      }));
+    } else {
+      // Get all users for this admin
+      return (userProfiles || []).map(profile => ({
+        user_id: profile.id,
+        email: profile.email,
+        raw_user_meta_data: {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+        },
+        created_at: profile.created_at,
+        banned_until: null,
+      }));
+    }
+  }, [userProfiles, getUsersByAdmin, selectedAdminFilter, isSuperAdmin]);
+
+  const error = null; // Remove error handling since useUsersByAdmin handles it
 
   // Toggle user active status
   const toggleUserActiveMutation = useMutation({
@@ -135,7 +120,7 @@ const UserManagement = () => {
       return { userId, isActive };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       toast.success(
         data.isActive 
           ? 'Usuário ativado com sucesso!' 
@@ -158,7 +143,7 @@ const UserManagement = () => {
       return userId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
       toast.success('Usuário excluído com sucesso!');
@@ -199,7 +184,7 @@ const UserManagement = () => {
       toast.success('Conta criada com sucesso!');
       
       // Atualiza a lista de usuários
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       
       // Fecha o modal e reseta o formulário
       setIsCreateUserOpen(false);

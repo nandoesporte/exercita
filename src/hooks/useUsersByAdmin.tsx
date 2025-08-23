@@ -40,46 +40,61 @@ export function useUsersByAdmin() {
   const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-by-admin'],
     queryFn: async () => {
-      // Get all users data using the function
-      const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
-      
-      if (usersError) throw usersError;
+      if (isSuperAdmin) {
+        // Super admin gets all users with email data
+        const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
+        if (usersError) throw usersError;
 
-      // Get profiles data
-      let profilesQuery = supabase
-        .from('profiles')
-        .select('id, first_name, last_name, admin_id, created_at, avatar_url');
+        // Get all profiles data
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url');
 
-      // If not super admin, filter by admin_id
-      if (isAdmin && !isSuperAdmin) {
+        if (profilesError) throw profilesError;
+
+        // Combine users and profiles data
+        const combinedData = profiles.map(profile => {
+          const userData = usersData.find((u: any) => u.id === profile.id);
+          return {
+            ...profile,
+            email: userData?.email || null
+          };
+        });
+
+        return combinedData as UserProfile[];
+      } else if (isAdmin) {
+        // Regular admin gets only their users (no email access for security)
         const { data: currentUser } = await supabase.auth.getUser();
-        if (currentUser.user) {
-          const { data: currentProfile } = await supabase
-            .from('profiles')
-            .select('admin_id')
-            .eq('id', currentUser.user.id)
-            .single();
+        if (!currentUser.user) throw new Error('Usuário não autenticado');
+        
+        // Get current admin ID
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('admin_id')
+          .eq('id', currentUser.user.id)
+          .single();
 
-          if (currentProfile?.admin_id) {
-            profilesQuery = profilesQuery.eq('admin_id', currentProfile.admin_id);
-          }
+        if (!currentProfile?.admin_id) {
+          throw new Error('Admin ID não encontrado');
         }
-      }
 
-      const { data: profiles, error: profilesError } = await profilesQuery;
+        // Get only profiles for this admin
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url')
+          .eq('admin_id', currentProfile.admin_id)
+          .neq('is_admin', true); // Exclude other admins from the list
 
-      if (profilesError) throw profilesError;
+        if (profilesError) throw profilesError;
 
-      // Combine users and profiles data
-      const combinedData = profiles.map(profile => {
-        const userData = usersData.find((u: any) => u.id === profile.id);
-        return {
+        // For regular admins, we don't expose email addresses for security
+        return profiles.map(profile => ({
           ...profile,
-          email: userData?.email || null
-        };
-      });
-
-      return combinedData as UserProfile[];
+          email: `${profile.first_name || 'usuário'}@***` // Masked email
+        })) as UserProfile[];
+      }
+      
+      return [];
     },
     enabled: isSuperAdmin || isAdmin,
   });
