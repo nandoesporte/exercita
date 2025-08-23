@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -90,7 +89,7 @@ const WorkoutManagement = () => {
           },
           {
             accessorKey: "level",
-            header: "Nível",
+            header: "Nível", 
             cell: ({ row }: { row: { original: any } }) => (
               <span className="capitalize">{row.original.level}</span>
             )
@@ -163,7 +162,9 @@ const WorkoutManagement = () => {
       {filteredWorkouts.length === 0 && !isLoading && (
         <div className="p-6 sm:p-8 text-center">
           <p className="text-muted-foreground text-sm sm:text-base">Nenhum treino encontrado</p>
-          <Button variant="link" onClick={handleCreateNew} className="text-sm sm:text-base">Crie seu primeiro treino</Button>
+          <Button variant="link" onClick={handleCreateNew} className="text-sm sm:text-base">
+            Crie seu primeiro treino
+          </Button>
         </div>
       )}
       
