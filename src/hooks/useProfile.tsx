@@ -32,33 +32,61 @@ export function useProfile() {
       try {
         console.log('Fetching profile for user:', user.id);
         
-        // First check if we have cached data
-        const cachedData = queryClient.getQueryData<Profile>(['profile', user.id]);
-        
-        // If we have valid cached data and this is not an initial load, use it
-        if (cachedData?.id && cachedData.first_name && cachedData.last_name) {
-          console.log('Using valid cached profile data:', cachedData);
-          return cachedData;
+        // First check localStorage for cached user data
+        const cachedUserStr = localStorage.getItem('user_cache');
+        if (cachedUserStr) {
+          try {
+            const cachedUser = JSON.parse(cachedUserStr);
+            // Check if cache is for the current user and not too old (24 hours)
+            if (cachedUser.id === user.id && (Date.now() - cachedUser.cached_at) < 24 * 60 * 60 * 1000) {
+              console.log('Using localStorage cached profile data for instant display');
+              // Set initial data immediately while we fetch fresh data in background
+              queryClient.setQueryData(['profile', user.id], cachedUser);
+            }
+          } catch (parseError) {
+            console.error('Error parsing cached user data:', parseError);
+            localStorage.removeItem('user_cache');
+          }
         }
+        
+        // Then check React Query cache
+        const cachedData = queryClient.getQueryData<Profile>(['profile', user.id]);
         
         // Fetch fresh data from database
         const profile = await fetchUserProfile(user.id);
         
         if (!profile) {
           console.error('Failed to fetch profile data');
-          return null;
+          return cachedData || null;
         }
         
-        console.log('New profile data loaded:', profile);
+        // Update localStorage cache with fresh data
+        try {
+          const newCachedUserData = {
+            id: user.id,
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            avatar_url: profile.avatar_url,
+            cached_at: Date.now()
+          };
+          localStorage.setItem('user_cache', JSON.stringify(newCachedUserData));
+        } catch (cacheError) {
+          console.error('Error updating localStorage cache:', cacheError);
+        }
+        
+        console.log('Fresh profile data loaded:', profile);
         return profile as Profile;
       } catch (error) {
         console.error('Exception in profile fetch:', error);
-        return null;
+        
+        // Fallback to cached data if available
+        const cachedData = queryClient.getQueryData<Profile>(['profile', user.id]);
+        return cachedData || null;
       }
     },
     enabled: !!user,
-    staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes (increased from 1)
-    gcTime: 1000 * 60 * 30, // Keep cache for 30 minutes (increased from 5)
+    staleTime: 1000 * 60 * 5, // Consider data stale after 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep cache for 30 minutes
   });
 
   const pixKeyQuery = useQuery({

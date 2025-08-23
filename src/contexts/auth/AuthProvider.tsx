@@ -220,6 +220,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         await ensureProfileExists(data.user.id, data.user.user_metadata);
+        
+        // Save basic user data to localStorage for instant display
+        try {
+          const profileData = await fetchUserProfile(data.user.id);
+          if (profileData) {
+            const cachedUserData = {
+              id: data.user.id,
+              first_name: profileData.first_name,
+              last_name: profileData.last_name,
+              avatar_url: profileData.avatar_url,
+              cached_at: Date.now()
+            };
+            localStorage.setItem('user_cache', JSON.stringify(cachedUserData));
+            console.log('User data cached for instant display');
+          }
+        } catch (cacheError) {
+          console.error('Error caching user data:', cacheError);
+        }
       }
       
       return data;
@@ -292,6 +310,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error("Error handling profile data before logout:", error);
       }
+      
+      // Clear cached user data
+      localStorage.removeItem('user_cache');
       
       // Clear local auth state first for immediate UI feedback
       setUser(null);

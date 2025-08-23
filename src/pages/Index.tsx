@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useInstantProfile } from '@/hooks/useInstantProfile';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Dumbbell, Clock, Activity, MapPin, ChevronRight, Camera, ShoppingBag, Settings, Calendar, MessageCircle } from 'lucide-react';
@@ -23,10 +24,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const { profile } = useProfile();
+  const instantProfile = useInstantProfile();
   const userId = user?.id;
   const { data: userWorkouts, isLoading } = useRecommendedWorkoutsForUser(userId);
   const { data: workoutHistory } = useWorkoutHistory();
   const { featuredProducts, isLoadingFeaturedProducts } = useStore();
+  
+  // Use instant profile for immediate display, fallback to regular profile
+  const displayProfile = instantProfile || profile;
   
   // Debug logs
   console.log('Current userId:', userId);
@@ -62,10 +67,10 @@ const Index = () => {
   
   // Function to get user initials for the avatar fallback
   const getInitials = () => {
-    if (!profile) return 'U';
+    if (!displayProfile) return 'U';
     
-    const firstName = profile.first_name || '';
-    const lastName = profile.last_name || '';
+    const firstName = displayProfile.first_name || '';
+    const lastName = displayProfile.last_name || '';
     
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
@@ -77,8 +82,8 @@ const Index = () => {
         <Link to="/profile">
           <Avatar className="h-24 w-24 border-4 border-fitness-green cursor-pointer hover:border-fitness-orange transition-all duration-300">
             <AvatarImage 
-              src={profile?.avatar_url ? `${profile.avatar_url}?t=${avatarTimestamp}` : undefined} 
-              alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+              src={displayProfile?.avatar_url ? `${displayProfile.avatar_url}?t=${avatarTimestamp}` : undefined} 
+              alt={`${displayProfile?.first_name || 'Usuário'}'s profile`} 
               onError={(e) => {
                 console.error('Error loading profile image on index page:', e);
                 // Fallback to initials on error
@@ -95,7 +100,7 @@ const Index = () => {
       {/* Seção de Boas-vindas */}
       <section className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-fitness-orange mb-2">
-          {greeting}, {profile?.first_name || 'Atleta'}!
+          {greeting}, {displayProfile?.first_name || 'Atleta'}!
         </h1>
         <p className="text-xl text-gray-200">
           {hasAssignedWorkout 
