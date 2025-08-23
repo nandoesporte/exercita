@@ -80,15 +80,15 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
 
     try {
       const options = {
-        maxSizeMB: 0.5, // Compress to max 500KB
-        maxWidthOrHeight: 1080, // Max dimension 1080px
+        maxSizeMB: 0.3, // Compress to max 300KB
+        maxWidthOrHeight: 360, // Resize to 360x360px
         useWebWorker: true,
         fileType: file.type,
-        quality: 0.8, // 80% quality
+        quality: 0.85, // 85% quality to maintain clarity at smaller size
       };
 
       const compressedFile = await imageCompression(file, options);
-      console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+      console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB (360x360px)`);
       
       // Return the compressed file (it already has the correct name and type)
       return compressedFile;
