@@ -1139,6 +1139,10 @@ export type Database = {
         Args: { user_email: string }
         Returns: Json
       }
+      toggle_user_active_status: {
+        Args: { is_active: boolean; user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       admin_permission:
