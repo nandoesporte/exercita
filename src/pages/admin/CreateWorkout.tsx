@@ -6,6 +6,7 @@ import { useAdminWorkouts, WorkoutFormData } from '@/hooks/useAdminWorkouts';
 import WorkoutForm from '@/components/admin/WorkoutForm';
 import { toast } from '@/lib/toast-wrapper';
 import { AdminDataRefresh } from '@/components/admin/AdminDataRefresh';
+import { AdminDebugInfo } from '@/components/admin/AdminDebugInfo';
 
 const CreateWorkout = () => {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ const CreateWorkout = () => {
   
   return (
     <div className="space-y-6">
+      <AdminDebugInfo />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button 
