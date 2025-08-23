@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   public: {
     Tables: {
       appointments: {
@@ -340,33 +335,6 @@ export type Database = {
         }
         Relationships: []
       }
-      product_categories: {
-        Row: {
-          color: string | null
-          created_at: string | null
-          icon: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string | null
-          icon?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          color?: string | null
-          created_at?: string | null
-          icon?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       products: {
         Row: {
           category_id: string | null
@@ -412,7 +380,7 @@ export type Database = {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "product_categories"
+            referencedRelation: "workout_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -427,7 +395,6 @@ export type Database = {
           gender: string | null
           height: number | null
           id: string
-          instance_id: string | null
           is_admin: boolean | null
           last_name: string | null
           updated_at: string | null
@@ -442,7 +409,6 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id: string
-          instance_id?: string | null
           is_admin?: boolean | null
           last_name?: string | null
           updated_at?: string | null
@@ -457,7 +423,6 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id?: string
-          instance_id?: string | null
           is_admin?: boolean | null
           last_name?: string | null
           updated_at?: string | null
@@ -762,7 +727,7 @@ export type Database = {
           image_url: string | null
           is_featured: boolean | null
           is_recommended: boolean | null
-          level: Database["public"]["Enums"]["workout_level"]
+          level: Database["public"]["Enums"]["difficulty_level"]
           title: string
           updated_at: string | null
         }
@@ -776,7 +741,7 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           is_recommended?: boolean | null
-          level: Database["public"]["Enums"]["workout_level"]
+          level: Database["public"]["Enums"]["difficulty_level"]
           title: string
           updated_at?: string | null
         }
@@ -790,7 +755,7 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           is_recommended?: boolean | null
-          level?: Database["public"]["Enums"]["workout_level"]
+          level?: Database["public"]["Enums"]["difficulty_level"]
           title?: string
           updated_at?: string | null
         }
@@ -809,46 +774,67 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_add_pix_key: {
+      admin_create_user: {
         Args: {
-          is_primary_val?: boolean
-          key_type_val: string
-          key_value_val: string
-          recipient_name_val: string
+          user_email: string
+          user_password: string
+          user_metadata?: Json
         }
         Returns: Json
       }
-      admin_login: {
-        Args: { admin_password: string }
-        Returns: Json
+      admin_delete_user: {
+        Args: { user_id: string }
+        Returns: undefined
       }
-      admin_save_payment_settings: {
-        Args: {
-          accept_card_payments_val: boolean
-          accept_monthly_fee_val: boolean
-          accept_pix_payments_val: boolean
-          monthly_fee_amount_val: number
-        }
-        Returns: Json
+      clone_workout_for_user: {
+        Args: { source_workout_id: string; target_user_id: string }
+        Returns: string
       }
       debug_get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
-          banned_until: string
-          created_at: string
+          user_id: string
           email: string
-          id: string
-          last_sign_in_at: string
           raw_user_meta_data: Json
+          created_at: string
+          last_sign_in_at: string
+          banned_until: string
         }[]
       }
-      is_admin: {
+      get_all_users: {
         Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          raw_user_meta_data: Json
+          created_at: string
+          last_sign_in_at: string
+          banned_until: string
+        }[]
+      }
+      get_tables_without_rls: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          has_rls: boolean
+          row_count: number
+        }[]
+      }
+      handle_kiwify_webhook: {
+        Args: { payload: Json }
+        Returns: Json
+      }
+      is_admin: {
+        Args: { user_id: string }
         Returns: boolean
+      }
+      toggle_user_active_status: {
+        Args: { user_id: string; is_active: boolean }
+        Returns: undefined
       }
     }
     Enums: {
-      workout_level: "beginner" | "intermediate" | "advanced"
+      difficulty_level: "beginner" | "intermediate" | "advanced" | "all_levels"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -856,25 +842,21 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -892,16 +874,14 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -917,16 +897,14 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -942,16 +920,14 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -959,16 +935,14 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
@@ -976,7 +950,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      workout_level: ["beginner", "intermediate", "advanced"],
+      difficulty_level: ["beginner", "intermediate", "advanced", "all_levels"],
     },
   },
 } as const

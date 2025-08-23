@@ -91,17 +91,19 @@ const PaymentMethodManagement = () => {
 
   const fetchPaymentSettings = async () => {
     try {
-      // Mock since payment_settings table doesn't exist in current schema
-      const data = null;
-      const error = null;
+      const { data, error } = await supabase
+        .from('payment_settings')
+        .select('*')
+        .single();
 
       if (error && error.code !== 'PGRST116') throw error;
       
-      // Set default values since table doesn't exist
-      setAcceptCardPayments(true);
-      setAcceptPixPayments(true);
-      setAcceptMonthlyFee(false);
-      setMonthlyFeeAmount(0);
+      if (data) {
+        setAcceptCardPayments(data.accept_card_payments || false);
+        setAcceptPixPayments(data.accept_pix_payments || false);
+        setAcceptMonthlyFee(data.accept_monthly_fee || false);
+        setMonthlyFeeAmount(data.monthly_fee_amount || 0);
+      }
     } catch (error) {
       console.error('Error fetching payment settings:', error);
       toast("Erro ao carregar configurações de pagamento.");
@@ -128,7 +130,7 @@ const PaymentMethodManagement = () => {
 
       // Usar a função segura para contornar a política RLS
       if (isAdmin && user) {
-        const { data, error } = await supabase.rpc('admin_add_pix_key' as any, {
+        const { data, error } = await supabase.rpc('admin_add_pix_key', {
           key_type_val: keyType,
           key_value_val: keyValue,
           recipient_name_val: recipientName,
@@ -170,7 +172,7 @@ const PaymentMethodManagement = () => {
       }
       
       // Usar a função segura para contornar a política RLS
-      const { error } = await supabase.rpc('admin_set_primary_pix_key' as any, {
+      const { error } = await supabase.rpc('admin_set_primary_pix_key', {
         key_id_val: id
       });
       
@@ -198,7 +200,7 @@ const PaymentMethodManagement = () => {
       }
       
       // Usar a função segura para contornar a política RLS
-      const { error } = await supabase.rpc('admin_delete_pix_key' as any, {
+      const { error } = await supabase.rpc('admin_delete_pix_key', {
         key_id_val: id
       });
         
@@ -227,7 +229,7 @@ const PaymentMethodManagement = () => {
       }
       
       // Usar a função segura para contornar a política RLS
-      const { error } = await supabase.rpc('admin_save_payment_settings' as any, {
+      const { error } = await supabase.rpc('admin_save_payment_settings', {
         accept_card_payments_val: acceptCardPayments,
         accept_pix_payments_val: acceptPixPayments,
         accept_monthly_fee_val: acceptMonthlyFee,

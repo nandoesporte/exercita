@@ -1,9 +1,9 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
+import { useAdminStore } from '@/hooks/useAdminStore';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -40,7 +40,8 @@ interface CategoryFormProps {
 }
 
 export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { createCategory, updateCategory, isCreatingCategory, isUpdatingCategory } = useAdminStore();
+  const isLoading = isCreatingCategory || isUpdatingCategory;
   
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(formSchema),
@@ -70,33 +71,34 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
   
   const onSubmit = async (values: CategoryFormValues) => {
     try {
-      if (category) {
-        // Atualizar categoria existente
-        const { error } = await supabase
-          .from('product_categories')
-          .update({
-            name: values.name,
-            color: values.color,
-            icon: values.icon,
-          })
-          .eq('id', category.id);
-
-        if (error) throw error;
-        toast('Categoria atualizada com sucesso!');
+      if (category?.id) {
+        // Ensure name is provided when updating
+        if (!values.name) {
+          toast('Nome da categoria é obrigatório');
+          return;
+        }
+        
+        await updateCategory({
+          id: category.id,
+          name: values.name, // Required field
+          color: values.color,
+          icon: values.icon,
+        });
+        toast('Categoria atualizada com sucesso');
       } else {
-        // Criar nova categoria
-        const { error } = await supabase
-          .from('product_categories')
-          .insert({
-            name: values.name,
-            color: values.color,
-            icon: values.icon,
-          });
-
-        if (error) throw error;
-        toast('Categoria criada com sucesso!');
+        // Ensure name is provided when creating
+        if (!values.name) {
+          toast('Nome da categoria é obrigatório');
+          return;
+        }
+        
+        await createCategory({
+          name: values.name, // Required field
+          color: values.color,
+          icon: values.icon,
+        });
+        toast('Categoria criada com sucesso');
       }
-      
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving category:', error);

@@ -18,7 +18,7 @@ export const checkAdminStatus = async (userId: string): Promise<boolean> => {
     }
     
     console.log("Admin status check result:", data);
-    const adminStatus = data?.is_admin === true;
+    const adminStatus = data?.is_admin || false;
     
     if (adminStatus) {
       console.log("User has admin privileges!");
@@ -63,8 +63,9 @@ export const ensureProfileExists = async (userId: string, metadata?: any): Promi
         .from('profiles')
         .insert({
           id: userId,
-          nome: metadata?.first_name || '',
-          email: metadata?.email || ''
+          first_name: metadata?.first_name || '',
+          last_name: metadata?.last_name || '',
+          avatar_url: metadata?.avatar_url || ''
         });
 
       if (insertError) {

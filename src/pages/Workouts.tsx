@@ -185,12 +185,12 @@ const Workouts = () => {
                   key={workout.id} 
                   id={workout.id}
                   title={workout.title}
-                  image=""
-                  duration={`${workout.duration || 0} min`}
+                  image={workout.image_url || ''}
+                  duration={`${workout.duration} min`}
                   level={workout.level === 'beginner' ? 'Iniciante' : 
                          workout.level === 'intermediate' ? 'Intermediário' : 
-                         workout.level === 'advanced' ? 'Avançado' : workout.level || 'N/A'}
-                  calories={0}
+                         workout.level === 'advanced' ? 'Avançado' : workout.level}
+                  calories={workout.calories || 0}
                   daysOfWeek={workout.days_of_week}
                 />
               ))}

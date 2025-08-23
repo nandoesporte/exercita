@@ -48,7 +48,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface ExerciseBatchUploadProps {
   onSubmit: (data: any[]) => Promise<void>;
-  categories: { id: string; name: string; color?: string; icon?: string; created_at?: string; updated_at?: string }[];
+  categories: { id: string; name: string; color: string; icon: string; created_at: string; updated_at: string }[];
 }
 
 export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploadProps) {

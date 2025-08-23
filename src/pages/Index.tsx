@@ -54,10 +54,10 @@ const Index = () => {
   
   // Update timestamp when profile changes
   useEffect(() => {
-    if (profile?.first_name) {
+    if (profile?.avatar_url) {
       setAvatarTimestamp(Date.now());
     }
-  }, [profile?.first_name]);
+  }, [profile?.avatar_url]);
   
   // Function to get user initials for the avatar fallback
   const getInitials = () => {
@@ -65,15 +65,8 @@ const Index = () => {
     
     const firstName = profile.first_name || '';
     const lastName = profile.last_name || '';
-    const words = [firstName, lastName].filter(Boolean);
     
-    if (words.length >= 2) {
-      return `${words[0].charAt(0)}${words[1].charAt(0)}`.toUpperCase();
-    } else if (words.length === 1) {
-      return words[0].charAt(0).toUpperCase();
-    }
-    
-    return 'U';
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
   
   return (
@@ -83,8 +76,13 @@ const Index = () => {
         <Link to="/profile">
           <Avatar className="h-24 w-24 border-4 border-fitness-green cursor-pointer hover:border-fitness-orange transition-all duration-300">
             <AvatarImage 
-              src={undefined} 
+              src={profile?.avatar_url ? `${profile.avatar_url}?t=${avatarTimestamp}` : undefined} 
               alt={`${profile?.first_name || 'Usuário'}'s profile`} 
+              onError={(e) => {
+                console.error('Error loading profile image on index page:', e);
+                // Fallback to initials on error
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
             />
             <AvatarFallback className="bg-fitness-dark text-white text-3xl">
               {getInitials()}

@@ -230,38 +230,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const adminLogin = async (password: string) => {
     try {
+      // Check if the password matches the admin password
+      if (password !== 'Nando045+-') {
+        throw new Error('Invalid admin password');
+      }
+
+      // If there is a logged-in user, make them an admin
+      if (user) {
+        console.log("Setting admin status for user:", user.id);
+        const { error } = await supabase
+          .from('profiles')
+          .update({ is_admin: true })
+          .eq('id', user.id);
+          
+        if (error) {
+          console.error("Error setting admin status:", error);
+          throw error;
+        }
+        
+        setIsAdmin(true);
+        toast.success('Admin access granted!');
+        navigate('/admin');
+        return;
+      }
+      
       // If no user is logged in, show an error
-      if (!user) {
-        throw new Error('You must be logged in to become an admin');
-      }
-
-      console.log("Attempting admin login for user:", user.id);
-      
-      // Call the secure admin login function
-      const { data, error } = await supabase.rpc('admin_login', {
-        admin_password: password
-      });
-
-      if (error) {
-        console.error("Admin login error:", error);
-        throw new Error('Database error during admin login');
-      }
-
-      // Type the response data from the RPC function
-      const response = data as { success: boolean; message: string } | null;
-
-      if (!response?.success) {
-        throw new Error(response?.message || 'Invalid admin password');
-      }
-
-      // Update admin status and refresh profile
-      await updateAdminStatus(user.id);
-      refreshUserProfile();
-      
-      toast.success('Admin access granted!');
-      navigate('/admin');
+      throw new Error('You must be logged in to become an admin');
     } catch (error: any) {
-      console.error("Admin login failed:", error);
       toast.error(error.message || 'Error granting admin access');
       throw error;
     }
@@ -277,13 +272,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileData = window.queryClient.getQueryData(['profile', user.id]);
           if (profileData) {
             console.log("Saving profile data before logout:", profileData);
-            // Update only existing profile fields
-            const { first_name, last_name } = profileData as any;
-            if (first_name || last_name) {
+            // Make sure avatar_url and other critical data is saved to database before logout
+            const { avatar_url, first_name, last_name } = profileData as any;
+            if (avatar_url || first_name || last_name) {
               await supabase
                 .from('profiles')
                 .update({ 
-                  first_name,
+                  avatar_url, 
+                  first_name, 
                   last_name,
                   updated_at: new Date().toISOString()
                 })

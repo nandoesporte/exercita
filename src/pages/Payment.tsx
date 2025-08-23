@@ -57,17 +57,33 @@ const Payment = () => {
     const fetchPaymentData = async () => {
       setIsLoading(true);
       try {
-        // Default settings since payment_settings table doesn't exist
-        setSettings({
-          accept_card_payments: true,
-          accept_pix_payments: true,
-          accept_monthly_fee: true,
-          monthly_fee_amount: 99.90
-        });
-        setMonthlyFee('99.90');
+        // Fetch payment settings from database
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('payment_settings')
+          .select('*')
+          .single();
+          
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          console.error('Error fetching payment settings:', settingsError);
+          throw settingsError;
+        }
+        
+        if (settingsData) {
+          setSettings(settingsData);
+          setMonthlyFee(settingsData.monthly_fee_amount?.toString() || '');
+        } else {
+          // Default settings if none found
+          setSettings({
+            accept_card_payments: true,
+            accept_pix_payments: true,
+            accept_monthly_fee: false,
+            monthly_fee_amount: 0
+          });
+          setMonthlyFee('99.90');
+        }
         
         // Fetch PIX key if PIX payments are enabled
-        if (true) {
+        if (settingsData?.accept_pix_payments) {
           const { data: pixData, error: pixError } = await supabase
             .from('pix_keys')
             .select('key_type, key_value, is_primary')
@@ -102,8 +118,28 @@ const Payment = () => {
           },
         ]);
 
-        // Mock payment history since orders table doesn't exist
-        setPaymentHistory([
+        // Fetch payment history - in real implementation fetch from orders table
+        const { data: historyData, error: historyError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+          
+        if (historyError) {
+          console.error('Error fetching payment history:', historyError);
+        } else {
+          // Transform data to match our PaymentHistory interface
+          const transformedHistory = historyData?.map(order => ({
+            id: order.id,
+            date: order.created_at,
+            amount: order.total_amount,
+            status: order.status as 'completed' | 'pending' | 'failed',
+            method: 'Cartão de Crédito',
+            description: 'Mensalidade'
+          })) || [];
+          
+          setPaymentHistory(transformedHistory.length > 0 ? transformedHistory : [
             {
               id: '1',
               date: '2025-05-01',
@@ -129,6 +165,7 @@ const Payment = () => {
               description: 'Mensalidade de Março',
             },
           ]);
+        }
       } catch (error) {
         console.error('Error fetching payment data:', error);
         toast('Falha ao carregar dados de pagamento');

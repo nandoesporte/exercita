@@ -149,7 +149,7 @@ export default function ExerciseLibrary() {
                 setIsCreateDialogOpen(false);
               }}
               isLoading={isCreating}
-              categories={exerciseCategories as any}
+              categories={exerciseCategories}
               preSelectedCategory={selectedCategory}
             />
           </ScrollArea>
@@ -173,7 +173,7 @@ export default function ExerciseLibrary() {
                   setIsEditDialogOpen(false);
                 }}
                 isLoading={isUpdating}
-                categories={exerciseCategories as any}
+                categories={exerciseCategories}
                 initialData={selectedExercise}
               />
             </ScrollArea>
@@ -193,7 +193,7 @@ export default function ExerciseLibrary() {
           <ScrollArea className="max-h-[70vh] pr-4">
             <ExerciseBatchUpload 
               onSubmit={handleBatchSubmit} 
-              categories={categories as any}
+              categories={categories}
             />
           </ScrollArea>
         </DialogContent>

@@ -28,8 +28,9 @@ const GymPhotoManagement = () => {
     // Filter by search query (user name)
     if (searchQuery.trim()) {
       photos = photos.filter(photo => {
-        const userName = photo.profiles?.nome || '';
-        const fullName = userName.toLowerCase();
+        const firstName = photo.profiles?.first_name || '';
+        const lastName = photo.profiles?.last_name || '';
+        const fullName = `${firstName} ${lastName}`.toLowerCase();
         return fullName.includes(searchQuery.toLowerCase());
       });
     }
@@ -183,11 +184,11 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6 ring-2 ring-white/20">
                       <AvatarFallback className="bg-fitness-green text-[10px]">
-                        {photo.profiles?.nome?.[0] || 'U'}
+                        {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-white text-sm font-medium">
-                      {photo.profiles?.nome || 'Usuário'}
+                      {photo.profiles?.first_name} {photo.profiles?.last_name}
                     </span>
                   </div>
                 </div>
@@ -215,12 +216,12 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
                   <div className="flex items-center gap-3 mb-3">
                     <Avatar>
                       <AvatarFallback className="bg-fitness-green">
-                        {photo.profiles?.nome?.[0] || 'U'}
+                        {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className="text-white text-lg font-semibold">
-                        {photo.profiles?.nome || 'Usuário'}
+                        {photo.profiles?.first_name} {photo.profiles?.last_name}
                       </h3>
                       <p className="text-[#aaadb0] text-sm">
                         Enviado em {format(new Date(photo.created_at), 'dd/MM/yyyy HH:mm')}
@@ -262,11 +263,11 @@ const PhotoGrid = ({ photos, handleApprove, handleReject, setSelectedPhoto, sele
               <div className="flex items-center gap-2">
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="bg-fitness-green text-xs">
-                    {photo.profiles?.nome?.[0] || 'U'}
+                    {photo.profiles?.first_name?.[0]}{photo.profiles?.last_name?.[0] || ''}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-white text-base font-medium line-clamp-1">
-                  {photo.profiles?.nome || 'Usuário'}
+                  {photo.profiles?.first_name} {photo.profiles?.last_name}
                 </span>
               </div>
               <span className="text-[#aaadb0] text-xs">

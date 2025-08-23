@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from '@/lib/toast-wrapper';
 import { v4 as uuidv4 } from 'uuid';
-import { useWorkoutCategories } from './useWorkoutCategories';
 
 export type AdminExercise = Database['public']['Tables']['exercises']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -212,12 +211,26 @@ export function useAdminExercises() {
     }
   });
 
-  // Fetch workout categories using the dedicated hook
-  const { 
-    categories: workoutCategories, 
-    isLoadingCategories: areCategoriesLoading,
-    categoriesError 
-  } = useWorkoutCategories();
+  const workoutCategoriesQuery = useQuery({
+    queryKey: ['admin-workout-categories'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('workout_categories')
+          .select('*')
+          .order('name');
+        
+        if (error) {
+          throw new Error(`Erro ao buscar categorias: ${error.message}`);
+        }
+        
+        return data;
+      } catch (error: any) {
+        console.error('Error in workoutCategoriesQuery:', error);
+        throw error;
+      }
+    },
+  });
 
   // Create or check storage bucket
   const checkStorageBucket = async () => {
@@ -253,8 +266,8 @@ export function useAdminExercises() {
     isUpdating: updateExercise.isPending,
     deleteExercise: deleteExercise.mutate,
     isDeleting: deleteExercise.isPending,
-    categories: workoutCategories,
-    areCategoriesLoading,
+    categories: workoutCategoriesQuery.data || [],
+    areCategoriesLoading: workoutCategoriesQuery.isLoading,
     checkStorageBucket,
     isValidUUID
   };

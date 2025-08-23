@@ -71,7 +71,8 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       onAddExercise({
         is_title_section: true,
         section_title: sectionTitle.trim(),
-        order_index: currentExerciseCount + 1,
+        order_position: currentExerciseCount + 1,
+        day_of_week: dayOfWeek || undefined,
       });
 
       // Reset form
@@ -100,8 +101,10 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
       sets: parseInt(sets, 10) || undefined,
       reps: reps ? parseInt(reps, 10) : null,
       duration: durationInSeconds,
-      rest_time: rest ? parseInt(rest, 10) : null,
-      order_index: currentExerciseCount + 1,
+      rest: rest ? parseInt(rest, 10) : null,
+      weight: weight ? parseFloat(weight) : null,
+      order_position: currentExerciseCount + 1,
+      day_of_week: dayOfWeek || undefined,
     });
 
     // Reset form

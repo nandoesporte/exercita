@@ -54,22 +54,20 @@ const EditWorkoutExercises = () => {
     exercises,
     areExercisesLoading,
     getWorkoutExercises,
+    addExerciseToWorkout,
+    isAddingExercise,
+    removeExerciseFromWorkout,
+    isRemovingExercise,
+    updateExerciseOrder,
+    isUpdatingExerciseOrder,
+    cloneExercisesToDays,
+    isCloningExercises,
   } = useAdminWorkouts();
-  
-  // Mock missing functions since they're not in the admin store
-  const addExerciseToWorkout = async () => { console.log('Not implemented'); };
-  const isAddingExercise = false;
-  const removeExerciseFromWorkout = async () => { console.log('Not implemented'); };
-  const isRemovingExercise = false;
-  const updateExerciseOrder = async () => { console.log('Not implemented'); };
-  const isUpdatingExerciseOrder = false;
-  const cloneExercisesToDays = async () => { console.log('Not implemented'); };
-  const isCloningExercises = false;
 
   const { 
     data: workoutExercises = [], 
     isLoading: areWorkoutExercisesLoading 
-  } = { data: [], isLoading: false }; // Mock since function doesn't match expected signature
+  } = getWorkoutExercises(id || '', selectedDayOfWeek);
 
   const handleBackClick = () => {
     navigate('/admin/workouts');
@@ -78,25 +76,39 @@ const EditWorkoutExercises = () => {
   const handleAddExercise = (exerciseData: WorkoutExercise) => {
     if (!id) return;
     
-    console.log('Would add exercise:', exerciseData);
+    addExerciseToWorkout({
+      workoutId: id,
+      exerciseData
+    });
   };
 
   const handleRemoveExercise = (exerciseId: string) => {
     if (!id) return;
     
-    console.log('Would remove exercise:', exerciseId);
+    removeExerciseFromWorkout({
+      exerciseId,
+      workoutId: id
+    });
   };
 
   const handleMoveUp = (exerciseId: string, currentPosition: number) => {
     if (!id || currentPosition <= 1) return;
     
-    console.log('Would move up:', exerciseId, currentPosition);
+    updateExerciseOrder({
+      exerciseId,
+      newPosition: currentPosition - 1,
+      workoutId: id
+    });
   };
 
   const handleMoveDown = (exerciseId: string, currentPosition: number) => {
     if (!id || currentPosition >= workoutExercises.length) return;
     
-    console.log('Would move down:', exerciseId, currentPosition);
+    updateExerciseOrder({
+      exerciseId,
+      newPosition: currentPosition + 1,
+      workoutId: id
+    });
   };
 
   const handleDayChange = (day: string) => {
@@ -117,7 +129,11 @@ const EditWorkoutExercises = () => {
     if (!id || !selectedDayOfWeek || targetDays.length === 0) return;
     
     try {
-      await console.log('Would clone exercises to:', targetDays);
+      await cloneExercisesToDays({
+        workoutId: id,
+        sourceDayOfWeek: selectedDayOfWeek,
+        targetDaysOfWeek: targetDays
+      });
       
       setIsCloneDialogOpen(false);
       toast.success(`Exercícios clonados com sucesso para ${targetDays.length} dia(s)`);

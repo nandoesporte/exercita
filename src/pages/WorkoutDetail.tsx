@@ -81,8 +81,10 @@ const WorkoutDetail = () => {
   const getInitials = () => {
     if (!profile) return 'U';
     
-    const name = profile.first_name || '';
-    return name.charAt(0).toUpperCase() || 'U';
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
   };
 
   // Organize workout exercises by day
@@ -103,7 +105,7 @@ const WorkoutDetail = () => {
     
     // Sort exercises by order_position within each day
     Object.keys(result).forEach(day => {
-      result[day].sort((a, b) => (a.order_position || 0) - (b.order_position || 0));
+      result[day].sort((a, b) => a.order_position - b.order_position);
     });
     
     // If we have days_of_week from the workout but no exercises for some days,
@@ -221,13 +223,21 @@ const WorkoutDetail = () => {
       }
       
       // Record the workout in history
-      // Mock workout completion since user_workout_history table doesn't exist
-      console.log('Would save workout completion:', {
-        user_id: user.user.id,
-        workout_id: workout.id,
-        completed_at: new Date().toISOString(),
-        duration: workout.duration
-      });
+      const { error } = await supabase
+        .from('user_workout_history')
+        .insert({
+          user_id: user.user.id,
+          workout_id: workout.id,
+          completed_at: new Date().toISOString(),
+          duration: workout.duration,
+          calories_burned: workout.calories
+        });
+      
+      if (error) {
+        console.error("Error recording workout:", error);
+        toast.error("Erro ao registrar treino.");
+        return;
+      }
       
       toast.success("Treino marcado como concluído!");
       
@@ -337,7 +347,7 @@ const WorkoutDetail = () => {
             >
               <Avatar className="h-8 w-8 border-2 border-fitness-green">
                 <AvatarImage 
-                  src={undefined}
+                  src={profile?.avatar_url || ''} 
                   alt={`${profile?.first_name || 'Usuário'}'s profile`} 
                 />
                 <AvatarFallback className="bg-fitness-dark text-white">
@@ -458,6 +468,7 @@ const WorkoutDetail = () => {
                             // Regular exercise item
                             const exerciseData = workoutExercise.exercise;
                             const imageUrl = exerciseData?.image_url;
+                            const hasWeight = workoutExercise.weight && workoutExercise.weight > 0;
                             
                             return (
                               <div 
@@ -482,12 +493,12 @@ const WorkoutDetail = () => {
                                       {workoutExercise.reps && workoutExercise.reps > 0 ? (
                                         <div className="flex items-center gap-1">
                                           <span className="font-semibold text-white">{workoutExercise.reps} repetições</span>
-                                           {workoutExercise.reps && (
-                                             <>
-                                               <span className="text-muted-foreground">•</span>
-                                               <span className="font-semibold text-white">{workoutExercise.reps} repetições</span>
-                                             </>
-                                           )}
+                                          {hasWeight && (
+                                            <span className="flex items-center gap-0.5 bg-fitness-darkGray/30 px-2 py-1 rounded-full text-sm font-medium text-white">
+                                              <Weight className="h-3 w-3 text-fitness-orange" />
+                                              <span>{workoutExercise.weight}kg</span>
+                                            </span>
+                                          )}
                                         </div>
                                       ) : (
                                         workoutExercise.duration && workoutExercise.duration > 0 && (

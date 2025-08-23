@@ -23,7 +23,7 @@ const RLSChecker = () => {
     queryKey: ['tables-rls-status'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.rpc('get_tables_without_rls' as any);
+        const { data, error } = await supabase.rpc('get_tables_without_rls');
         
         if (error) {
           throw error;
@@ -41,7 +41,7 @@ const RLSChecker = () => {
   const enableRLSMutation = useMutation({
     mutationFn: async (tableName: string) => {
       try {
-        const { data, error } = await supabase.rpc('admin_enable_rls' as any, {
+        const { data, error } = await supabase.rpc('admin_enable_rls', {
           table_name: tableName
         });
         

@@ -38,9 +38,11 @@ const Profile = () => {
   };
 
   const userData = {
-    name: profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : profile?.first_name || user?.email || 'User',
+    name: profile?.first_name && profile?.last_name 
+      ? `${profile.first_name} ${profile.last_name}` 
+      : user?.email || 'User',
     email: user?.email || '',
-    avatar: undefined, // avatar_url doesn't exist in profiles table
+    avatar: getDisplayAvatarUrl(profile?.avatar_url),
     memberSince: user?.created_at 
       ? formatDate(new Date(user.created_at)) 
       : 'Unknown',
@@ -162,7 +164,7 @@ const Profile = () => {
           </div>
           <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg">
             <div className="text-2xl font-bold text-fitness-orange">
-              N/A
+              {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
             </div>
             <p className="text-sm text-gray-500">Peso atual</p>
           </div>

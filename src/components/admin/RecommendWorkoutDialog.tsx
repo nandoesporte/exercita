@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -9,10 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
 import { Loader2, Search, UserPlus, UserX, Users } from 'lucide-react';
-import { toast } from '@/lib/toast-wrapper';
 
 export function RecommendWorkoutDialog({
   workoutId,
@@ -21,40 +23,104 @@ export function RecommendWorkoutDialog({
   workoutId: string;
   onClose: () => void;
 }) {
-  const [isRecommended, setIsRecommended] = useState(false);
+  const { 
+    workouts, 
+    getWorkoutRecommendations,
+    addWorkoutRecommendation,
+    removeWorkoutRecommendation,
+    isAddingRecommendation,
+    isRemovingRecommendation,
+    updateWorkout,
+    users
+  } = useAdminWorkouts();
+  
+  // Find the current workout
+  const workout = workouts.find(w => w.id === workoutId);
+  
+  // Get workout recommendations
+  const { 
+    data: recommendations, 
+    isLoading: recommendationsLoading 
+  } = getWorkoutRecommendations(workoutId);
+  
+  const [isRecommended, setIsRecommended] = useState(workout?.is_recommended || false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Simplified component - disable functionality due to missing tables
-  const filteredUsers: any[] = [];
-  const recommendationsLoading = false;
-  const isAddingRecommendation = false;
-  const isRemovingRecommendation = false;
+  // Sync the initial state with the workout data
+  useEffect(() => {
+    if (workout) {
+      setIsRecommended(workout.is_recommended || false);
+    }
+  }, [workout]);
+
+  // Filter users based on search query
+  const filteredUsers = users.filter(user => {
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
+    return fullName.includes(searchQuery.toLowerCase()) || 
+           (user.id && user.id.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
+
+  // Check if a user already has this workout recommended
+  const isUserRecommended = (userId: string) => {
+    return recommendations?.some(rec => rec.user_id === userId);
+  };
 
   // Handle toggling the global recommendation state
   const handleToggleRecommended = async () => {
+    if (!workout) return;
+    
     setIsProcessing(true);
-    toast('Workout recommendation functionality is disabled');
+    await updateWorkout({
+      id: workout.id,
+      title: workout.title,
+      duration: workout.duration,
+      level: workout.level,
+      is_recommended: !isRecommended
+    });
     setIsRecommended(!isRecommended);
     setIsProcessing(false);
   };
 
   // Handle recommending to a specific user
   const handleRecommendToUser = (userId: string) => {
-    toast('User-specific recommendations are disabled');
+    if (isUserRecommended(userId)) {
+      const recommendation = recommendations?.find(rec => rec.user_id === userId);
+      if (recommendation) {
+        removeWorkoutRecommendation({
+          recommendationId: recommendation.id,
+          workoutId
+        });
+      }
+    } else {
+      addWorkoutRecommendation({
+        workout_id: workoutId,
+        user_id: userId
+      });
+    }
   };
 
   // Handle recommending to all users
   const handleRecommendToAll = () => {
-    toast('Recommend to all functionality is disabled');
+    addWorkoutRecommendation({
+      workout_id: workoutId,
+      user_id: null // null means recommended for all users
+    });
   };
+
+  // Check if the workout is recommended to all users
+  const isRecommendedToAll = recommendations?.some(rec => rec.user_id === null);
 
   // Remove recommendation for all users
   const handleRemoveForAll = () => {
-    toast('Remove recommendation functionality is disabled');
+    const allUsersRecommendation = recommendations?.find(rec => rec.user_id === null);
+    if (allUsersRecommendation) {
+      removeWorkoutRecommendation({
+        recommendationId: allUsersRecommendation.id,
+        workoutId
+      });
+    }
   };
-
-  const isRecommendedToAll = false;
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -62,7 +128,7 @@ export function RecommendWorkoutDialog({
         <DialogHeader>
           <DialogTitle>Manage Workout Recommendations</DialogTitle>
           <DialogDescription>
-            Workout recommendation functionality is currently disabled due to missing database tables.
+            Mark this workout as recommended for all users or assign it to specific users.
           </DialogDescription>
         </DialogHeader>
         
@@ -70,7 +136,7 @@ export function RecommendWorkoutDialog({
           <div className="flex-1">
             <h3 className="font-medium">Mark as Featured Workout</h3>
             <p className="text-sm text-muted-foreground">
-              This feature requires additional database setup
+              This workout will be marked as recommended for all users in the app
             </p>
           </div>
           <Switch 
@@ -88,31 +154,72 @@ export function RecommendWorkoutDialog({
               variant="outline"
               size="sm"
               onClick={isRecommendedToAll ? handleRemoveForAll : handleRecommendToAll}
-              disabled={true}
-              className="opacity-50"
+              disabled={isAddingRecommendation || isRemovingRecommendation}
+              className={isRecommendedToAll ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
             >
               <Users className="h-4 w-4 mr-2" />
-              Feature Disabled
+              {isRecommendedToAll ? "Recommended to All" : "Recommend to All Users"}
             </Button>
           </div>
 
           <div className="relative mb-2">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input 
-              placeholder="Search disabled..." 
+              placeholder="Search users..." 
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              disabled
             />
           </div>
 
           <ScrollArea className="flex-1 border rounded-md">
-            <div className="p-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                User recommendation functionality requires additional database tables to be created.
-              </p>
-            </div>
+            {recommendationsLoading ? (
+              <div className="p-4 flex items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">Loading recommendations...</span>
+              </div>
+            ) : filteredUsers.length > 0 ? (
+              <div className="p-0">
+                {filteredUsers.map((user) => {
+                  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                  const displayName = fullName || user.id;
+                  const isRecommended = isUserRecommended(user.id);
+                  
+                  return (
+                    <div 
+                      key={user.id} 
+                      className="flex items-center justify-between p-3 hover:bg-muted/50 border-b last:border-b-0"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{displayName}</p>
+                      </div>
+                      <Button
+                        variant={isRecommended ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleRecommendToUser(user.id)}
+                        disabled={isAddingRecommendation || isRemovingRecommendation}
+                      >
+                        {isRecommended ? (
+                          <>
+                            <UserX className="h-4 w-4 mr-2" />
+                            Remove
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Recommend
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4 text-center">
+                <p className="text-sm text-muted-foreground">No users found</p>
+              </div>
+            )}
           </ScrollArea>
         </div>
 

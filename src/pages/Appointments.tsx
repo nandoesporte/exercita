@@ -174,14 +174,14 @@ const Appointments = () => {
                         {appointment.status}
                       </span>
                     </div>
-                    <h3 className="font-semibold text-lg">Appointment</h3>
+                    <h3 className="font-semibold text-lg">{appointment.title}</h3>
                     <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                       <Clock size={14} />
-                      <span>{format(new Date(appointment.appointment_date), 'h:mm a')}</span>
+                      <span>{formatTime(appointment.appointment_date, appointment.duration)}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                       <Dumbbell size={14} />
-                      <span>Personal Training</span>
+                      <span>With {appointment.trainer_name}</span>
                     </div>
                     <div className="mt-4 flex justify-end gap-3">
                       <button 
@@ -224,14 +224,14 @@ const Appointments = () => {
                         Completed
                       </span>
                     </div>
-                    <h3 className="font-semibold text-lg">Appointment</h3>
+                    <h3 className="font-semibold text-lg">{appointment.title}</h3>
                     <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                       <Clock size={14} />
-                      <span>{format(new Date(appointment.appointment_date), 'h:mm a')}</span>
+                      <span>{formatTime(appointment.appointment_date, appointment.duration)}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                       <Dumbbell size={14} />
-                      <span>Personal Training</span>
+                      <span>With {appointment.trainer_name}</span>
                     </div>
                   </div>
                 ))

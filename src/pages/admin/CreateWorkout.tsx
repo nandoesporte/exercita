@@ -59,7 +59,7 @@ const CreateWorkout = () => {
             onSubmit={handleCreateWorkout} 
             isLoading={isCreating}
             categories={categories}
-            users={[]} // Temporarily remove users prop to avoid type issues
+            users={users}
           />
         )}
       </div>
