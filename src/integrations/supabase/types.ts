@@ -1074,7 +1074,11 @@ export type Database = {
           key_value_val: string
           recipient_name_val: string
         }
-        Returns: Json
+        Returns: string
+      }
+      admin_delete_pix_key: {
+        Args: { key_id_val: string }
+        Returns: undefined
       }
       admin_delete_user: {
         Args: { user_id: string }
@@ -1098,7 +1102,11 @@ export type Database = {
           accept_pix_payments_val: boolean
           monthly_fee_amount_val: number
         }
-        Returns: Json
+        Returns: undefined
+      }
+      admin_set_primary_pix_key: {
+        Args: { key_id_val: string }
+        Returns: undefined
       }
       clone_workout_for_user: {
         Args: { source_workout_id: string; target_user_id: string }
