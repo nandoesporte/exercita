@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminStore } from '@/hooks/useAdminStore';
+import { useCategories } from '@/hooks/useCategories';
 import ProductForm from '@/components/admin/ProductForm';
 import { ProductFormData } from '@/types/store';
 import { toast } from '@/lib/toast-wrapper';
@@ -13,14 +14,18 @@ const CreateProduct = () => {
     isCreating, 
   } = useAdminStore();
   
-  // Mock categories since they're not in the admin store
-  const categories = [];
-  const isLoadingCategories = false;
+  const { categories, isLoadingCategories } = useCategories();
   
   const handleCreateProduct = async (data: ProductFormData) => {
     try {
-      console.log('Criando produto com dados:', data);
-      await createProduct(data);
+      // Ensure category_id is null instead of "null" string if empty
+      const productData = {
+        ...data,
+        category_id: data.category_id === '' || data.category_id === 'null' ? null : data.category_id
+      };
+      
+      console.log('Criando produto com dados:', productData);
+      await createProduct(productData);
       toast('Produto criado com sucesso');
       navigate('/admin/products');
     } catch (error) {
