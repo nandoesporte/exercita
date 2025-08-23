@@ -11,6 +11,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import PaymentTabs from '@/components/profile/PaymentTabs';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey, refreshProfile, getDisplayAvatarUrl } = useProfile();
@@ -18,6 +20,22 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
+  
+  // Get admin name
+  const { data: adminData } = useQuery({
+    queryKey: ['admin', profile?.admin_id],
+    queryFn: async () => {
+      if (!profile?.admin_id) return null;
+      const { data, error } = await supabase
+        .from('admins')
+        .select('name')
+        .eq('id', profile.admin_id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.admin_id,
+  });
   
   // Force refresh profile data ONCE when component mounts
   useEffect(() => {
@@ -155,14 +173,14 @@ const Profile = () => {
         </div>
         
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg">
+        <div className="grid grid-cols-2 gap-4 mb-8 w-full">
+          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full">
             <div className="text-2xl font-bold text-fitness-orange">
-              {userData.workoutsCompleted}
+              {adminData?.name || 'N/A'}
             </div>
-            <p className="text-sm text-gray-500">Treinos completados</p>
+            <p className="text-sm text-gray-500">Personal Trainer</p>
           </div>
-          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg">
+          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full">
             <div className="text-2xl font-bold text-fitness-orange">
               {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
             </div>

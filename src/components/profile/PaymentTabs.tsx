@@ -24,12 +24,12 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({ pixKey, isLoadingPixKey }) =>
     <div className="mb-8">
       <h3 className="text-lg font-semibold mb-3">Pagamentos</h3>
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="info" className="flex items-center gap-2">
+        <TabsList className="grid grid-cols-2 mb-4 w-full">
+          <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
             <Wallet size={16} />
             <span>Informações</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
+          <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
             <CreditCard size={16} />
             <span>Histórico</span>
           </TabsTrigger>

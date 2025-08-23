@@ -186,6 +186,25 @@
     @apply px-6 py-8 md:p-8;
   }
   
+  /* Mobile responsive styles for profile page */
+  @media (max-width: 768px) {
+    .mobile-section {
+      @apply px-4 py-6 w-full;
+    }
+    
+    .mobile-section .grid.grid-cols-2 {
+      @apply w-full gap-2;
+    }
+    
+    .mobile-section .fitness-card {
+      @apply w-full;
+    }
+    
+    .mobile-section .bg-fitness-darkGray {
+      @apply w-full;
+    }
+  }
+  
   /* Admin Panel Specific Improvements */
   .admin-btn {
     @apply inline-flex items-center justify-center gap-3 rounded-lg font-medium transition-all duration-200;
