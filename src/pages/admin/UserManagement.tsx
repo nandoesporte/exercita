@@ -168,27 +168,19 @@ const UserManagement = () => {
       accessorKey: 'email',
       header: 'Email',
       cell: ({ row }: { row: { original: any } }) => {
-        // For mobile, we'll show a shorter version
-        if (isMobile) {
-          const email = row.original.email || '';
-          return email.length > 20 ? email.substring(0, 17) + '...' : email;
-        }
-        return row.original.email;
+        const email = row.original.email || '';
+        return <span className="font-medium">{email}</span>;
       }
     },
     {
       accessorKey: 'name',
       header: 'Nome',
+      hideOnMobile: true,
       cell: ({ row }: { row: { original: any } }) => {
         const userData = row.original.raw_user_meta_data || {};
         const firstName = userData.first_name || '';
         const lastName = userData.last_name || '';
         const fullName = `${firstName} ${lastName}`.trim();
-        
-        // For mobile, we'll only show the first name if it's too long
-        if (isMobile && fullName.length > 12 && firstName) {
-          return firstName;
-        }
         
         return fullName || 'N/A';
       },
@@ -196,6 +188,7 @@ const UserManagement = () => {
     {
       accessorKey: 'created_at',
       header: 'Cadastro',
+      hideOnMobile: true,
       cell: ({ row }: { row: { original: any } }) => {
         return row.original.created_at
           ? formatDistanceToNow(new Date(row.original.created_at), {
@@ -215,9 +208,8 @@ const UserManagement = () => {
             <Switch
               checked={isActive}
               onCheckedChange={() => handleToggleUserActive(row.original.user_id, isActive)}
-              className={isMobile ? "scale-75" : ""}
             />
-            <span className={`${isActive ? 'text-green-600' : 'text-red-600'} ${isMobile ? "text-xs" : ""}`}>
+            <span className={`${isActive ? 'text-green-600' : 'text-red-600'} text-sm`}>
               {isActive ? 'Ativo' : 'Inativo'}
             </span>
           </div>
@@ -231,8 +223,7 @@ const UserManagement = () => {
         return (
           <Button
             variant="destructive"
-            size={isMobile ? "sm" : "default"}
-            className={isMobile ? "px-2 h-7 text-xs" : ""}
+            size="sm"
             onClick={() => {
               setSelectedUser(row.original);
               setIsDeleteDialogOpen(true);
@@ -245,13 +236,6 @@ const UserManagement = () => {
     },
   ];
 
-  // Define which columns to show on mobile
-  const mobileColumns = isMobile ? [
-    columns[0], // Email
-    columns[1], // Nome
-    columns[3], // Status
-    columns[4], // Ações
-  ] : columns;
 
   if (error) {
     return (
@@ -371,12 +355,7 @@ const UserManagement = () => {
         </CardHeader>
         <CardContent className={isMobile ? "px-2 py-1" : ""}>
           <DataTable
-            columns={isMobile ? [
-              columns[0], // Email
-              columns[1], // Nome
-              columns[3], // Status
-              columns[4], // Ações
-            ] : columns}
+            columns={columns}
             data={usersData || []}
             isLoading={isLoadingUsers}
           />

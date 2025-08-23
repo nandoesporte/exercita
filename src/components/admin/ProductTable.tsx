@@ -51,6 +51,7 @@ export const ProductTable = ({
     {
       accessorKey: 'image_url',
       header: 'Imagem',
+      hideOnMobile: true,
       cell: ({ row }: { row: { original: any } }) => (
         <div className="h-10 w-10 rounded overflow-hidden">
           <img 
@@ -63,21 +64,28 @@ export const ProductTable = ({
     },
     {
       accessorKey: 'name',
-      header: 'Nome'
+      header: 'Nome',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="font-medium">{row.original.name}</div>
+      )
     },
     {
       accessorKey: 'price',
       header: 'Preço',
-      cell: ({ row }: { row: { original: any } }) => formatCurrency(row.original.price)
+      cell: ({ row }: { row: { original: any } }) => (
+        <span className="font-medium text-green-600">{formatCurrency(row.original.price)}</span>
+      )
     },
     {
       accessorKey: 'categories.name',
       header: 'Categoria',
+      hideOnMobile: true,
       cell: ({ row }: { row: { original: any } }) => row.original.categories?.name || 'Sem categoria'
     },
     {
       accessorKey: 'is_active',
       header: 'Status',
+      hideOnMobile: true,
       cell: ({ row }: { row: { original: any } }) => (
         row.original.is_active ? 
           <Star className="h-5 w-5 text-amber-400" /> : 
@@ -103,12 +111,12 @@ export const ProductTable = ({
       accessorKey: 'actions',
       header: 'Ações',
       cell: ({ row }: { row: { original: any } }) => (
-        <div className="flex items-center justify-end gap-1 sm:gap-2">
+        <div className="flex items-center justify-end gap-1 flex-wrap">
           <Button
             variant="outline"
             size="sm"
             asChild
-            className="px-2 sm:px-3"
+            className="px-2"
           >
             <a href={row.original.sale_url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4" />
@@ -119,7 +127,7 @@ export const ProductTable = ({
             variant="outline"
             size="sm"
             onClick={() => onEdit(row.original.id)}
-            className="px-2 sm:px-3"
+            className="px-2"
           >
             <PenSquare className="h-4 w-4" />
             <span className="sr-only">Editar</span>
@@ -128,7 +136,7 @@ export const ProductTable = ({
             variant="outline"
             size="sm"
             onClick={() => handleDeleteClick(row.original.id)}
-            className="px-2 sm:px-3"
+            className="px-2"
           >
             <Trash2 className="h-4 w-4" />
             <span className="sr-only">Excluir</span>
@@ -140,13 +148,11 @@ export const ProductTable = ({
 
   return (
     <>
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={products}
-          isLoading={isLoading}
-        />
-      </div>
+      <DataTable
+        columns={columns}
+        data={products}
+        isLoading={isLoading}
+      />
       
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

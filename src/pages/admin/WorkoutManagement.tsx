@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { RecommendWorkoutDialog } from '@/components/admin/RecommendWorkoutDialog';
 import { CloneWorkoutDialog } from '@/components/admin/CloneWorkoutDialog';
+import { DataTable } from '@/components/ui/data-table';
 
 const WorkoutManagement = () => {
   const navigate = useNavigate();
@@ -84,97 +85,112 @@ const WorkoutManagement = () => {
         />
       </div>
       
-      <div className="bg-card rounded-lg border border-border overflow-hidden -mx-2 sm:mx-0">
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-sm text-muted-foreground">Carregando treinos...</p>
-          </div>
-        ) : filteredWorkouts.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px]">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm">Título</th>
-                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm">Nível</th>
-                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm">Duração</th>
-                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm">Categoria</th>
-                  <th className="text-center py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm">Rec.</th>
-                  <th className="text-right py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredWorkouts.map((workout) => (
-                  <tr key={workout.id} className="border-b hover:bg-muted/50">
-                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium">{workout.title}</td>
-                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm capitalize">{workout.level}</td>
-                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm">{workout.duration} min</td>
-                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm">{workout.category?.name || 'Sem categoria'}</td>
-                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-center">
-                      {workout.is_recommended && <Star className="h-3 w-3 sm:h-4 sm:w-4 text-amber-400 inline" />}
-                    </td>
-                    <td className="py-2 sm:py-3 px-2 sm:px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => handleOpenCloneDialog(workout.id, e)}
-                          title="Clonar para usuário"
-                          className="px-1 sm:px-2"
-                        >
-                          <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="sr-only">Clonar para Usuário</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenRecommendDialog(workout.id)}
-                          className={`px-1 sm:px-2 ${workout.is_recommended ? "border-amber-400 text-amber-500" : ""}`}
-                        >
-                          <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="sr-only">Gerenciar Recomendações</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditExercises(workout.id)}
-                          className="px-1 sm:px-2"
-                        >
-                          <Dumbbell className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="sr-only">Editar Exercícios</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(workout.id)}
-                          className="px-1 sm:px-2"
-                        >
-                          <PenSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="sr-only">Editar</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteClick(workout.id)}
-                          className="px-1 sm:px-2"
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="sr-only">Excluir</span>
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-6 sm:p-8 text-center">
-            <p className="text-muted-foreground text-sm sm:text-base">Nenhum treino encontrado</p>
-            <Button variant="link" onClick={handleCreateNew} className="text-sm sm:text-base">Crie seu primeiro treino</Button>
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={[
+          {
+            accessorKey: "title",
+            header: "Título",
+            cell: ({ row }: { row: { original: any } }) => (
+              <span className="font-medium">{row.original.title}</span>
+            )
+          },
+          {
+            accessorKey: "level",
+            header: "Nível",
+            cell: ({ row }: { row: { original: any } }) => (
+              <span className="capitalize">{row.original.level}</span>
+            )
+          },
+          {
+            accessorKey: "duration",
+            header: "Duração",
+            cell: ({ row }: { row: { original: any } }) => (
+              <span>{row.original.duration} min</span>
+            )
+          },
+          {
+            accessorKey: "category",
+            header: "Categoria",
+            hideOnMobile: true,
+            cell: ({ row }: { row: { original: any } }) => (
+              <span>{row.original.category?.name || 'Sem categoria'}</span>
+            )
+          },
+          {
+            accessorKey: "is_recommended",
+            header: "Recomendado",
+            hideOnMobile: true,
+            cell: ({ row }: { row: { original: any } }) => (
+              <div className="text-center">
+                {row.original.is_recommended && <Star className="h-4 w-4 text-amber-400 inline" />}
+              </div>
+            )
+          },
+          {
+            accessorKey: "actions",
+            header: "Ações",
+            cell: ({ row }: { row: { original: any } }) => (
+              <div className="flex items-center justify-end gap-1 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => handleOpenCloneDialog(row.original.id, e)}
+                  title="Clonar para usuário"
+                  className="px-2"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="sr-only">Clonar para Usuário</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenRecommendDialog(row.original.id)}
+                  className={`px-2 ${row.original.is_recommended ? "border-amber-400 text-amber-500" : ""}`}
+                >
+                  <UserCheck className="h-4 w-4" />
+                  <span className="sr-only">Gerenciar Recomendações</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEditExercises(row.original.id)}
+                  className="px-2"
+                >
+                  <Dumbbell className="h-4 w-4" />
+                  <span className="sr-only">Editar Exercícios</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEdit(row.original.id)}
+                  className="px-2"
+                >
+                  <PenSquare className="h-4 w-4" />
+                  <span className="sr-only">Editar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteClick(row.original.id)}
+                  className="px-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Excluir</span>
+                </Button>
+              </div>
+            )
+          }
+        ]}
+        data={filteredWorkouts}
+        isLoading={isLoading}
+      />
+
+      {filteredWorkouts.length === 0 && !isLoading && (
+        <div className="p-6 sm:p-8 text-center">
+          <p className="text-muted-foreground text-sm sm:text-base">Nenhum treino encontrado</p>
+          <Button variant="link" onClick={handleCreateNew} className="text-sm sm:text-base">Crie seu primeiro treino</Button>
+        </div>
+      )}
       
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent className="w-[95vw] sm:max-w-lg p-4 sm:p-6">
