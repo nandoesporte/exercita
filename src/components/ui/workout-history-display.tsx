@@ -123,10 +123,10 @@ export function WorkoutHistoryDisplay({ workoutHistory = [] }: WorkoutHistoryDis
               <Flame className="h-4 w-4 text-fitness-orange" />
             </div>
             <div className="text-lg font-bold text-fitness-orange">
-              {historyStats.currentStreak}
+              {historyStats.thisWeekCount}
             </div>
-            <div className="text-xs text-gray-400">dias</div>
-            <div className="text-xs text-gray-400">seguidos</div>
+            <div className="text-xs text-gray-400">treinos</div>
+            <div className="text-xs text-gray-400">na semana</div>
           </div>
 
           <div className="bg-fitness-dark/50 rounded-lg p-3 text-center">
@@ -145,68 +145,23 @@ export function WorkoutHistoryDisplay({ workoutHistory = [] }: WorkoutHistoryDis
               <Trophy className="h-4 w-4 text-fitness-blue" />
             </div>
             <div className="text-lg font-bold text-fitness-blue">
-              {historyStats.thisWeekCount}
+              {historyStats.currentStreak}
             </div>
-            <div className="text-xs text-gray-400">nesta</div>
-            <div className="text-xs text-gray-400">semana</div>
-          </div>
-        </div>
-
-        {/* Mini Calendar */}
-        <div className="bg-fitness-dark/30 rounded-lg p-3">
-          <div className="text-center mb-3">
-            <h4 className="font-semibold text-sm text-gray-200">
-              Calendário de Treinos
-            </h4>
-          </div>
-
-          {/* Days of week header */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, index) => (
-              <div key={index} className="text-center text-xs font-medium text-gray-400 py-1">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {/* Empty cells for days before month starts */}
-            {Array.from({ length: monthStart.getDay() }).map((_, index) => (
-              <div key={`empty-${index}`} className="w-8 h-8" />
-            ))}
-            
-            {/* Days of the month */}
-            {daysInMonth.map((day) => (
-              <div key={day.toString()} className={getDayClasses(day)}>
-                {format(day, 'd')}
-              </div>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-4 mt-3 text-xs">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-fitness-green rounded-full"></div>
-              <span className="text-gray-400">Treinou</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-fitness-orange/20 border border-fitness-orange rounded-full"></div>
-              <span className="text-gray-400">Hoje</span>
-            </div>
+            <div className="text-xs text-gray-400">dias</div>
+            <div className="text-xs text-gray-400">seguidos</div>
           </div>
         </div>
 
         {/* Motivational message */}
-        {historyStats.currentStreak > 0 && (
+        {historyStats.thisWeekCount > 0 && (
           <div className="bg-gradient-to-r from-fitness-green/20 to-fitness-orange/20 rounded-lg p-3 text-center">
             <p className="text-sm font-medium">
-              🔥 Parabéns! Você está há <span className="text-fitness-green font-bold">{historyStats.currentStreak} dias</span> consecutivos treinando!
+              🔥 Parabéns! Você treinou <span className="text-fitness-green font-bold">{historyStats.thisWeekCount} {historyStats.thisWeekCount === 1 ? 'dia' : 'dias'}</span> essa semana!
             </p>
           </div>
         )}
 
-        {historyStats.currentStreak === 0 && historyStats.totalThisMonth === 0 && (
+        {historyStats.thisWeekCount === 0 && historyStats.totalThisMonth === 0 && (
           <div className="bg-fitness-dark/50 rounded-lg p-3 text-center">
             <p className="text-sm text-gray-300">
               Comece hoje e inicie sua jornada de transformação! 💪
