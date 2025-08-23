@@ -831,6 +831,10 @@ export type Database = {
         }
         Returns: Json
       }
+      clone_workout_for_user: {
+        Args: { source_workout_id: string; target_user_id: string }
+        Returns: Json
+      }
       debug_get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
