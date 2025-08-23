@@ -400,6 +400,7 @@ export type Database = {
           gender: string | null
           height: number | null
           id: string
+          instance_id: string | null
           is_admin: boolean | null
           last_name: string | null
           updated_at: string | null
@@ -414,6 +415,7 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id: string
+          instance_id?: string | null
           is_admin?: boolean | null
           last_name?: string | null
           updated_at?: string | null
@@ -428,6 +430,7 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id?: string
+          instance_id?: string | null
           is_admin?: boolean | null
           last_name?: string | null
           updated_at?: string | null
@@ -782,6 +785,17 @@ export type Database = {
       admin_login: {
         Args: { admin_password: string }
         Returns: Json
+      }
+      debug_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          banned_until: string
+          created_at: string
+          email: string
+          id: string
+          last_sign_in_at: string
+          raw_user_meta_data: Json
+        }[]
       }
       is_admin: {
         Args: Record<PropertyKey, never>
