@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
 import { useAdminRole } from "@/hooks/useAdminRole";
-import { useAdminPermissions } from "@/contexts/admin/AdminPermissionsContext";
+import { useAdminPermissionsContext } from "@/hooks/useAdminPermissionsContext";
 import {
   LineChart,
   Dumbbell,
@@ -41,7 +41,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isSuperAdmin, isAdmin } = useAdminRole();
-  const { hasPermission, isLoading: permissionsLoading } = useAdminPermissions();
+  const { hasPermission, isLoading: permissionsLoading } = useAdminPermissionsContext();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const toggleSidebar = () => {
