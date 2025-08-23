@@ -17,6 +17,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/auth';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
+import { useUsersByAdmin } from '@/hooks/useUsersByAdmin';
 
 // Define form schema for user creation exatamente como na página de login
 const formSchema = z.object({
@@ -37,84 +39,104 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
   const { signUp } = useAuth(); // Importando a função signUp do hook useAuth
   const { isSuperAdmin } = useAdminRole();
+  const { adminId, isAdmin } = useAdminPermissions();
+  const { adminUsers, userProfiles, getUsersByAdmin, isLoading: usersLoading } = useUsersByAdmin();
 
   // Fetch statistics including real appointment data
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['admin-dashboard-stats'],
+    queryKey: ['admin-dashboard-stats', adminId],
     queryFn: async () => {
-      // Get users count
-      const { data: usersData, error: usersError } = await supabase.rpc('debug_get_all_users');
-      if (usersError) console.error("Error fetching users:", usersError);
+      if (isSuperAdmin) {
+        // Super admin sees all data
+        const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
+        if (usersError) console.error("Error fetching users:", usersError);
+        
+        const { count: workoutsCount, error: workoutsError } = await supabase
+          .from('workouts')
+          .select('*', { count: 'exact', head: true });
+        if (workoutsError) console.error("Error fetching workouts:", workoutsError);
+        
+        const { count: appointmentsCount, error: appointmentsError } = await supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true });
+        if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
+        
+        return {
+          users: usersData?.length || 0,
+          workouts: workoutsCount || 0,
+          appointments: appointmentsCount || 0
+        };
+      } else if (isAdmin && adminId) {
+        // Regular admin sees only their data
+        const { count: usersCount, error: usersError } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('admin_id', adminId);
+        if (usersError) console.error("Error fetching users:", usersError);
+        
+        const { count: workoutsCount, error: workoutsError } = await supabase
+          .from('workouts')
+          .select('*', { count: 'exact', head: true })
+          .eq('admin_id', adminId);
+        if (workoutsError) console.error("Error fetching workouts:", workoutsError);
+        
+        const { count: appointmentsCount, error: appointmentsError } = await supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true })
+          .eq('admin_id', adminId);
+        if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
+        
+        return {
+          users: usersCount || 0,
+          workouts: workoutsCount || 0,
+          appointments: appointmentsCount || 0
+        };
+      }
       
-      // Get workouts count
-      const { count: workoutsCount, error: workoutsError } = await supabase
-        .from('workouts')
-        .select('*', { count: 'exact', head: true });
-      if (workoutsError) console.error("Error fetching workouts:", workoutsError);
-      
-      // Get appointments count
-      const { count: appointmentsCount, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select('*', { count: 'exact', head: true });
-      if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
-      
-      return {
-        users: usersData?.length || 0,
-        workouts: workoutsCount || 0,
-        appointments: appointmentsCount || 0
-      };
+      return { users: 0, workouts: 0, appointments: 0 };
     },
+    enabled: !!adminId,
   });
 
   // Fetch appointments for display
   const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery({
-    queryKey: ['admin-dashboard-appointments'],
+    queryKey: ['admin-dashboard-appointments', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select('*')
         .order('appointment_date', { ascending: true })
         .limit(3);
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        query = query.eq('admin_id', adminId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data || [];
     },
+    enabled: !!adminId,
   });
 
-  // Fetch users for the recent activity section
-  const { data: recentUsersData, isLoading: usersLoading, error: usersError } = useQuery({
-    queryKey: ['admin-dashboard-users'],
-    queryFn: async () => {
-      console.log("Fetching users with debug_get_all_users function");
-      const { data, error } = await supabase.rpc('debug_get_all_users');
-      
-      if (error) {
-        console.error("Error fetching users:", error);
-        throw new Error(error.message);
-      }
-      
-      console.log("User data returned:", data);
-      if (data && data.length > 0) {
-        console.log("First user structure:", data[0]);
-      }
-      
-      return data || [];
-    },
-  });
-
-  // Process user data for display
+  // Process user data for display based on admin permissions
   const recentUsers = React.useMemo(() => {
-    if (!recentUsersData) return [];
+    if (!userProfiles) return [];
     
-    return recentUsersData.slice(0, 5).map(user => ({
-      id: user.user_id, // Updated to use user_id instead of id
-      email: user.email,
-      user: (user.raw_user_meta_data?.first_name || '') + ' ' + (user.raw_user_meta_data?.last_name || ''),
-      time: user.created_at,
-      isActive: !user.banned_until,
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${user.raw_user_meta_data?.first_name || user.email}`,
+    // Get users for this admin (or all users if super admin)
+    const relevantUsers = isSuperAdmin ? userProfiles : getUsersByAdmin(adminId);
+    
+    return relevantUsers.slice(0, 5).map(profile => ({
+      id: profile.id,
+      email: profile.email || '',
+      user: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Novo Usuário',
+      time: profile.created_at,
+      isActive: true, // Default to active since we don't have banned_until in profiles
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${profile.first_name || profile.email || 'User'}`,
     }));
-  }, [recentUsersData]);
+  }, [userProfiles, adminId, isSuperAdmin, getUsersByAdmin]);
 
   // Toggle user active status
   const toggleUserActiveMutation = useMutation({
@@ -128,7 +150,7 @@ const Dashboard = () => {
       return { userId, isActive };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       toast.success(
         data.isActive 
           ? 'Usuário ativado com sucesso!' 
@@ -163,7 +185,7 @@ const Dashboard = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       setIsCreateUserOpen(false);
       toast.success('Usuário criado com sucesso!');
       form.reset();
@@ -184,7 +206,7 @@ const Dashboard = () => {
       return userId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
       toast.success('Usuário excluído com sucesso!');
@@ -225,7 +247,7 @@ const Dashboard = () => {
       toast.success('Conta criada com sucesso!');
       
       // Atualiza a lista de usuários
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       
       // Fecha o modal e reseta o formulário
       setIsCreateUserOpen(false);
@@ -361,19 +383,7 @@ const Dashboard = () => {
             <h2 className="text-base font-semibold">Usuários Recentes</h2>
           </div>
           
-          {usersError ? (
-            <div className="p-4 rounded-md bg-red-50 border border-red-200">
-              <p className="text-red-600 text-sm">{(usersError as Error).message}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-                onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-dashboard-users'] })}
-              >
-                Tentar novamente
-              </Button>
-            </div>
-          ) : usersLoading ? (
+          {usersLoading ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="h-6 w-6 animate-spin text-fitness-green mr-2" />
               <span className="text-sm">Carregando usuários...</span>

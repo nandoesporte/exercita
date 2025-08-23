@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 interface CompleteWorkoutData {
   workoutId: string;
@@ -13,6 +14,7 @@ interface CompleteWorkoutData {
 
 export const useWorkoutCompletion = () => {
   const queryClient = useQueryClient();
+  const { adminId } = useAdminPermissions();
 
   return useMutation({
     mutationFn: async (data: CompleteWorkoutData) => {
@@ -49,7 +51,7 @@ export const useWorkoutCompletion = () => {
     },
     onSuccess: () => {
       // Invalidate workout history to refresh the data
-      queryClient.invalidateQueries({ queryKey: ["workoutHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["workoutHistory", adminId] });
       toast.success("Treino concluído com sucesso!");
     },
     onError: (error: Error) => {

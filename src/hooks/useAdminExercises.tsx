@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from '@/lib/toast-wrapper';
 import { v4 as uuidv4 } from 'uuid';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 export type AdminExercise = Database['public']['Tables']['exercises']['Row'] & {
   category?: Database['public']['Tables']['workout_categories']['Row'] | null;
@@ -27,6 +28,7 @@ export type BatchExerciseFormData = {
 
 export function useAdminExercises() {
   const queryClient = useQueryClient();
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
   
   // Helper function to validate UUID format
   const isValidUUID = (uuid: string) => {
@@ -35,10 +37,14 @@ export function useAdminExercises() {
   };
   
   const exercisesQuery = useQuery({
-    queryKey: ['admin-exercises'],
+    queryKey: ['admin-exercises', adminId],
     queryFn: async () => {
+      if (!hasPermission('manage_exercises')) {
+        throw new Error('Você não tem permissão para gerenciar exercícios');
+      }
+
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('exercises')
           .select(`
             *,
@@ -50,6 +56,13 @@ export function useAdminExercises() {
             )
           `)
           .order('name');
+
+        // Filter by admin_id if not super admin
+        if (!isSuperAdmin && adminId) {
+          query = query.eq('admin_id', adminId);
+        }
+        
+        const { data, error } = await query;
         
         if (error) {
           throw new Error(`Erro ao buscar exercícios: ${error.message}`);
@@ -61,6 +74,7 @@ export function useAdminExercises() {
         throw error;
       }
     },
+    enabled: hasPermission('manage_exercises') && !!adminId,
   });
 
   const createExercise = useMutation({
@@ -212,13 +226,24 @@ export function useAdminExercises() {
   });
 
   const workoutCategoriesQuery = useQuery({
-    queryKey: ['admin-workout-categories'],
+    queryKey: ['admin-workout-categories', adminId],
     queryFn: async () => {
+      if (!hasPermission('manage_categories') && !hasPermission('manage_exercises')) {
+        throw new Error('Você não tem permissão para gerenciar categorias');
+      }
+
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('workout_categories')
           .select('*')
           .order('name');
+
+        // Filter by admin_id if not super admin
+        if (!isSuperAdmin && adminId) {
+          query = query.eq('admin_id', adminId);
+        }
+        
+        const { data, error } = await query;
         
         if (error) {
           throw new Error(`Erro ao buscar categorias: ${error.message}`);
@@ -230,6 +255,7 @@ export function useAdminExercises() {
         throw error;
       }
     },
+    enabled: (hasPermission('manage_categories') || hasPermission('manage_exercises')) && !!adminId,
   });
 
   // Create or check storage bucket

@@ -3,22 +3,34 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 type Appointment = Database['public']['Tables']['appointments']['Row'];
 
 export function useAppointments() {
   const { user } = useAuth();
+  const { adminId, isSuperAdmin, isAdmin } = useAdminPermissions();
   
   return useQuery({
-    queryKey: ['appointments', user?.id],
+    queryKey: ['appointments', user?.id, adminId],
     queryFn: async () => {
       if (!user) throw new Error('User must be logged in');
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select('*')
-        .eq('user_id', user.id)
         .order('appointment_date', { ascending: true });
+
+      if (isAdmin && !isSuperAdmin) {
+        // Admin sees appointments from their managed users or their own appointments
+        query = query.or(`user_id.eq.${user.id},admin_id.eq.${adminId}`);
+      } else if (!isAdmin) {
+        // Regular users see only their own appointments
+        query = query.eq('user_id', user.id);
+      }
+      // Super admin sees all appointments (no filter)
+      
+      const { data, error } = await query;
       
       if (error) {
         throw new Error(`Error fetching appointments: ${error.message}`);
@@ -35,6 +47,6 @@ export function useAppointments() {
       
       return { upcoming, past };
     },
-    enabled: !!user,
+    enabled: !!user && !!adminId,
   });
 }

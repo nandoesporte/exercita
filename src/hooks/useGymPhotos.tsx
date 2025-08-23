@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { useAdminPermissions } from '@/contexts/admin/AdminPermissionsContext';
 
 export type GymPhoto = {
   id: string;
@@ -23,6 +24,7 @@ export function useGymPhotos() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const { adminId, isSuperAdmin, hasPermission } = useAdminPermissions();
 
   // Get user's gym photos
   const { data: photos = [], isLoading } = useQuery({
@@ -152,15 +154,22 @@ export function useGymPhotos() {
 
   // Admin functions for viewing all photos
   const { data: allPhotos = [], isLoading: isLoadingAll } = useQuery({
-    queryKey: ['adminGymPhotos'],
+    queryKey: ['adminGymPhotos', adminId],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !hasPermission('manage_gym_photos')) return [];
       
-      // First fetch all photos
-      const { data: photoData, error: photoError } = await supabase
+      // First fetch photos with admin filter
+      let photoQuery = supabase
         .from('user_gym_photos')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Filter by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        photoQuery = photoQuery.eq('admin_id', adminId);
+      }
+      
+      const { data: photoData, error: photoError } = await photoQuery;
         
       if (photoError) {
         toast.error('Erro ao carregar fotos');
@@ -170,10 +179,19 @@ export function useGymPhotos() {
       
       // Then fetch all user profiles
       const userIds = photoData.map(photo => photo.user_id);
-      const { data: profilesData, error: profilesError } = await supabase
+      if (userIds.length === 0) return [];
+      
+      let profilesQuery = supabase
         .from('profiles')
         .select('id, first_name, last_name')
         .in('id', userIds);
+
+      // Also filter profiles by admin_id if not super admin
+      if (!isSuperAdmin && adminId) {
+        profilesQuery = profilesQuery.eq('admin_id', adminId);
+      }
+      
+      const { data: profilesData, error: profilesError } = await profilesQuery;
         
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
@@ -193,7 +211,7 @@ export function useGymPhotos() {
       
       return photosWithProfiles;
     },
-    enabled: !!user
+    enabled: !!user && hasPermission('manage_gym_photos') && !!adminId
   });
 
   // Admin function to approve/reject a photo
