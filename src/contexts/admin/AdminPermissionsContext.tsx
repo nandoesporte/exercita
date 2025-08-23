@@ -42,7 +42,7 @@ export function AdminPermissionsProvider({ children }: { children: ReactNode }) 
       
       return data;
     },
-    enabled: !!user?.id && isAdmin && !isSuperAdmin,
+    enabled: !!user?.id && isAdmin, // Remove the !isSuperAdmin condition so it works for both
   });
 
   // Fetch admin permissions

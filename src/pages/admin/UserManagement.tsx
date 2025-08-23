@@ -178,20 +178,23 @@ const UserManagement = () => {
       const { data: currentUser } = await supabase.auth.getUser();
       if (!currentUser.user) throw new Error('Usuário não autenticado');
 
-      // Get current admin ID from profiles
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('admin_id')
-        .eq('id', currentUser.user.id)
-        .single();
-
       let adminId = null;
       if (isSuperAdmin) {
         // Super admin can assign to specific admin if filter is selected
         adminId = selectedAdminFilter !== 'all' ? selectedAdminFilter : null;
       } else {
-        // Regular admin assigns to their own admin_id
-        adminId = currentProfile?.admin_id;
+        // Regular admin: get their admin ID from the admins table
+        const { data: adminData } = await supabase
+          .from('admins')
+          .select('id')
+          .eq('user_id', currentUser.user.id)
+          .single();
+        
+        if (adminData) {
+          adminId = adminData.id;
+        } else {
+          throw new Error('Admin ID não encontrado');
+        }
       }
 
       // Include admin_id in metadata
@@ -204,8 +207,12 @@ const UserManagement = () => {
       await signUp(values.email, values.password, metadata);
       toast.success('Conta criada com sucesso!');
       
-      // Atualiza a lista de usuários
+      // Invalidate multiple queries to update all admin data
       queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['current-admin-id'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-permissions'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-workout-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       
       // Fecha o modal e reseta o formulário
       setIsCreateUserOpen(false);
