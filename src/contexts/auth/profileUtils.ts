@@ -1,16 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Check admin status safely with timeout to avoid deadlocks
+// Check admin status using the new role system
 export const checkAdminStatus = async (userId: string): Promise<boolean> => {
   try {
     console.log(`Checking admin status for user: ${userId}`);
     
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userId)
-      .single();
+    // Use the database function to check admin status
+    const { data, error } = await supabase.rpc('is_admin');
     
     if (error) {
       console.error('Error checking admin status:', error);
@@ -18,7 +15,7 @@ export const checkAdminStatus = async (userId: string): Promise<boolean> => {
     }
     
     console.log("Admin status check result:", data);
-    const adminStatus = data?.is_admin || false;
+    const adminStatus = Boolean(data);
     
     if (adminStatus) {
       console.log("User has admin privileges!");
