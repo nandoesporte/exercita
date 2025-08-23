@@ -412,7 +412,7 @@ export type Database = {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "workout_categories"
+            referencedRelation: "product_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -809,8 +809,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_pix_key: {
+        Args: {
+          is_primary_val?: boolean
+          key_type_val: string
+          key_value_val: string
+          recipient_name_val: string
+        }
+        Returns: Json
+      }
       admin_login: {
         Args: { admin_password: string }
+        Returns: Json
+      }
+      admin_save_payment_settings: {
+        Args: {
+          accept_card_payments_val: boolean
+          accept_monthly_fee_val: boolean
+          accept_pix_payments_val: boolean
+          monthly_fee_amount_val: number
+        }
         Returns: Json
       }
       debug_get_all_users: {
