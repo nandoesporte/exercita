@@ -140,6 +140,18 @@ const Index = () => {
               calories={recommendedWorkout?.calories}
               daysOfWeek={recommendedWorkout?.days_of_week}
             />
+            
+            {/* Botão Iniciar Treino */}
+            <Button 
+              className="w-full mt-4 bg-fitness-orange hover:bg-fitness-orange/90 text-white text-lg font-semibold h-12 rounded-xl"
+              asChild
+              disabled={isLoading || !recommendedWorkout}
+            >
+              <Link to={`/workout/${recommendedWorkout?.id || ''}`}>
+                <Dumbbell className="mr-2 h-5 w-5" />
+                {isLoading ? 'Carregando...' : 'Iniciar Treino'}
+              </Link>
+            </Button>
           </div>
         ) : (
           // Card para agendar consultoria - exibido quando não há treinos atribuídos
