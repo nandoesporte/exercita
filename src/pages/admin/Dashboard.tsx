@@ -63,7 +63,7 @@ const Dashboard = () => {
         if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
         
         return {
-          users: usersData?.length || 0,
+          users: (usersData as any[])?.length || 0,
           workouts: workoutsCount || 0,
           appointments: appointmentsCount || 0
         };
@@ -144,7 +144,6 @@ const Dashboard = () => {
     mutationFn: async ({ userId, isActive }: { userId: string, isActive: boolean }) => {
       const { error } = await supabase.rpc('toggle_user_active_status', {
         user_id: userId,
-        is_active: isActive,
       });
       
       if (error) throw new Error(error.message);
@@ -169,9 +168,9 @@ const Dashboard = () => {
       console.log("Creating user from dashboard with:", userData.email);
       // Using the admin_create_user RPC function which runs with elevated privileges
       const { data, error } = await supabase.rpc('admin_create_user', {
-        user_email: userData.email,
-        user_password: userData.password,
-        user_metadata: {
+        user_data: {
+          email: userData.email,
+          password: userData.password,
           first_name: userData.firstName,
           last_name: userData.lastName,
         }

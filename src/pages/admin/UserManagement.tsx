@@ -113,7 +113,6 @@ const UserManagement = () => {
     mutationFn: async ({ userId, isActive }: { userId: string, isActive: boolean }) => {
       const { error } = await supabase.rpc('toggle_user_active_status', {
         user_id: userId,
-        is_active: isActive,
       });
       
       if (error) throw new Error(error.message);

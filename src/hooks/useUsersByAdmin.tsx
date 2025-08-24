@@ -81,7 +81,7 @@ export function useUsersByAdmin() {
 
         // Combine users and profiles data
         const combinedData = profiles.map(profile => {
-          const userData = usersData.find((u: any) => u.id === profile.id);
+          const userData = (usersData as any[])?.find((u: any) => u.id === profile.id);
           return {
             ...profile,
             email: userData?.email || null

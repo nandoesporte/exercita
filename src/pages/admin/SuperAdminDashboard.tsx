@@ -48,7 +48,7 @@ const SuperAdminDashboard = () => {
 
       return {
         admins: adminsCount || 0,
-        users: usersData?.length || 0,
+        users: (usersData as any[])?.length || 0,
         workouts: workoutsCount || 0,
         appointments: appointmentsCount || 0,
       };

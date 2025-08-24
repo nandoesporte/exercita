@@ -36,7 +36,7 @@ export default function AdminManagement() {
       
       // Buscar perfis dos usuários para completar os dados
       const userProfiles = await Promise.all(
-        data.map(async (user: any) => {
+        (data as any[])?.map(async (user: any) => {
           const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name, is_admin')
