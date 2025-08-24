@@ -111,7 +111,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
     }] : []),
     // Only show if user has schedule permission
     ...(hasPermission('manage_schedule') ? [{
-      title: 'Horários',
+      title: 'Personal',
       icon: <Calendar className="h-4 w-4" />,
       to: '/admin/schedule'
     }] : []),
