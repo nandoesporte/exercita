@@ -34,16 +34,22 @@ export function usePersonalTrainer() {
   } = useQuery({
     queryKey: ['personal-trainer', adminId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('personal_trainers')
         .select('*')
-        .eq('is_primary', true)
-        .maybeSingle();
+        .eq('is_primary', true);
+      
+      // If user is not super admin, filter by their admin_id or null (global)
+      if (!isSuperAdmin && adminId) {
+        query = query.or(`admin_id.eq.${adminId},admin_id.is.null`);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
       return data as PersonalTrainer | null;
     },
-    enabled: !!adminId || isSuperAdmin,
+    enabled: true, // Always enable query - all users should see trainer info
   });
 
   // Create or update trainer
