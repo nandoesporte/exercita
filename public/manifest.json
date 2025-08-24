@@ -1,12 +1,12 @@
 
 {
-  "name": "Mais Saúde - Seu Companheiro de Fitness",
-  "short_name": "Mais Saúde",
+  "name": "Exercita - Seu Companheiro de Fitness",
+  "short_name": "Exercita",
   "description": "Seu companheiro personalizado de fitness com treinos, acompanhamento de exercícios e monitoramento de saúde",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1A1F2C",
-  "theme_color": "#34B5A9",
+  "background_color": "#1A1A1A",
+  "theme_color": "#FF6B35",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { ExercitaLogo } from "@/components/ui/exercita-logo";
 
 const loginSchema = z.object({
   email: z.string().email("Digite um email válido"),
@@ -132,13 +133,9 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-              alt="Mais Saúde Logo"
-              className="h-16 w-16"
-            />
+            <ExercitaLogo className="h-16 w-16" />
           </div>
-          <h1 className="font-extrabold text-3xl text-fitness-green">Mais Saúde</h1>
+          <h1 className="font-extrabold text-3xl text-primary">Exercita</h1>
           <p className="text-muted-foreground mt-2">Seu companheiro de fitness pessoal</p>
         </div>
 
@@ -204,7 +201,7 @@ const Login = () => {
                       )}
                     />
 
-                    <Button type="submit" className="w-full bg-fitness-green hover:bg-fitness-darkGreen" disabled={isLoading}>
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -331,7 +328,7 @@ const Login = () => {
                       )}
                     />
 
-                    <Button type="submit" className="w-full bg-fitness-green hover:bg-fitness-darkGreen" disabled={isLoading}>
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -347,7 +344,7 @@ const Login = () => {
           
           <CardFooter className="flex flex-col gap-4 border-t pt-4">
             <p className="text-center text-sm text-muted-foreground">
-              <Link to="/" className="text-fitness-green hover:underline">
+              <Link to="/" className="text-primary hover:underline">
                 Voltar à página inicial
               </Link>
             </p>

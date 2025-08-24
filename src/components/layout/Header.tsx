@@ -6,6 +6,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useWorkouts } from '@/hooks/useWorkouts';
+import { ExercitaLogo } from '@/components/ui/exercita-logo';
 
 interface HeaderProps {
   title?: string;
@@ -84,30 +85,23 @@ const Header: React.FC<HeaderProps> = ({
   // If auth is loading, show a simplified header to prevent errors
   if (authLoading) {
     return (
-      <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
+      <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-              alt="Mais Saúde Logo"
-              className="h-10 w-10"
-            />
-            <span className="font-extrabold text-xl text-white">Mais Saúde</span>
-          </div>
-          <div className="animate-pulse w-8 h-8 bg-fitness-darkGray rounded-full"></div>
+          <ExercitaLogo showText />
+          <div className="animate-pulse w-8 h-8 bg-muted rounded-full"></div>
         </div>
       </header>
     );
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-fitness-dark/95 backdrop-blur-lg border-b border-fitness-darkGray/50">
+    <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur-lg border-b border-border">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {showBack && (
             <button 
               onClick={onBackClick} 
-              className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+              className="p-2 rounded-full hover:bg-muted/60 active:scale-95 transition-all"
             >
               <svg 
                 width="24" 
@@ -127,19 +121,14 @@ const Header: React.FC<HeaderProps> = ({
             </button>
           )}
           {!isMobile && title && (
-            <h1 className="text-xl font-bold text-white">{title}</h1>
+            <h1 className="text-xl font-bold">{title}</h1>
           )}
         </div>
         
         {/* App Logo for Mobile (centered) */}
         <div className={`absolute left-1/2 transform -translate-x-1/2 flex items-center ${!isMobile && 'hidden'}`}>
-          <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-              alt="Mais Saúde Logo"
-              className="h-10 w-10"
-            />
-            <span className="font-extrabold text-xl text-white">Mais Saúde</span>
+          <Link to="/">
+            <ExercitaLogo showText />
           </Link>
         </div>
 
@@ -147,13 +136,8 @@ const Header: React.FC<HeaderProps> = ({
         {!isMobile && (
           <div className="flex-1 flex justify-center">
             <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-2">
-                <img 
-                  src="/lovable-uploads/abe8bbb7-7e2f-4277-b5b0-1f923e57b6f7.png"
-                  alt="Mais Saúde Logo"
-                  className="h-10 w-10"
-                />
-                <span className="font-extrabold text-xl text-white">Mais Saúde</span>
+              <Link to="/">
+                <ExercitaLogo showText />
               </Link>
               
               <nav className="flex items-center ml-6 space-x-4">
@@ -161,8 +145,8 @@ const Header: React.FC<HeaderProps> = ({
                   to="/" 
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     location.pathname === '/' 
-                      ? 'text-fitness-green bg-fitness-darkGray/30' 
-                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                      ? 'text-primary bg-muted' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   Início
@@ -171,8 +155,8 @@ const Header: React.FC<HeaderProps> = ({
                   to={`/workout/${firstWorkoutId}`}
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     location.pathname.startsWith('/workout/') 
-                      ? 'text-fitness-green bg-fitness-darkGray/30' 
-                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                      ? 'text-primary bg-muted' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   Treinos
@@ -181,8 +165,8 @@ const Header: React.FC<HeaderProps> = ({
                   to="/schedule"
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     location.pathname === '/schedule' 
-                      ? 'text-fitness-green bg-fitness-darkGray/30' 
-                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                      ? 'text-primary bg-muted' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   Agendar
@@ -191,8 +175,8 @@ const Header: React.FC<HeaderProps> = ({
                   to="/store"
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     location.pathname.startsWith('/store') 
-                      ? 'text-fitness-green bg-fitness-darkGray/30' 
-                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                      ? 'text-primary bg-muted' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   Loja
@@ -201,8 +185,8 @@ const Header: React.FC<HeaderProps> = ({
                   to="/history" 
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     location.pathname === '/history' 
-                      ? 'text-fitness-green bg-fitness-darkGray/30' 
-                      : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                      ? 'text-primary bg-muted' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   Histórico
@@ -212,8 +196,8 @@ const Header: React.FC<HeaderProps> = ({
                     to="/admin" 
                     className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       location.pathname.startsWith('/admin') 
-                        ? 'text-fitness-green bg-fitness-darkGray/30' 
-                        : 'text-muted-foreground hover:text-white hover:bg-fitness-darkGray/20'
+                        ? 'text-primary bg-muted' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                     }`}
                   >
                     Admin
@@ -226,9 +210,9 @@ const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center gap-4">
           {showNotifications && (
-            <Link to="/notifications" className="p-2 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all text-white">
+            <Link to="/notifications" className="p-2 rounded-full hover:bg-muted/60 active:scale-95 transition-all">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-fitness-green rounded-full"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
             </Link>
           )}
           
@@ -236,9 +220,9 @@ const Header: React.FC<HeaderProps> = ({
           {!isHomePage && (
             <Link 
               to="/profile" 
-              className="p-1 rounded-full hover:bg-fitness-darkGray/60 active:scale-95 transition-all"
+              className="p-1 rounded-full hover:bg-muted/60 active:scale-95 transition-all"
             >
-              <Avatar className="h-8 w-8 border-2 border-fitness-green">
+              <Avatar className="h-8 w-8 border-2 border-primary">
                 {avatarUrl ? (
                   <AvatarImage 
                     src={avatarUrl} 
@@ -246,7 +230,7 @@ const Header: React.FC<HeaderProps> = ({
                     onError={handleImageError}
                   />
                 ) : null}
-                <AvatarFallback className="bg-fitness-dark text-white">
+                <AvatarFallback className="bg-background">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
