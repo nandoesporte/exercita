@@ -64,14 +64,14 @@ const PixKeySection = ({
             throw insertError;
           }
         } else {
-          // Regular user - save to user_pix_keys table
-          console.log("Regular user saving to user_pix_keys table");
+          // Regular user - save to pix_keys table  
+          console.log("Regular user saving to pix_keys table");
           
           // First check if user already has a PIX key
           const { data: existingKey, error: fetchError } = await supabase
-            .from('user_pix_keys')
+            .from('pix_keys')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('admin_id', null) // User pix keys don't have admin_id
             .single();
             
           if (fetchError && fetchError.code !== 'PGRST116') {
@@ -82,12 +82,12 @@ const PixKeySection = ({
           // Update or insert PIX key
           if (existingKey) {
             const { error: updateError } = await supabase
-              .from('user_pix_keys')
+              .from('pix_keys')
               .update({ 
                 key_type: pixKeyType,
                 key_value: pixKey 
               })
-              .eq('user_id', user.id);
+              .eq('id', existingKey.id);
               
             if (updateError) {
               console.error("Error updating PIX key:", updateError);
@@ -95,11 +95,14 @@ const PixKeySection = ({
             }
           } else {
             const { error: insertError } = await supabase
-              .from('user_pix_keys')
+              .from('pix_keys')
               .insert({
-                user_id: user.id,
                 key_type: pixKeyType,
-                key_value: pixKey
+                key_value: pixKey,
+                recipient_name: user.user_metadata?.first_name ? 
+                  `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : 
+                  'Usuário da Academia',
+                is_primary: true
               });
               
             if (insertError) {
