@@ -1,14 +1,28 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import MobileNavbar from './MobileNavbar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
 const UserLayout = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   const isMobile = useIsMobile();
+  const { showInstallPrompt, showPrompt, closePrompt } = usePWAInstall();
+  
+  useEffect(() => {
+    // Show PWA install prompt after 3 seconds if conditions are met
+    const timer = setTimeout(() => {
+      if (isMobile) {
+        showPrompt();
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [isMobile, showPrompt]);
   
   // Determine the header title based on the current route
   const getHeaderTitle = () => {
@@ -51,6 +65,9 @@ const UserLayout = () => {
       </main>
       
       <MobileNavbar />
+      
+      {/* PWA Install Prompt */}
+      {showInstallPrompt && <PWAInstallPrompt onClose={closePrompt} />}
     </div>
   );
 };
