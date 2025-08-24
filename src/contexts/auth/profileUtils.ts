@@ -62,7 +62,8 @@ export const ensureProfileExists = async (userId: string, metadata?: any): Promi
           id: userId,
           first_name: metadata?.first_name || '',
           last_name: metadata?.last_name || '',
-          avatar_url: metadata?.avatar_url || ''
+          avatar_url: metadata?.avatar_url || '',
+          admin_id: metadata?.created_by_admin_id || null
         });
 
       if (insertError) {

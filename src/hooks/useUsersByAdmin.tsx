@@ -94,8 +94,7 @@ export function useUsersByAdmin() {
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, admin_id, created_at, avatar_url')
-          .eq('admin_id', adminData.id)
-          .neq('is_admin', true); // Exclude other admins from the list
+          .eq('admin_id', adminData.id);
 
         if (profilesError) throw profilesError;
 
