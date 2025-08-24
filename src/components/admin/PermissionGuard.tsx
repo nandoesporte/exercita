@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Lock } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
-type AdminPermission = Database['public']['Enums']['admin_permission'];
+type AdminPermission = Database['public']['Enums']['user_permission'];
 
 interface PermissionGuardProps {
   permission: AdminPermission;

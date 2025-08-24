@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
-type AdminPermission = Database['public']['Enums']['admin_permission'];
+type AdminPermission = Database['public']['Enums']['user_permission'];
 
 interface AdminWithPermissions {
   id: string;
@@ -125,6 +125,11 @@ export const AVAILABLE_PERMISSIONS: Record<AdminPermission, { label: string; des
     label: 'Gerenciar Produtos',
     description: 'Criar, editar e excluir produtos',
     category: 'Loja'
+  },
+  manage_payments: {
+    label: 'Gerenciar Pagamentos',
+    description: 'Configurar métodos de pagamento e processar transações',
+    category: 'Pagamentos'
   },
   manage_store: {
     label: 'Gerenciar Loja',

@@ -1204,6 +1204,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_user: {
+        Args: { user_data: Json }
+        Returns: boolean
+      }
+      admin_delete_user: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      clone_workout_for_user: {
+        Args: { target_user_id: string; workout_id: string }
+        Returns: boolean
+      }
+      debug_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1211,6 +1231,14 @@ export type Database = {
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      toggle_user_active_status: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      toggle_user_admin_status: {
+        Args: { make_admin: boolean; user_id: string }
+        Returns: Json
       }
     }
     Enums: {
@@ -1221,6 +1249,12 @@ export type Database = {
         | "manage_products"
         | "manage_payments"
         | "view_analytics"
+        | "manage_categories"
+        | "manage_store"
+        | "manage_gym_photos"
+        | "manage_schedule"
+        | "manage_appointments"
+        | "manage_payment_methods"
       user_role: "admin" | "trainer" | "user"
       workout_level: "beginner" | "intermediate" | "advanced"
     }
@@ -1357,6 +1391,12 @@ export const Constants = {
         "manage_products",
         "manage_payments",
         "view_analytics",
+        "manage_categories",
+        "manage_store",
+        "manage_gym_photos",
+        "manage_schedule",
+        "manage_appointments",
+        "manage_payment_methods",
       ],
       user_role: ["admin", "trainer", "user"],
       workout_level: ["beginner", "intermediate", "advanced"],

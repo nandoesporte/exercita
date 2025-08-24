@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AVAILABLE_PERMISSIONS } from "@/hooks/useAdminPermissions";
 import type { Database } from '@/integrations/supabase/types';
 
-type AdminPermission = Database['public']['Enums']['admin_permission'];
+type AdminPermission = Database['public']['Enums']['user_permission'];
 
 interface AdminWithPermissions {
   id: string;
