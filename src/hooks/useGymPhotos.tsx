@@ -62,12 +62,11 @@ export function useGymPhotos() {
         // Create a unique file name to avoid conflicts
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
-        const filePath = `gym_photos/${fileName}`;
         
         // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from('gym_photos')
-          .upload(filePath, file);
+          .upload(fileName, file);
           
         if (uploadError) {
           throw uploadError;
@@ -76,26 +75,15 @@ export function useGymPhotos() {
         // Get the public URL
         const { data: publicURL } = supabase.storage
           .from('gym_photos')
-          .getPublicUrl(filePath);
+          .getPublicUrl(fileName);
           
-        // Get user's admin_id from profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('admin_id')
-          .eq('id', user.id)
-          .single();
-          
-        // Debug: Log the data being inserted
+        // Insert record in database with user_id (admin_id will be set by trigger)
         const insertData = {
           user_id: user.id,
           photo_url: publicURL.publicUrl,
-          description: description || null,
-          admin_id: profile?.admin_id || null
+          description: description || null
         };
-        console.log('Inserting gym photo data:', insertData);
-        console.log('Current user:', user);
         
-        // Insert record in database
         const { data: photoRecord, error: insertError } = await supabase
           .from('user_gym_photos')
           .insert(insertData)
@@ -103,9 +91,7 @@ export function useGymPhotos() {
           .single();
           
         if (insertError) {
-          console.error('Database insert error details:', insertError);
-          console.error('Insert error code:', insertError.code);
-          console.error('Insert error hint:', insertError.hint);
+          console.error('Database insert error:', insertError);
           throw insertError;
         }
         
