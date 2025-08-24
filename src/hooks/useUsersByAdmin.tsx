@@ -70,6 +70,7 @@ export function useUsersByAdmin() {
       if (isSuperAdmin) {
         // Super admin gets all users with email data
         const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
+        console.log('Super admin - usersData:', usersData, 'error:', usersError);
         if (usersError) throw usersError;
 
         // Get all profiles data
@@ -77,17 +78,19 @@ export function useUsersByAdmin() {
           .from('profiles')
           .select('id, first_name, last_name, admin_id, created_at, avatar_url');
 
+        console.log('Super admin - profiles:', profiles, 'error:', profilesError);
         if (profilesError) throw profilesError;
 
         // Combine users and profiles data
-        const combinedData = profiles.map(profile => {
+        const combinedData = profiles?.map(profile => {
           const userData = (usersData as any[])?.find((u: any) => u.id === profile.id);
           return {
             ...profile,
             email: userData?.email || null
           };
-        });
+        }) || [];
 
+        console.log('Super admin - combinedData:', combinedData);
         return combinedData as UserProfile[];
       } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their users (no email access for security)
