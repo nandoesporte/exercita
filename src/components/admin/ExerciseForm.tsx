@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from '@/lib/toast-wrapper';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 // Define form schema with Zod
 const formSchema = z.object({
@@ -75,12 +76,16 @@ const ExerciseForm = ({
     },
   });
 
+  const { checkSubscriptionAndAct } = useSubscriptionGuard();
+
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     if (uploadError) {
       toast.error("Corrija os erros de upload antes de enviar");
       return;
     }
-    onSubmit(values as ExerciseFormData);
+    checkSubscriptionAndAct(() => {
+      onSubmit(values as ExerciseFormData);
+    });
   };
 
   const handleGifUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

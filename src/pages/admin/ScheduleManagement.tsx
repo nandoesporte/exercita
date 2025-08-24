@@ -77,11 +77,18 @@ const ScheduleManagement = () => {
     uploadPhoto(file);
   };
 
+  const { checkSubscriptionAndAct } = useSubscriptionGuard();
+
   // Handle form submission
   const onSubmit = async (data: TrainerFormValues) => {
-    updateTrainer({
-      ...data,
-      photo_url: photoUrl,
+    checkSubscriptionAndAct(() => {
+      updateTrainer({
+        name: data.name || '',
+        credentials: data.credentials,
+        bio: data.bio,
+        whatsapp: data.whatsapp,
+        photo_url: photoUrl,
+      });
     });
   };
 

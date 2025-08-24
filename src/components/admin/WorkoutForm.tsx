@@ -97,8 +97,12 @@ const WorkoutForm = ({
     }
   }, [defaultValues, form]);
 
+  const { checkSubscriptionAndAct } = useSubscriptionGuard();
+
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onSubmit(values as WorkoutFormData);
+    checkSubscriptionAndAct(() => {
+      onSubmit(values as WorkoutFormData);
+    });
   };
 
   return (

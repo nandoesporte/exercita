@@ -80,9 +80,13 @@ const ProductForm = ({
     }
   }, [defaultValues, form]);
 
+  const { checkSubscriptionAndAct } = useSubscriptionGuard();
+
   const handleSubmit = (values: ProductFormData) => {
     console.log("Form submitting with values:", values);
-    onSubmit(values);
+    checkSubscriptionAndAct(() => {
+      onSubmit(values);
+    });
   };
   
   const handleNavigateToCategories = () => {
