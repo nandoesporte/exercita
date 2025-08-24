@@ -29,7 +29,6 @@ import { toast } from '@/lib/toast-wrapper';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 // Define a schema that ensures the category_id is a valid UUID
 const formSchema = z.object({
@@ -57,7 +56,6 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
   const [uploading, setUploading] = useState(false);
   const [fileList, setFileList] = useState<any[]>([]);
   const [isCategoryValid, setIsCategoryValid] = useState(true);
-  const { checkSubscriptionAndAct } = useSubscriptionGuard();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -219,27 +217,26 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
   };
 
   const handleSubmit = async (values: FormValues) => {
-    checkSubscriptionAndAct(async () => {
-      if (fileList.length === 0) {
-        toast.error("Adicione pelo menos um arquivo para upload");
-        return;
-      }
+    if (fileList.length === 0) {
+      toast.error("Adicione pelo menos um arquivo para upload");
+      return;
+    }
 
-      // Ensure we have a valid category ID before proceeding
-      if (!values.category_id) {
-        toast.error("Selecione uma categoria válida");
-        return;
-      }
-      
-      // Validate if the category exists
-      const categoryExists = categories.some(cat => cat.id === values.category_id);
-      if (!categoryExists) {
-        setIsCategoryValid(false);
-        toast.error("A categoria selecionada não existe no banco de dados");
-        return;
-      }
+    // Ensure we have a valid category ID before proceeding
+    if (!values.category_id) {
+      toast.error("Selecione uma categoria válida");
+      return;
+    }
+    
+    // Validate if the category exists
+    const categoryExists = categories.some(cat => cat.id === values.category_id);
+    if (!categoryExists) {
+      setIsCategoryValid(false);
+      toast.error("A categoria selecionada não existe no banco de dados");
+      return;
+    }
 
-      setUploading(true);
+    setUploading(true);
     
     try {
       const results = [];
@@ -299,7 +296,6 @@ export function ExerciseBatchUpload({ onSubmit, categories }: ExerciseBatchUploa
     } finally {
       setUploading(false);
     }
-    });
   };
 
   return (

@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 import {
   Dialog,
@@ -34,7 +33,6 @@ interface CloneWorkoutDialogProps {
 export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWorkoutDialogProps) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [isCloning, setIsCloning] = useState(false);
-  const { checkSubscriptionAndAct } = useSubscriptionGuard();
   
   // Fetch users for selection - Fixed the query to join with auth.users to get email
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
@@ -55,36 +53,34 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
   });
 
   const handleCloneWorkout = async () => {
-    checkSubscriptionAndAct(async () => {
-      if (!selectedUserId || !workoutId) {
-        toast.error('Por favor, selecione um usuário');
-        return;
-      }
-      
-      setIsCloning(true);
-      
-      try {
-        const { data, error } = await supabase.rpc(
-          'clone_workout_for_user',
-          {
-            source_workout_id: workoutId,
-            target_user_id: selectedUserId
-          }
-        );
-        
-        if (error) {
-          throw error;
+    if (!selectedUserId || !workoutId) {
+      toast.error('Por favor, selecione um usuário');
+      return;
+    }
+    
+    setIsCloning(true);
+    
+    try {
+      const { data, error } = await supabase.rpc(
+        'clone_workout_for_user',
+        {
+          source_workout_id: workoutId,
+          target_user_id: selectedUserId
         }
-        
-        toast.success(`Treino clonado com sucesso para o usuário!`);
-        onClose();
-      } catch (error: any) {
-        console.error('Error cloning workout:', error);
-        toast.error(`Falha ao clonar treino: ${error.message}`);
-      } finally {
-        setIsCloning(false);
+      );
+      
+      if (error) {
+        throw error;
       }
-    });
+      
+      toast.success(`Treino clonado com sucesso para o usuário!`);
+      onClose();
+    } catch (error: any) {
+      console.error('Error cloning workout:', error);
+      toast.error(`Falha ao clonar treino: ${error.message}`);
+    } finally {
+      setIsCloning(false);
+    }
   };
 
   return (

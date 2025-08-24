@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAdminWorkouts } from '@/hooks/useAdminWorkouts';
 import { Loader2, Search, UserPlus, UserX, Users } from 'lucide-react';
-import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 export function RecommendWorkoutDialog({
   workoutId,
@@ -47,7 +46,6 @@ export function RecommendWorkoutDialog({
   const [isRecommended, setIsRecommended] = useState(workout?.is_recommended || false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const { checkSubscriptionAndAct } = useSubscriptionGuard();
 
   // Sync the initial state with the workout data
   useEffect(() => {
@@ -70,49 +68,43 @@ export function RecommendWorkoutDialog({
 
   // Handle toggling the global recommendation state
   const handleToggleRecommended = async () => {
-    checkSubscriptionAndAct(async () => {
-      if (!workout) return;
-      
-      setIsProcessing(true);
-      await updateWorkout({
-        id: workout.id,
-        title: workout.title,
-        duration: workout.duration,
-        level: workout.level,
-        is_recommended: !isRecommended
-      });
-      setIsRecommended(!isRecommended);
-      setIsProcessing(false);
+    if (!workout) return;
+    
+    setIsProcessing(true);
+    await updateWorkout({
+      id: workout.id,
+      title: workout.title,
+      duration: workout.duration,
+      level: workout.level,
+      is_recommended: !isRecommended
     });
+    setIsRecommended(!isRecommended);
+    setIsProcessing(false);
   };
 
   // Handle recommending to a specific user
   const handleRecommendToUser = (userId: string) => {
-    checkSubscriptionAndAct(() => {
-      if (isUserRecommended(userId)) {
-        const recommendation = recommendations?.find(rec => rec.user_id === userId);
-        if (recommendation) {
-          removeWorkoutRecommendation({
-            recommendationId: recommendation.id,
-            workoutId
-          });
-        }
-      } else {
-        addWorkoutRecommendation({
-          workout_id: workoutId,
-          user_id: userId
+    if (isUserRecommended(userId)) {
+      const recommendation = recommendations?.find(rec => rec.user_id === userId);
+      if (recommendation) {
+        removeWorkoutRecommendation({
+          recommendationId: recommendation.id,
+          workoutId
         });
       }
-    });
+    } else {
+      addWorkoutRecommendation({
+        workout_id: workoutId,
+        user_id: userId
+      });
+    }
   };
 
   // Handle recommending to all users
   const handleRecommendToAll = () => {
-    checkSubscriptionAndAct(() => {
-      addWorkoutRecommendation({
-        workout_id: workoutId,
-        user_id: null // null means recommended for all users
-      });
+    addWorkoutRecommendation({
+      workout_id: workoutId,
+      user_id: null // null means recommended for all users
     });
   };
 
@@ -121,15 +113,13 @@ export function RecommendWorkoutDialog({
 
   // Remove recommendation for all users
   const handleRemoveForAll = () => {
-    checkSubscriptionAndAct(() => {
-      const allUsersRecommendation = recommendations?.find(rec => rec.user_id === null);
-      if (allUsersRecommendation) {
-        removeWorkoutRecommendation({
-          recommendationId: allUsersRecommendation.id,
-          workoutId
-        });
-      }
-    });
+    const allUsersRecommendation = recommendations?.find(rec => rec.user_id === null);
+    if (allUsersRecommendation) {
+      removeWorkoutRecommendation({
+        recommendationId: allUsersRecommendation.id,
+        workoutId
+      });
+    }
   };
 
   return (
