@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAdminStore } from '@/hooks/useAdminStore';
 import { toast } from 'sonner';
-import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
+
 import {
   Dialog,
   DialogContent,
@@ -70,11 +70,10 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
     }
   }, [category, form]);
   
-  const { checkSubscriptionAndAct } = useSubscriptionGuard();
+  
 
   const onSubmit = async (values: CategoryFormValues) => {
-    checkSubscriptionAndAct(() => {
-      try {
+    try {
         if (category?.id) {
           // Ensure name is provided when updating
           if (!values.name) {
@@ -104,11 +103,10 @@ export const CategoryForm = ({ open, onOpenChange, category }: CategoryFormProps
         toast('Categoria criada com sucesso');
       }
       onOpenChange(false);
-    } catch (error) {
-      console.error('Error saving category:', error);
-      toast('Erro ao salvar categoria');
-    }
-    });
+      } catch (error) {
+        console.error('Error saving category:', error);
+        toast('Erro ao salvar categoria.');
+      }
   };
   
   return (
