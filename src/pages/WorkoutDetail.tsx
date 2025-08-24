@@ -91,12 +91,15 @@ const WorkoutDetail = () => {
   const exercisesByDay = useMemo(() => {
     if (!workout || !workout.workout_exercises) return {};
     
+    console.log('WorkoutDetail - workout.workout_exercises:', workout.workout_exercises);
+    
     // Initialize with all days that have exercises
     const result: Record<string, WorkoutExercise[]> = {};
     
     // Group exercises by their day_of_week
     workout.workout_exercises.forEach(exercise => {
       const day = exercise.day_of_week || 'all_days';
+      console.log('WorkoutDetail - Exercise:', exercise.exercise?.name, 'Day:', day);
       if (!result[day]) {
         result[day] = [];
       }
