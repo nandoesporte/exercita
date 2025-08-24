@@ -50,11 +50,12 @@ const ScheduleManagement = () => {
     const fetchTrainerData = async () => {
       setLoading(true);
       try {
+        // Buscar trainer específico do admin atual
         const { data, error } = await supabase
           .from('personal_trainers')
           .select('*')
           .eq('is_primary', true)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -120,13 +121,13 @@ const ScheduleManagement = () => {
         .from('personal_trainers')
         .select('id')
         .eq('is_primary', true)
-        .single();
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         throw fetchError;
       }
 
-      // Prepare data to save
+      // Prepare data to save - admin_id será definido automaticamente pelo trigger
       const trainerData = {
         name: data.name,
         credentials: data.credentials,

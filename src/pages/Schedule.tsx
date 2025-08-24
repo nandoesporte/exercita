@@ -59,24 +59,36 @@ const Schedule = () => {
   useEffect(() => {
     const fetchTrainerData = async () => {
       try {
+        // Buscar trainer do admin do usuário atual
         const { data, error } = await supabase
           .from('personal_trainers')
           .select('*')
           .eq('is_primary', true)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching trainer data:', error);
           return;
         }
 
-        setTrainer({
-          name: data.name || 'Carlos Silva',
-          credentials: data.credentials || 'Personal Trainer - CREF 123456',
-          bio: data.bio || 'Especialista em treinamento funcional e hipertrofia, com mais de 10 anos de experiência ajudando pessoas a alcançarem seus objetivos de forma saudável.',
-          whatsapp: data.whatsapp || DEFAULT_WHATSAPP,
-          photo_url: data.photo_url
-        });
+        if (data) {
+          setTrainer({
+            name: data.name || 'Carlos Silva',
+            credentials: data.credentials || 'Personal Trainer - CREF 123456',
+            bio: data.bio || 'Especialista em treinamento funcional e hipertrofia, com mais de 10 anos de experiência ajudando pessoas a alcançarem seus objetivos de forma saudável.',
+            whatsapp: data.whatsapp || DEFAULT_WHATSAPP,
+            photo_url: data.photo_url
+          });
+        } else {
+          // Dados padrão se não encontrar trainer específico
+          setTrainer({
+            name: 'Personal Trainer',
+            credentials: 'Personal Trainer - CREF',
+            bio: 'Especialista em treinamento funcional e hipertrofia.',
+            whatsapp: DEFAULT_WHATSAPP,
+            photo_url: null
+          });
+        }
       } catch (error) {
         console.error('Error in trainer data fetch:', error);
       } finally {

@@ -72,7 +72,7 @@ const AppointmentManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('upcoming');
 
-  // Fetch all appointments
+  // Fetch appointments (filtered by RLS automatically)
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['admin-appointments'],
     queryFn: async () => {
@@ -171,6 +171,7 @@ const AppointmentManagement = () => {
       duration: selectedDuration,
       trainer_name: trainerName,
       status,
+      // admin_id será definido automaticamente pelo trigger RLS
     };
 
     createAppointmentMutation.mutate(newAppointment as any);
