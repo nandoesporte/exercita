@@ -7,18 +7,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AVAILABLE_PERMISSIONS } from "@/hooks/useAdminPermissions";
 import type { Database } from '@/integrations/supabase/types';
 
-type AdminPermission = Database['public']['Enums']['user_permission'];
+type UserPermission = Database['public']['Enums']['user_permission'];
 
 interface AdminWithPermissions {
   id: string;
   name: string;
   email: string;
-  permissions: AdminPermission[];
+  permissions: UserPermission[];
 }
 
 interface AdminPermissionsCardProps {
   admin: AdminWithPermissions;
-  onTogglePermission: (adminId: string, permission: AdminPermission, hasPermission: boolean) => void;
+  onTogglePermission: (adminId: string, permission: UserPermission, hasPermission: boolean) => void;
   isUpdating: boolean;
 }
 
@@ -28,11 +28,11 @@ export function AdminPermissionsCard({ admin, onTogglePermission, isUpdating }: 
     if (!acc[config.category]) {
       acc[config.category] = [];
     }
-    acc[config.category].push({ permission: permission as AdminPermission, ...config });
+    acc[config.category].push({ permission: permission as UserPermission, ...config });
     return acc;
-  }, {} as Record<string, Array<{ permission: AdminPermission; label: string; description: string; category: string }>>);
+  }, {} as Record<string, Array<{ permission: UserPermission; label: string; description: string; category: string }>>);
 
-  const hasPermission = (permission: AdminPermission) => admin.permissions.includes(permission);
+  const hasPermission = (permission: UserPermission) => admin.permissions.includes(permission);
 
   return (
     <Card className="w-full">

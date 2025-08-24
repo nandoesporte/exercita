@@ -1204,13 +1204,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_pix_key: {
+        Args: {
+          p_is_primary?: boolean
+          p_key_type: string
+          p_key_value: string
+          p_recipient_name: string
+        }
+        Returns: Json
+      }
       admin_create_user: {
         Args: { user_data: Json }
         Returns: boolean
       }
+      admin_delete_pix_key: {
+        Args: { p_pix_key_id: string }
+        Returns: Json
+      }
       admin_delete_user: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      admin_enable_rls: {
+        Args: { p_table_name: string }
+        Returns: Json
+      }
+      admin_save_payment_settings: {
+        Args: {
+          p_accept_card: boolean
+          p_accept_monthly_fee: boolean
+          p_accept_pix: boolean
+          p_monthly_fee_amount: number
+        }
+        Returns: Json
+      }
+      admin_set_primary_pix_key: {
+        Args: { p_pix_key_id: string }
+        Returns: Json
       }
       clone_workout_for_user: {
         Args: { target_user_id: string; workout_id: string }
@@ -1221,6 +1251,10 @@ export type Database = {
         Returns: Json
       }
       get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_tables_without_rls: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }

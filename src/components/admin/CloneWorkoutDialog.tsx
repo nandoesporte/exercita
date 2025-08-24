@@ -64,7 +64,7 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
       const { data, error } = await supabase.rpc(
         'clone_workout_for_user',
         {
-          source_workout_id: workoutId,
+          workout_id: workoutId,
           target_user_id: selectedUserId
         }
       );
@@ -115,7 +115,7 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
                     <span>Carregando usuários...</span>
                   </div>
                 ) : (
-                  users.map(user => (
+                  (users as any[])?.map(user => (
                     <SelectItem key={user.user_id} value={user.user_id}>
                       <div className="flex items-center">
                         <Avatar className="h-6 w-6 mr-2">

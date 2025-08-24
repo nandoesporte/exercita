@@ -64,21 +64,21 @@ export default function AdminManagement() {
   const toggleUserAdminMutation = useMutation({
     mutationFn: async ({ userId, makeAdmin }: { userId: string, makeAdmin: boolean }) => {
       const { data, error } = await supabase.rpc('toggle_user_admin_status', {
-        target_user_id: userId,
+        user_id: userId,
         make_admin: makeAdmin,
       });
 
       if (error) throw new Error(error.message);
       
-      if (!data.success) {
-        throw new Error(data.message);
+      if (!(data as any)?.success) {
+        throw new Error((data as any)?.message);
       }
 
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      toast.success(data.message);
+      toast.success((data as any)?.message);
     },
     onError: (error: Error) => {
       toast.error(error.message);

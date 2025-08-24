@@ -29,7 +29,7 @@ const RLSChecker = () => {
           throw error;
         }
         
-        return data as TableData[];
+        return (data as unknown) as TableData[];
       } catch (error: any) {
         console.error('Error fetching tables without RLS:', error);
         throw error;
@@ -42,7 +42,7 @@ const RLSChecker = () => {
     mutationFn: async (tableName: string) => {
       try {
         const { data, error } = await supabase.rpc('admin_enable_rls', {
-          table_name: tableName
+          p_table_name: tableName
         });
         
         if (error) {

@@ -159,10 +159,10 @@ const PaymentMethodManagement = () => {
       // Usar a função segura para contornar a política RLS
       if (isAdmin && user) {
         const { data, error } = await supabase.rpc('admin_add_pix_key', {
-          key_type_val: keyType,
-          key_value_val: keyValue,
-          recipient_name_val: recipientName,
-          is_primary_val: pixKeys.length === 0
+          p_key_type: keyType,
+          p_key_value: keyValue,
+          p_recipient_name: recipientName,
+          p_is_primary: pixKeys.length === 0
         });
         
         if (error) {
@@ -201,7 +201,7 @@ const PaymentMethodManagement = () => {
       
       // Usar a função segura para contornar a política RLS
       const { error } = await supabase.rpc('admin_set_primary_pix_key', {
-        key_id_val: id
+        p_pix_key_id: id
       });
       
       if (error) {
@@ -229,7 +229,7 @@ const PaymentMethodManagement = () => {
       
       // Usar a função segura para contornar a política RLS
       const { error } = await supabase.rpc('admin_delete_pix_key', {
-        key_id_val: id
+        p_pix_key_id: id
       });
         
       if (error) {
@@ -258,10 +258,10 @@ const PaymentMethodManagement = () => {
       
       // Usar a função segura para contornar a política RLS
       const { error } = await supabase.rpc('admin_save_payment_settings', {
-        accept_card_payments_val: acceptCardPayments,
-        accept_pix_payments_val: acceptPixPayments,
-        accept_monthly_fee_val: acceptMonthlyFee,
-        monthly_fee_amount_val: monthlyFeeAmount
+        p_accept_card: acceptCardPayments,
+        p_accept_pix: acceptPixPayments,
+        p_accept_monthly_fee: acceptMonthlyFee,
+        p_monthly_fee_amount: monthlyFeeAmount
       });
       
       if (error) throw error;

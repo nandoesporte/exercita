@@ -4,13 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
-type AdminPermission = Database['public']['Enums']['user_permission'];
+type UserPermission = Database['public']['Enums']['user_permission'];
 
 interface AdminWithPermissions {
   id: string;
   name: string;
   email: string;
-  permissions: AdminPermission[];
+  permissions: UserPermission[];
 }
 
 export function useAdminPermissions() {
@@ -46,7 +46,7 @@ export function useAdminPermissions() {
 
   // Grant permission to admin
   const grantPermissionMutation = useMutation({
-    mutationFn: async ({ adminId, permission }: { adminId: string; permission: AdminPermission }) => {
+    mutationFn: async ({ adminId, permission }: { adminId: string; permission: UserPermission }) => {
       const { error } = await supabase
         .from('admin_permissions')
         .insert({
@@ -69,7 +69,7 @@ export function useAdminPermissions() {
 
   // Revoke permission from admin
   const revokePermissionMutation = useMutation({
-    mutationFn: async ({ adminId, permission }: { adminId: string; permission: AdminPermission }) => {
+    mutationFn: async ({ adminId, permission }: { adminId: string; permission: UserPermission }) => {
       const { error } = await supabase
         .from('admin_permissions')
         .delete()
@@ -88,7 +88,7 @@ export function useAdminPermissions() {
     }
   });
 
-  const togglePermission = (adminId: string, permission: AdminPermission, hasPermission: boolean) => {
+  const togglePermission = (adminId: string, permission: UserPermission, hasPermission: boolean) => {
     if (hasPermission) {
       revokePermissionMutation.mutate({ adminId, permission });
     } else {
@@ -105,7 +105,7 @@ export function useAdminPermissions() {
 }
 
 // Available permissions with descriptions
-export const AVAILABLE_PERMISSIONS: Record<AdminPermission, { label: string; description: string; category: string }> = {
+export const AVAILABLE_PERMISSIONS: Record<UserPermission, { label: string; description: string; category: string }> = {
   manage_workouts: {
     label: 'Gerenciar Treinos',
     description: 'Criar, editar e excluir treinos',
