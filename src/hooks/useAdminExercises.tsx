@@ -59,7 +59,8 @@ export function useAdminExercises() {
 
         // Filter by admin_id if not super admin
         if (!isSuperAdmin && adminId) {
-          query = query.eq('admin_id', adminId);
+          // Include both admin-specific exercises and global exercises (admin_id IS NULL)
+          query = query.or(`admin_id.eq.${adminId},admin_id.is.null`);
         }
         
         const { data, error } = await query;
