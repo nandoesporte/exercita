@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -36,11 +35,9 @@ const formSchema = z.object({
   duration: z.coerce.number().min(1, { message: "A duração deve ser de pelo menos 1 minuto." }),
   level: z.enum(['beginner', 'intermediate', 'advanced', 'all_levels']),
   category_id: z.string().optional().nullable(),
-  image_url: z.string().optional().nullable(),
   calories: z.coerce.number().optional().nullable(),
   user_id: z.string().optional().nullable(),
   days_of_week: z.array(z.string()).optional(),
-  is_recommended: z.boolean().optional().default(false),
 });
 
 const weekdays = [
@@ -78,11 +75,9 @@ const WorkoutForm = ({
       duration: 30,
       level: "all_levels",
       category_id: null,
-      image_url: "",
       calories: null,
       user_id: null,
       days_of_week: [],
-      is_recommended: false,
     },
   });
 
@@ -237,48 +232,6 @@ const WorkoutForm = ({
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="is_recommended"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Treino Destacado</FormLabel>
-                <FormDescription>
-                  Marque este treino como recomendado para todos os usuários
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="image_url"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL da Imagem (opcional)</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="https://example.com/imagem.jpg" 
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormDescription>
-                Digite uma URL para a imagem do treino
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <FormField
           control={form.control}

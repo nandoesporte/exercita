@@ -32,7 +32,6 @@ const EditWorkout = () => {
         duration: workout.duration,
         level: workout.level,
         category_id: workout.category_id || null,
-        image_url: workout.image_url || '',
         calories: workout.calories || null,
         days_of_week: workoutDays,
       });

@@ -16,11 +16,9 @@ export type WorkoutFormData = {
   duration: number;
   level: Database['public']['Enums']['workout_level'];
   category_id?: string | null;
-  image_url?: string | null;
   calories?: number | null;
   user_id?: string | null; 
   days_of_week?: string[] | null;
-  is_recommended?: boolean;
 };
 
 export type UpdateWorkoutData = WorkoutFormData & {
@@ -118,9 +116,7 @@ export function useAdminWorkouts() {
             duration: formData.duration,
             level: formData.level,
             category_id: formData.category_id || null,
-            image_url: formData.image_url || null,
             calories: formData.calories || null,
-            is_recommended: formData.is_recommended || false,
           })
           .select('id')
           .single();
@@ -190,23 +186,10 @@ export function useAdminWorkouts() {
           } else {
             console.log(`Workout recommendation added successfully for user ${formData.user_id}`);
           }
-        } else if (formData.is_recommended && workout) {
-          // Se o treino é marcado como recomendado mas não foi atribuído a um usuário específico,
-          // adicione-o como uma recomendação global (user_id = null)
-          console.log("Adding workout as a global recommendation");
-          const { error: globalRecError } = await supabase
-            .from('workout_recommendations')
-            .insert({
-              user_id: null, // Recomendação global
-              workout_id: workout.id
-            });
-          
-          if (globalRecError) {
-            console.error("Error creating global workout recommendation:", globalRecError);
-            toast.error(`Error creating global workout recommendation: ${globalRecError.message}`);
-          } else {
-            console.log("Global workout recommendation added successfully");
-          }
+        } else {
+          // Se o treino não foi atribuído a um usuário específico, 
+          // não fazer nada especial - treino fica como público
+          console.log("Workout created as public workout");
         }
       
         return workout;
@@ -228,7 +211,7 @@ export function useAdminWorkouts() {
 
   const updateWorkout = useMutation({
     mutationFn: async (data: UpdateWorkoutData) => {
-      const { id, days_of_week, is_recommended, ...workoutData } = data;
+      const { id, days_of_week, ...workoutData } = data;
       
       // First, update the workout
       const { error: workoutError } = await supabase
@@ -239,9 +222,7 @@ export function useAdminWorkouts() {
           duration: workoutData.duration,
           level: workoutData.level,
           category_id: workoutData.category_id || null,
-          image_url: workoutData.image_url || null,
           calories: workoutData.calories || null,
-          is_recommended: is_recommended || false,
         })
         .eq('id', id);
       

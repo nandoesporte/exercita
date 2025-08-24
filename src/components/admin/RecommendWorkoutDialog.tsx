@@ -9,7 +9,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -43,16 +42,8 @@ export function RecommendWorkoutDialog({
     isLoading: recommendationsLoading 
   } = getWorkoutRecommendations(workoutId);
   
-  const [isRecommended, setIsRecommended] = useState(workout?.is_recommended || false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // Sync the initial state with the workout data
-  useEffect(() => {
-    if (workout) {
-      setIsRecommended(workout.is_recommended || false);
-    }
-  }, [workout]);
 
   // Filter users based on search query
   const filteredUsers = users.filter(user => {
@@ -64,22 +55,6 @@ export function RecommendWorkoutDialog({
   // Check if a user already has this workout recommended
   const isUserRecommended = (userId: string) => {
     return recommendations?.some(rec => rec.user_id === userId);
-  };
-
-  // Handle toggling the global recommendation state
-  const handleToggleRecommended = async () => {
-    if (!workout) return;
-    
-    setIsProcessing(true);
-    await updateWorkout({
-      id: workout.id,
-      title: workout.title,
-      duration: workout.duration,
-      level: workout.level,
-      is_recommended: !isRecommended
-    });
-    setIsRecommended(!isRecommended);
-    setIsProcessing(false);
   };
 
   // Handle recommending to a specific user
@@ -132,20 +107,6 @@ export function RecommendWorkoutDialog({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex items-center space-x-4 py-4 border-y">
-          <div className="flex-1">
-            <h3 className="font-medium">Marcar como Treino em Destaque</h3>
-            <p className="text-sm text-muted-foreground">
-              Este treino será marcado como recomendado para todos os usuários do app
-            </p>
-          </div>
-          <Switch 
-            checked={isRecommended}
-            onCheckedChange={handleToggleRecommended}
-            disabled={isProcessing}
-          />
-        </div>
-
         <div className="py-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           <h3 className="font-medium">Recomendar para Usuários Específicos</h3>
           
