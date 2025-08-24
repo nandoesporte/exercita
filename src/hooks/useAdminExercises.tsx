@@ -44,6 +44,8 @@ export function useAdminExercises() {
       }
 
       try {
+        console.log('Fetching exercises with adminId:', adminId, 'isSuperAdmin:', isSuperAdmin);
+        
         let query = supabase
           .from('exercises')
           .select(`
@@ -60,14 +62,19 @@ export function useAdminExercises() {
         // Filter by admin_id if not super admin
         if (!isSuperAdmin && adminId) {
           // Include both admin-specific exercises and global exercises (admin_id IS NULL)
+          console.log('Adding admin filter for adminId:', adminId);
           query = query.or(`admin_id.eq.${adminId},admin_id.is.null`);
         }
         
         const { data, error } = await query;
         
         if (error) {
+          console.error('Supabase error:', error);
           throw new Error(`Erro ao buscar exercícios: ${error.message}`);
         }
+        
+        console.log('Exercises fetched:', data?.length, 'exercises');
+        console.log('First 3 exercises:', data?.slice(0, 3));
         
         return data as AdminExercise[];
       } catch (error: any) {
