@@ -37,9 +37,10 @@ export function useAdminExercises() {
   };
   
   const exercisesQuery = useQuery({
-    queryKey: ['admin-exercises', adminId],
+    queryKey: ['admin-exercises', adminId, isSuperAdmin],
     queryFn: async () => {
       if (!hasPermission('manage_exercises')) {
+        console.log('User does not have manage_exercises permission');
         throw new Error('Você não tem permissão para gerenciar exercícios');
       }
 
@@ -60,10 +61,17 @@ export function useAdminExercises() {
           .order('name');
 
         // Filter by admin_id if not super admin
-        if (!isSuperAdmin && adminId) {
+        if (!isSuperAdmin && adminId && adminId !== 'super_admin') {
           // Include both admin-specific exercises and global exercises (admin_id IS NULL)
           console.log('Adding admin filter for adminId:', adminId);
           query = query.or(`admin_id.eq.${adminId},admin_id.is.null`);
+        } else if (isSuperAdmin) {
+          // Super admin sees all exercises
+          console.log('Super admin - showing all exercises');
+        } else {
+          // No admin ID, show only global exercises
+          console.log('No admin ID - showing only global exercises');
+          query = query.is('admin_id', null);
         }
         
         const { data, error } = await query;
@@ -82,7 +90,7 @@ export function useAdminExercises() {
         throw error;
       }
     },
-    enabled: hasPermission('manage_exercises') && !!adminId,
+    enabled: hasPermission('manage_exercises'),
   });
 
   const createExercise = useMutation({
@@ -234,7 +242,7 @@ export function useAdminExercises() {
   });
 
   const workoutCategoriesQuery = useQuery({
-    queryKey: ['admin-workout-categories', adminId],
+    queryKey: ['admin-workout-categories', adminId, isSuperAdmin],
     queryFn: async () => {
       if (!hasPermission('manage_categories') && !hasPermission('manage_exercises')) {
         throw new Error('Você não tem permissão para gerenciar categorias');
@@ -247,8 +255,14 @@ export function useAdminExercises() {
           .order('name');
 
         // Filter by admin_id if not super admin
-        if (!isSuperAdmin && adminId) {
-          query = query.eq('admin_id', adminId);
+        if (!isSuperAdmin && adminId && adminId !== 'super_admin') {
+          // Include both admin-specific categories and global categories (admin_id IS NULL)
+          query = query.or(`admin_id.eq.${adminId},admin_id.is.null`);
+        } else if (isSuperAdmin) {
+          // Super admin sees all categories
+        } else {
+          // No admin ID, show only global categories
+          query = query.is('admin_id', null);
         }
         
         const { data, error } = await query;
@@ -263,7 +277,7 @@ export function useAdminExercises() {
         throw error;
       }
     },
-    enabled: (hasPermission('manage_categories') || hasPermission('manage_exercises')) && !!adminId,
+    enabled: hasPermission('manage_categories') || hasPermission('manage_exercises'),
   });
 
   // Create or check storage bucket
