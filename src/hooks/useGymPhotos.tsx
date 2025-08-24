@@ -78,18 +78,26 @@ export function useGymPhotos() {
           .from('gym_photos')
           .getPublicUrl(filePath);
           
+        // Debug: Log the data being inserted
+        const insertData = {
+          user_id: user.id,
+          photo_url: publicURL.publicUrl,
+          description: description || null
+        };
+        console.log('Inserting gym photo data:', insertData);
+        console.log('Current user:', user);
+        
         // Insert record in database
         const { data: photoRecord, error: insertError } = await supabase
           .from('user_gym_photos')
-          .insert({
-            user_id: user.id,
-            photo_url: publicURL.publicUrl,
-            description: description || null
-          })
+          .insert(insertData)
           .select('*')
           .single();
           
         if (insertError) {
+          console.error('Database insert error details:', insertError);
+          console.error('Insert error code:', insertError.code);
+          console.error('Insert error hint:', insertError.hint);
           throw insertError;
         }
         
