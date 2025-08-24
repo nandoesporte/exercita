@@ -78,19 +78,11 @@ export function useGymPhotos() {
           .from('gym_photos')
           .getPublicUrl(filePath);
           
-        // Get user's admin_id from profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('admin_id')
-          .eq('id', user.id)
-          .single();
-          
-        // Debug: Log the data being inserted
+        // Insert record in database - let trigger handle admin_id automatically
         const insertData = {
           user_id: user.id,
           photo_url: publicURL.publicUrl,
-          description: description || null,
-          admin_id: profile?.admin_id || null
+          description: description || null
         };
         console.log('Inserting gym photo data:', insertData);
         console.log('Current user:', user);
