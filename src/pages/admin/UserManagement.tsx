@@ -79,9 +79,16 @@ const UserManagement = () => {
   
   // Get users for the selected admin (or current admin's users)
   const usersData = React.useMemo(() => {
+    console.log('UserManagement - Processing users data:', { 
+      isSuperAdmin, 
+      selectedAdminFilter, 
+      userProfilesLength: userProfiles?.length,
+      userProfiles 
+    });
+    
     if (isSuperAdmin && selectedAdminFilter && selectedAdminFilter !== 'all') {
       // Filter by specific admin
-      return getUsersByAdmin(selectedAdminFilter).map(profile => ({
+      const filteredUsers = getUsersByAdmin(selectedAdminFilter).map(profile => ({
         user_id: profile.id,
         email: profile.email,
         raw_user_meta_data: {
@@ -91,9 +98,11 @@ const UserManagement = () => {
         created_at: profile.created_at,
         banned_until: null, // Profiles don't have banned_until, assume active
       }));
+      console.log('UserManagement - Filtered users for admin:', filteredUsers);
+      return filteredUsers;
     } else {
       // Get all users for this admin
-      return (userProfiles || []).map(profile => ({
+      const allUsers = (userProfiles || []).map(profile => ({
         user_id: profile.id,
         email: profile.email,
         raw_user_meta_data: {
@@ -103,6 +112,8 @@ const UserManagement = () => {
         created_at: profile.created_at,
         banned_until: null,
       }));
+      console.log('UserManagement - All users:', allUsers);
+      return allUsers;
     }
   }, [userProfiles, getUsersByAdmin, selectedAdminFilter, isSuperAdmin]);
 
