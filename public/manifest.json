@@ -1,7 +1,7 @@
 
 {
-  "name": "Mais Saúde - Seu Companheiro de Fitness",
-  "short_name": "Mais Saúde",
+  "name": "Exercita - Seu Companheiro de Fitness",
+  "short_name": "Exercita",
   "description": "Seu companheiro personalizado de fitness com treinos, acompanhamento de exercícios e monitoramento de saúde",
   "start_url": "/",
   "display": "standalone",
@@ -10,49 +10,49 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icons/icon-72x72.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-96x96.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-128x128.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-144x144.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-152x152.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-192x192.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-384x384.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512x512.png",
+      "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -64,14 +64,14 @@
       "short_name": "Treinos",
       "description": "Ver seus treinos",
       "url": "/workouts",
-      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png", "sizes": "96x96" }]
     },
     {
       "name": "Perfil",
       "short_name": "Perfil",
       "description": "Acessar seu perfil",
       "url": "/profile",
-      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/lovable-uploads/261bfa34-e60d-4bd5-aeff-5868a556342b.png", "sizes": "96x96" }]
     }
   ]
 }
