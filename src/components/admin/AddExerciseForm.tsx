@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { toast } from '@/lib/toast';
 import { ExerciseSelector } from '@/components/admin/ExerciseSelector';
@@ -43,7 +44,7 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
   const [durationUnit, setDurationUnit] = useState<'seconds' | 'minutes'>('seconds');
   const [rest, setRest] = useState<string>('30');
   const [weight, setWeight] = useState<string>('');
-  const [dayOfWeek, setDayOfWeek] = useState<string | null>(null);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [sectionTitle, setSectionTitle] = useState<string>('');
   const isMobile = useIsMobile();
 
@@ -68,15 +69,24 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
         return;
       }
 
-      onAddExercise({
-        is_title_section: true,
-        section_title: sectionTitle.trim(),
-        order_position: currentExerciseCount + 1,
-        day_of_week: dayOfWeek || undefined,
+      if (selectedDays.length === 0) {
+        toast.error('Selecione pelo menos um dia da semana');
+        return;
+      }
+
+      // Create section titles for each selected day
+      selectedDays.forEach((dayOfWeek) => {
+        onAddExercise({
+          is_title_section: true,
+          section_title: sectionTitle.trim(),
+          order_position: currentExerciseCount + 1,
+          day_of_week: dayOfWeek === 'all' ? undefined : dayOfWeek,
+        });
       });
 
       // Reset form
       setSectionTitle('');
+      setSelectedDays([]);
       toast.success('Título de seção adicionado');
       return;
     }
@@ -84,6 +94,11 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
     // Regular exercise validation
     if (!exerciseId) {
       toast.error('Selecione um exercício');
+      return;
+    }
+
+    if (selectedDays.length === 0) {
+      toast.error('Selecione pelo menos um dia da semana');
       return;
     }
 
@@ -95,21 +110,24 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
         : parseInt(duration, 10);
     }
 
-    // Add exercise
-    onAddExercise({
-      exercise_id: exerciseId,
-      sets: parseInt(sets, 10) || undefined,
-      reps: reps ? parseInt(reps, 10) : null,
-      duration: durationInSeconds,
-      rest: rest ? parseInt(rest, 10) : null,
-      weight: weight ? parseFloat(weight) : null,
-      order_position: currentExerciseCount + 1,
-      day_of_week: dayOfWeek || undefined,
+    // Add exercise for each selected day
+    selectedDays.forEach((dayOfWeek) => {
+      onAddExercise({
+        exercise_id: exerciseId,
+        sets: parseInt(sets, 10) || undefined,
+        reps: reps ? parseInt(reps, 10) : null,
+        duration: durationInSeconds,
+        rest: rest ? parseInt(rest, 10) : null,
+        weight: weight ? parseFloat(weight) : null,
+        order_position: currentExerciseCount + 1,
+        day_of_week: dayOfWeek === 'all' ? undefined : dayOfWeek,
+      });
     });
 
     // Reset form
     setExerciseId('');
     setExerciseName('');
+    setSelectedDays([]);
     toast.success('Exercício adicionado');
   };
 
@@ -298,20 +316,34 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="day">Dia da Semana (opcional)</Label>
-        <Select value={dayOfWeek || ''} onValueChange={setDayOfWeek}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione um dia (opcional)" />
-          </SelectTrigger>
-          <SelectContent>
-            {days.map((day) => (
-              <SelectItem key={day.id} value={day.id}>
+      <div className="space-y-3">
+        <Label htmlFor="days">Dia da Semana</Label>
+        <div className="grid grid-cols-1 gap-3 p-3 border rounded-md">
+          {days.map((day) => (
+            <div key={day.id} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`day-${day.id}`}
+                checked={selectedDays.includes(day.id)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedDays([...selectedDays, day.id]);
+                  } else {
+                    setSelectedDays(selectedDays.filter(d => d !== day.id));
+                  }
+                }}
+              />
+              <label
+                htmlFor={`day-${day.id}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 {day.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              </label>
+            </div>
+          ))}
+        </div>
+        {selectedDays.length === 0 && (
+          <p className="text-sm text-destructive">Selecione pelo menos um dia da semana</p>
+        )}
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
