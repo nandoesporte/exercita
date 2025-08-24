@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,9 +14,9 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/lib/toast-wrapper';
 import { Loader2, Upload } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { usePersonalTrainer } from '@/hooks/usePersonalTrainer';
 
 // Schema for the form validation
 const trainerFormSchema = z.object({
@@ -30,9 +29,16 @@ const trainerFormSchema = z.object({
 type TrainerFormValues = z.infer<typeof trainerFormSchema>;
 
 const ScheduleManagement = () => {
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const { 
+    trainer, 
+    isLoading, 
+    updateTrainer, 
+    isUpdating, 
+    uploadPhoto, 
+    isUploading, 
+    photoUrl: uploadedPhotoUrl 
+  } = usePersonalTrainer();
 
   // Create form
   const form = useForm<TrainerFormValues>({
@@ -45,126 +51,38 @@ const ScheduleManagement = () => {
     },
   });
 
-  // Fetch existing trainer data when component mounts
+  // Populate form when trainer data loads
   useEffect(() => {
-    const fetchTrainerData = async () => {
-      setLoading(true);
-      try {
-        // Buscar trainer específico do admin atual
-        const { data, error } = await supabase
-          .from('personal_trainers')
-          .select('*')
-          .eq('is_primary', true)
-          .maybeSingle();
+    if (trainer) {
+      form.setValue('name', trainer.name || '');
+      form.setValue('credentials', trainer.credentials || '');
+      form.setValue('bio', trainer.bio || '');
+      form.setValue('whatsapp', trainer.whatsapp || '');
+      setPhotoUrl(trainer.photo_url);
+    }
+  }, [trainer, form]);
 
-        if (error) throw error;
-
-        if (data) {
-          form.setValue('name', data.name || '');
-          form.setValue('credentials', data.credentials || '');
-          form.setValue('bio', data.bio || '');
-          form.setValue('whatsapp', data.whatsapp || '');
-          setPhotoUrl(data.photo_url);
-        }
-      } catch (error) {
-        console.error('Error fetching trainer data:', error);
-        toast("Erro ao carregar dados: Não foi possível carregar as informações do personal trainer.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTrainerData();
-  }, [form]);
+  // Update photoUrl when new photo is uploaded
+  useEffect(() => {
+    if (uploadedPhotoUrl) {
+      setPhotoUrl(uploadedPhotoUrl);
+    }
+  }, [uploadedPhotoUrl]);
 
   // Handle photo upload
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `trainer-profile-${Date.now()}.${fileExt}`;
     
-    setUploading(true);
-    
-    try {
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('trainer_photos')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from('trainer_photos')
-        .getPublicUrl(fileName);
-
-      setPhotoUrl(data.publicUrl);
-      
-      toast("Foto enviada com sucesso: A foto do perfil foi atualizada.");
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      toast("Erro no upload: Não foi possível enviar a foto. Tente novamente.");
-    } finally {
-      setUploading(false);
-    }
+    uploadPhoto(file);
   };
 
   // Handle form submission
   const onSubmit = async (data: TrainerFormValues) => {
-    setLoading(true);
-    
-    try {
-      // Check if we're updating or inserting
-      const { data: existingTrainer, error: fetchError } = await supabase
-        .from('personal_trainers')
-        .select('id')
-        .eq('is_primary', true)
-        .maybeSingle();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw fetchError;
-      }
-
-      // Prepare data to save - admin_id será definido automaticamente pelo trigger
-      const trainerData = {
-        name: data.name,
-        credentials: data.credentials,
-        bio: data.bio,
-        whatsapp: data.whatsapp,
-        photo_url: photoUrl,
-        is_primary: true,
-      };
-
-      // Update or insert
-      let saveError;
-      if (existingTrainer?.id) {
-        // Update existing record
-        const { error } = await supabase
-          .from('personal_trainers')
-          .update(trainerData)
-          .eq('id', existingTrainer.id);
-        
-        saveError = error;
-      } else {
-        // Insert new record
-        const { error } = await supabase
-          .from('personal_trainers')
-          .insert(trainerData);
-        
-        saveError = error;
-      }
-
-      if (saveError) throw saveError;
-
-      toast("Salvo com sucesso: As informações do personal trainer foram atualizadas.");
-    } catch (error) {
-      console.error('Error saving trainer data:', error);
-      toast("Erro ao salvar: Não foi possível salvar as informações. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
+    updateTrainer({
+      ...data,
+      photo_url: photoUrl,
+    });
   };
 
   return (
@@ -198,39 +116,41 @@ const ScheduleManagement = () => {
                   )}
                 </div>
                 <div>
-                  <div className="mb-3">
-                    <Button variant="outline" className="relative" disabled={uploading}>
-                      <input 
-                        id="photo-upload"
-                        type="file" 
-                        accept="image/*" 
-                        className="absolute inset-0 opacity-0 cursor-pointer" 
-                        onChange={handlePhotoUpload}
-                        disabled={uploading}
-                      />
-                      {uploading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Enviando...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="mr-2 h-4 w-4" />
-                          Enviar nova foto
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
+                  <Button variant="outline" className="relative" disabled={isUploading}>
+                    <input 
+                      id="photo-upload"
+                      type="file" 
+                      accept="image/*" 
+                      className="absolute inset-0 opacity-0 cursor-pointer" 
+                      onChange={handlePhotoUpload}
+                      disabled={isUploading}
+                    />
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Enviar nova foto
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
                     Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Trainer Info Form */}
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -291,22 +211,23 @@ const ScheduleManagement = () => {
                   )}
                 />
                 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-fitness-green to-fitness-blue"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    'Salvar Informações'
-                  )}
-                </Button>
-              </form>
-            </Form>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-fitness-green to-fitness-blue"
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      'Salvar Informações'
+                    )}
+                  </Button>
+                </form>
+              </Form>
+            )}
           </div>
         </CardContent>
       </Card>

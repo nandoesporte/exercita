@@ -27,6 +27,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardHeader, CardContent, CardDescription } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { supabase } from '@/integrations/supabase/client';
+import { usePersonalTrainer } from '@/hooks/usePersonalTrainer';
 
 // Default fallback WhatsApp number if not loaded from DB
 const DEFAULT_WHATSAPP = "44997270698";
@@ -52,52 +53,7 @@ interface PersonalTrainer {
 const Schedule = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [whatsappLink, setWhatsappLink] = useState('');
-  const [trainer, setTrainer] = useState<PersonalTrainer | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch trainer data when component mounts
-  useEffect(() => {
-    const fetchTrainerData = async () => {
-      try {
-        // Buscar trainer do admin do usuário atual
-        const { data, error } = await supabase
-          .from('personal_trainers')
-          .select('*')
-          .eq('is_primary', true)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching trainer data:', error);
-          return;
-        }
-
-        if (data) {
-          setTrainer({
-            name: data.name || 'Carlos Silva',
-            credentials: data.credentials || 'Personal Trainer - CREF 123456',
-            bio: data.bio || 'Especialista em treinamento funcional e hipertrofia, com mais de 10 anos de experiência ajudando pessoas a alcançarem seus objetivos de forma saudável.',
-            whatsapp: data.whatsapp || DEFAULT_WHATSAPP,
-            photo_url: data.photo_url
-          });
-        } else {
-          // Dados padrão se não encontrar trainer específico
-          setTrainer({
-            name: 'Personal Trainer',
-            credentials: 'Personal Trainer - CREF',
-            bio: 'Especialista em treinamento funcional e hipertrofia.',
-            whatsapp: DEFAULT_WHATSAPP,
-            photo_url: null
-          });
-        }
-      } catch (error) {
-        console.error('Error in trainer data fetch:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTrainerData();
-  }, []);
+  const { trainer, isLoading } = usePersonalTrainer();
 
   const form = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleFormSchema),
@@ -119,7 +75,7 @@ const Schedule = () => {
       const message = `Olá! Gostaria de agendar uma consultoria:\n\n*Nome:* ${data.name}\n*Data:* ${formattedDate}\n*Hora:* ${data.time}\n*Objetivo:* ${data.goal}`;
       
       // Cria o link para o WhatsApp com a mensagem
-      const whatsappNumber = trainer?.whatsapp || DEFAULT_WHATSAPP;
+      const whatsappNumber = trainerData?.whatsapp || DEFAULT_WHATSAPP;
       const encodedMessage = encodeURIComponent(message);
       const link = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
       
@@ -141,7 +97,7 @@ const Schedule = () => {
   ];
 
   // Handle loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container max-w-4xl mx-auto py-10 flex justify-center">
         <div className="animate-pulse space-y-6 w-full">
@@ -154,6 +110,15 @@ const Schedule = () => {
     );
   }
 
+  // Default trainer data if none found
+  const trainerData = trainer || {
+    name: 'Personal Trainer',
+    credentials: 'Personal Trainer - CREF',
+    bio: 'Especialista em treinamento funcional e hipertrofia.',
+    whatsapp: DEFAULT_WHATSAPP,
+    photo_url: null
+  };
+
   return (
     <div className="container max-w-4xl mx-auto pb-10">
       {/* Personal Trainer Profile Card */}
@@ -163,15 +128,15 @@ const Schedule = () => {
             <AspectRatio ratio={1/1} className="bg-muted">
               <div className="h-full w-full p-2">
                 <Avatar className="h-full w-full rounded-xl">
-                  {trainer?.photo_url ? (
+                  {trainerData?.photo_url ? (
                     <AvatarImage 
-                      src={trainer.photo_url} 
-                      alt={trainer.name} 
+                      src={trainerData.photo_url} 
+                      alt={trainerData.name} 
                       className="object-cover"
                     />
                   ) : (
                     <AvatarFallback className="text-4xl bg-fitness-green text-white">
-                      {trainer?.name?.charAt(0) || 'P'}
+                      {trainerData?.name?.charAt(0) || 'P'}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -179,10 +144,10 @@ const Schedule = () => {
             </AspectRatio>
           </div>
           <div className="md:col-span-2 p-6 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold text-white mb-2">{trainer?.name}</h2>
-            <p className="text-fitness-green font-medium mb-4">{trainer?.credentials}</p>
+            <h2 className="text-2xl font-bold text-white mb-2">{trainerData?.name}</h2>
+            <p className="text-fitness-green font-medium mb-4">{trainerData?.credentials}</p>
             <CardDescription className="text-gray-300 text-base">
-              {trainer?.bio}
+              {trainerData?.bio}
             </CardDescription>
           </div>
         </div>
@@ -348,7 +313,7 @@ const Schedule = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-white">Agendamento Realizado!</h2>
                 <p className="text-gray-300 max-w-md mx-auto">
-                  Para confirmar seu agendamento com {trainer?.name || 'o Personal Trainer'}, clique no botão abaixo para enviar os detalhes pelo WhatsApp.
+                  Para confirmar seu agendamento com {trainerData?.name || 'o Personal Trainer'}, clique no botão abaixo para enviar os detalhes pelo WhatsApp.
                 </p>
               </div>
 
