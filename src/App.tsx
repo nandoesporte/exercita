@@ -57,6 +57,7 @@ import SuperAdminDashboard from "@/pages/admin/SuperAdminDashboard";
 import RLSChecker from "@/pages/admin/RLSChecker";
 import AdminManagement from "@/pages/admin/AdminManagement";
 import AdminPermissions from "@/pages/admin/AdminPermissions";
+import SubscriptionManagement from "@/pages/admin/SubscriptionManagement";
 
 const App = () => {
   return (
@@ -130,6 +131,8 @@ const App = () => {
               <Route path="rls-checker" element={<RLSChecker />} />
               {/* Admin Permissions */}
               <Route path="permissions" element={<AdminPermissions />} />
+              {/* Subscription Management */}
+              <Route path="subscriptions" element={<SubscriptionManagement />} />
             </Route>
             
             {/* 404 */}

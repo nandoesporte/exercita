@@ -19,6 +19,7 @@ import {
   Crown,
   Shield,
   Lock,
+  Wallet,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -139,6 +140,12 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
       icon: <ShieldCheck className="h-4 w-4" />,
       to: '/admin/rls-checker'
     }] : []),
+    // Show subscription management for all admins
+    {
+      title: 'Assinaturas',
+      icon: <Wallet className="h-4 w-4" />,
+      to: '/admin/subscriptions'
+    },
     // Show admin permissions for all admins
     {
       title: 'Permissões e Isolamento',
@@ -175,6 +182,7 @@ const AdminSidebar = ({ onNavItemClick }: AdminSidebarProps = {}) => {
           ) : (
             items.map((item) => {
               const hasAccess = item.to === '/admin' || item.to === '/admin/permissions' || 
+                              item.to === '/admin/subscriptions' ||
                               item.to === '/admin/super-dashboard' || item.to === '/admin/admins' || 
                               item.to === '/admin/users' || item.to === '/admin/rls-checker' || 
                               isSuperAdmin;

@@ -46,6 +46,63 @@ export type Database = {
           },
         ]
       }
+      admin_subscriptions: {
+        Row: {
+          admin_id: string
+          created_at: string | null
+          end_date: string | null
+          id: string
+          kiwify_customer_id: string | null
+          kiwify_order_id: string | null
+          payment_url: string | null
+          plan_id: string
+          start_date: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          kiwify_customer_id?: string | null
+          kiwify_order_id?: string | null
+          payment_url?: string | null
+          plan_id: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          kiwify_customer_id?: string | null
+          kiwify_order_id?: string | null
+          payment_url?: string | null
+          plan_id?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_subscriptions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: true
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admins: {
         Row: {
           created_at: string
@@ -269,6 +326,47 @@ export type Database = {
             columns: ["photo_id"]
             isOneToOne: false
             referencedRelation: "user_gym_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kiwify_webhook_logs: {
+        Row: {
+          admin_subscription_id: string | null
+          customer_id: string | null
+          event_type: string
+          id: string
+          order_id: string | null
+          payload: Json
+          processed_at: string | null
+          status: string | null
+        }
+        Insert: {
+          admin_subscription_id?: string | null
+          customer_id?: string | null
+          event_type: string
+          id?: string
+          order_id?: string | null
+          payload: Json
+          processed_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          admin_subscription_id?: string | null
+          customer_id?: string | null
+          event_type?: string
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          processed_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kiwify_webhook_logs_admin_subscription_id_fkey"
+            columns: ["admin_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "admin_subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -638,6 +736,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_days: number
+          id: string
+          is_active: boolean | null
+          kiwify_product_id: string | null
+          name: string
+          price: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean | null
+          kiwify_product_id?: string | null
+          name: string
+          price: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean | null
+          kiwify_product_id?: string | null
+          name?: string
+          price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_gym_photos: {
         Row: {
@@ -1084,6 +1218,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: undefined
       }
+      admin_has_active_subscription: {
+        Args: { admin_user_id: string }
+        Returns: boolean
+      }
       admin_has_permission: {
         Args: {
           _admin_id: string
@@ -1107,6 +1245,10 @@ export type Database = {
       admin_set_primary_pix_key: {
         Args: { key_id_val: string }
         Returns: undefined
+      }
+      can_access_admin_features: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       clone_workout_for_user: {
         Args: { source_workout_id: string; target_user_id: string }

@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/auth';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 import { useUsersByAdmin } from '@/hooks/useUsersByAdmin';
+import { SubscriptionStatusCard } from '@/components/admin/SubscriptionStatusCard';
 
 // Define form schema for user creation exatamente como na página de login
 const formSchema = z.object({
@@ -393,6 +394,13 @@ const Dashboard = () => {
           );
         })}
       </div>
+      
+      {/* Subscription Status Card - Only for non-Super Admins */}
+      {!isSuperAdmin && (
+        <div className="mb-4">
+          <SubscriptionStatusCard />
+        </div>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Recent User Activity with User Management - Improved Mobile Layout */}
