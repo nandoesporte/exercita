@@ -10,6 +10,7 @@ import { WorkoutExercise } from '@/hooks/useAdminWorkouts';
 import { toast } from '@/lib/toast';
 import { ExerciseSelector } from '@/components/admin/ExerciseSelector';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 interface Exercise {
   id: string;
@@ -58,59 +59,63 @@ const AddExerciseForm: React.FC<AddExerciseFormProps> = ({
     { id: 'all', name: 'Todos os dias' },
   ];
 
+  const { checkSubscriptionAndAct } = useSubscriptionGuard();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedTab === 'title') {
-      // Add section title
-      if (!sectionTitle.trim()) {
-        toast.error('Digite um título para a seção');
+    checkSubscriptionAndAct(() => {
+      if (selectedTab === 'title') {
+        // Add section title
+        if (!sectionTitle.trim()) {
+          toast.error('Digite um título para a seção');
+          return;
+        }
+
+        onAddExercise({
+          is_title_section: true,
+          section_title: sectionTitle.trim(),
+          order_position: currentExerciseCount + 1,
+          day_of_week: dayOfWeek || undefined,
+        });
+
+        // Reset form
+        setSectionTitle('');
+        toast.success('Título de seção adicionado');
         return;
       }
 
+      // Regular exercise validation
+      if (!exerciseId) {
+        toast.error('Selecione um exercício');
+        return;
+      }
+
+      // Convert duration to seconds if it's in minutes
+      let durationInSeconds = null;
+      if (duration) {
+        durationInSeconds = durationUnit === 'minutes' 
+          ? parseInt(duration, 10) * 60 
+          : parseInt(duration, 10);
+      }
+
+      // Add exercise
       onAddExercise({
-        is_title_section: true,
-        section_title: sectionTitle.trim(),
+        exercise_id: exerciseId,
+        sets: parseInt(sets, 10) || undefined,
+        reps: reps ? parseInt(reps, 10) : null,
+        duration: durationInSeconds,
+        rest: rest ? parseInt(rest, 10) : null,
+        weight: weight ? parseFloat(weight) : null,
         order_position: currentExerciseCount + 1,
         day_of_week: dayOfWeek || undefined,
       });
 
       // Reset form
-      setSectionTitle('');
-      toast.success('Título de seção adicionado');
-      return;
-    }
-
-    // Regular exercise validation
-    if (!exerciseId) {
-      toast.error('Selecione um exercício');
-      return;
-    }
-
-    // Convert duration to seconds if it's in minutes
-    let durationInSeconds = null;
-    if (duration) {
-      durationInSeconds = durationUnit === 'minutes' 
-        ? parseInt(duration, 10) * 60 
-        : parseInt(duration, 10);
-    }
-
-    // Add exercise
-    onAddExercise({
-      exercise_id: exerciseId,
-      sets: parseInt(sets, 10) || undefined,
-      reps: reps ? parseInt(reps, 10) : null,
-      duration: durationInSeconds,
-      rest: rest ? parseInt(rest, 10) : null,
-      weight: weight ? parseFloat(weight) : null,
-      order_position: currentExerciseCount + 1,
-      day_of_week: dayOfWeek || undefined,
+      setExerciseId('');
+      setExerciseName('');
+      toast.success('Exercício adicionado');
     });
-
-    // Reset form
-    setExerciseId('');
-    setExerciseName('');
-    toast.success('Exercício adicionado');
   };
 
   const handleExerciseSelect = (id: string, name: string) => {
