@@ -261,7 +261,7 @@ export function useProfile() {
       
       // Upload file to storage with caching disabled
       const { error: uploadError } = await supabase.storage
-        .from('profile_images')
+        .from('avatars')
         .upload(filePath, file, {
           cacheControl: 'no-cache, no-store, must-revalidate',
           upsert: true,
@@ -274,7 +274,7 @@ export function useProfile() {
       
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('profile_images')
+        .from('avatars')
         .getPublicUrl(filePath);
       
       if (!urlData || !urlData.publicUrl) {
