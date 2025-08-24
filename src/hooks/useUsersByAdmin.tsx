@@ -68,68 +68,66 @@ export function useUsersByAdmin() {
       console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
       
       if (isSuperAdmin) {
-        // Super admin gets all users with email data
+        // Super admin gets all non-admin users
+        console.log('Super admin: fetching all non-admin users');
+        
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
+          .eq('is_admin', false); // Only non-admin users
+
+        console.log('Super admin - profiles:', profiles, 'error:', profilesError);
+        
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          throw profilesError;
+        }
+
+        // For super admin, try to get emails via RPC, but don't fail if it doesn't work
         try {
           const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
-          console.log('Super admin - usersData:', usersData, 'error:', usersError);
           
-          if (usersError) {
-            console.error('Error fetching users:', usersError);
-            throw usersError;
+          if (!usersError && usersData) {
+            const usersArray = Array.isArray(usersData) ? usersData : [usersData];
+            const combinedData = profiles?.map(profile => {
+              const userData = usersArray?.find((u: any) => u.id === profile.id);
+              return {
+                ...profile,
+                email: (userData as any)?.email || `${profile.first_name || 'user'}@***`
+              };
+            }) || [];
+
+            console.log('Super admin - combinedData with emails:', combinedData);
+            return combinedData as UserProfile[];
           }
-
-          // Get all profiles data
-          const { data: profiles, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
-            .eq('is_admin', false); // Only non-admin users
-
-          console.log('Super admin - profiles:', profiles, 'error:', profilesError);
-          
-          if (profilesError) {
-            console.error('Error fetching profiles:', profilesError);
-            throw profilesError;
-          }
-
-          // Handle the case where usersData might be null or not an array
-          const usersArray = Array.isArray(usersData) ? usersData : (usersData ? [usersData] : []);
-          
-          // Combine users and profiles data
-          const combinedData = profiles?.map(profile => {
-            const userData = usersArray?.find((u: any) => u.id === profile.id);
-            return {
-              ...profile,
-              email: (userData as any)?.email || `${profile.first_name || 'user'}@***`
-            };
-          }) || [];
-
-          console.log('Super admin - combinedData:', combinedData);
-          return combinedData as UserProfile[];
         } catch (error) {
-          console.error('Error in super admin query:', error);
-          // Fallback: just get profiles without emails
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
-            .eq('is_admin', false);
-            
-          return (profiles || []).map(profile => ({
-            ...profile,
-            email: `${profile.first_name || 'user'}@***`
-          })) as UserProfile[];
+          console.warn('Could not fetch emails for super admin, showing profiles only:', error);
         }
+
+        // Fallback: show all profiles without real emails
+        const result = (profiles || []).map(profile => ({
+          ...profile,
+          email: `${profile.first_name || 'user'}@***`
+        })) as UserProfile[];
+
+        console.log('Super admin - fallback result:', result);
+        return result;
+        
       } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their users (no email access for security)
+        console.log('Regular admin: fetching users for admin_id:', adminData.id);
+        
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, admin_id, created_at, avatar_url')
-          .eq('admin_id', adminData.id);
+          .eq('admin_id', adminData.id)
+          .eq('is_admin', false); // Only non-admin users
 
         if (profilesError) throw profilesError;
 
-        console.log('Fetched profiles for admin:', profiles.length, 'profiles');
-        // For regular admins, we don't expose email addresses for security
-        return profiles.map(profile => ({
+        console.log('Regular admin - fetched profiles:', profiles?.length || 0, 'profiles');
+        
+        return (profiles || []).map(profile => ({
           ...profile,
           email: `${profile.first_name || 'usuário'}@***` // Masked email
         })) as UserProfile[];
