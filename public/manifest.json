@@ -5,8 +5,8 @@
   "description": "Seu companheiro personalizado de fitness com treinos, acompanhamento de exercícios e monitoramento de saúde",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f26b2c",
-  "theme_color": "#f26b2c",
+  "background_color": "#0c1421",
+  "theme_color": "#0c1421",
   "orientation": "portrait-primary",
   "icons": [
     {
