@@ -79,6 +79,8 @@ export function useWorkout(id: string | undefined) {
     queryFn: async () => {
       if (!id) throw new Error('Workout ID is required');
       
+      console.log('useWorkout - Fetching workout with ID:', id);
+      
       const { data, error } = await supabase
         .from('workouts')
         .select(`
@@ -111,6 +113,9 @@ export function useWorkout(id: string | undefined) {
         `)
         .eq('id', id)
         .single();
+      
+      console.log('useWorkout - Raw data:', data);
+      console.log('useWorkout - Error:', error);
       
       if (error) {
         throw new Error(`Error fetching workout: ${error.message}`);
