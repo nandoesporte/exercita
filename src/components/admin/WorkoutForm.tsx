@@ -36,7 +36,7 @@ const formSchema = z.object({
   level: z.enum(['beginner', 'intermediate', 'advanced', 'all_levels']),
   category_id: z.string().optional().nullable(),
   calories: z.coerce.number().optional().nullable(),
-  user_id: z.string().optional().nullable(),
+  user_id: z.string().min(1, { message: "É obrigatório selecionar um aluno." }),
   days_of_week: z.array(z.string()).optional(),
 });
 
@@ -76,7 +76,7 @@ const WorkoutForm = ({
       level: "all_levels",
       category_id: null,
       calories: null,
-      user_id: null,
+      user_id: "",
       days_of_week: [],
     },
   });
@@ -290,14 +290,14 @@ const WorkoutForm = ({
             name="user_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Atribuir ao Aluno (opcional)</FormLabel>
+                <FormLabel>Atribuir ao Aluno</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   value={field.value || undefined}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o aluno" />
+                      <SelectValue placeholder="Selecione o aluno *" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -309,7 +309,7 @@ const WorkoutForm = ({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Se selecionado, este treino será atribuído ao aluno
+                  Este treino será atribuído ao aluno selecionado
                 </FormDescription>
                 <FormMessage />
               </FormItem>
