@@ -91,14 +91,27 @@ const WorkoutDetail = () => {
   const exercisesByDay = useMemo(() => {
     if (!workout || !workout.workout_exercises) return {};
     
-    console.log('WorkoutDetail - workout.workout_exercises:', workout.workout_exercises);
+    
     
     // Initialize with all days that have exercises
     const result: Record<string, WorkoutExercise[]> = {};
     
     // Group exercises by their day_of_week
     workout.workout_exercises.forEach(exercise => {
-      const day = exercise.day_of_week || 'all_days';
+      let day = exercise.day_of_week;
+      
+      // If exercise has no day_of_week assigned and workout has specific days,
+      // assign it to the first day of the workout
+      if (!day && workout.days_of_week && workout.days_of_week.length > 0) {
+        day = workout.days_of_week[0];
+        console.log('WorkoutDetail - Assigning exercise to first workout day:', day);
+      }
+      
+      // Fallback to 'all_days' if still no day assigned
+      if (!day) {
+        day = 'all_days';
+      }
+      
       console.log('WorkoutDetail - Exercise:', exercise.exercise?.name, 'Day:', day);
       if (!result[day]) {
         result[day] = [];
