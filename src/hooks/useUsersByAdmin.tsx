@@ -19,6 +19,15 @@ interface AdminUser {
   userCount: number;
 }
 
+interface RpcUserData {
+  id: string;
+  email: string;
+  raw_user_meta_data: any;
+  created_at: string;
+  last_sign_in_at: string | null;
+  banned_until: string | null;
+}
+
 export function useUsersByAdmin() {
   const { isSuperAdmin, isAdmin } = useAdminRole();
 
@@ -68,50 +77,55 @@ export function useUsersByAdmin() {
       console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
       
       if (isSuperAdmin) {
-        // Super admin gets all non-admin users
+        // Super admin: get all non-admin users with emails
         console.log('Super admin: fetching all non-admin users');
         
+        // First get all non-admin profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
-          .eq('is_admin', false); // Only non-admin users
+          .eq('is_admin', false);
 
-        console.log('Super admin - profiles:', profiles, 'error:', profilesError);
-        
         if (profilesError) {
           console.error('Error fetching profiles:', profilesError);
           throw profilesError;
         }
 
-        // For super admin, try to get emails via RPC, but don't fail if it doesn't work
+        console.log('Super admin - profiles found:', profiles?.length || 0);
+
+         // Try to get emails via RPC
         try {
-          const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
+          const { data: usersWithEmails, error: rpcError } = await supabase.rpc('get_all_users');
           
-          if (!usersError && usersData) {
-            const usersArray = Array.isArray(usersData) ? usersData : [usersData];
+          console.log('RPC get_all_users result:', { data: usersWithEmails, error: rpcError });
+          
+          if (!rpcError && usersWithEmails && Array.isArray(usersWithEmails)) {
+            // Combine profile data with email data
             const combinedData = profiles?.map(profile => {
-              const userData = usersArray?.find((u: any) => u.id === profile.id);
+              const userWithEmail = usersWithEmails.find((u: any) => u.id === profile.id) as unknown as RpcUserData;
               return {
                 ...profile,
-                email: (userData as any)?.email || `${profile.first_name || 'user'}@***`
+                email: userWithEmail?.email || `${profile.first_name || 'user'}@***`
               };
             }) || [];
 
-            console.log('Super admin - combinedData with emails:', combinedData);
+            console.log('Super admin - combined data with emails:', combinedData.length);
             return combinedData as UserProfile[];
+          } else {
+            console.warn('RPC failed or returned invalid data, using fallback:', rpcError);
           }
         } catch (error) {
-          console.warn('Could not fetch emails for super admin, showing profiles only:', error);
+          console.warn('RPC call failed, using fallback:', error);
         }
 
-        // Fallback: show all profiles without real emails
-        const result = (profiles || []).map(profile => ({
+        // Fallback: return profiles with masked emails
+        const fallbackResult = (profiles || []).map(profile => ({
           ...profile,
-          email: `${profile.first_name || 'user'}@***`
+          email: `${profile.first_name || 'usuário'}@***`
         })) as UserProfile[];
 
-        console.log('Super admin - fallback result:', result);
-        return result;
+        console.log('Super admin - fallback result:', fallbackResult.length, 'users');
+        return fallbackResult;
         
       } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their users (no email access for security)
