@@ -739,34 +739,34 @@ export type Database = {
       }
       subscription_plans: {
         Row: {
+          checkout_url: string | null
           created_at: string | null
           description: string | null
           duration_days: number
           id: string
           is_active: boolean | null
-          kiwify_product_id: string | null
           name: string
           price: number
           updated_at: string | null
         }
         Insert: {
+          checkout_url?: string | null
           created_at?: string | null
           description?: string | null
           duration_days?: number
           id?: string
           is_active?: boolean | null
-          kiwify_product_id?: string | null
           name: string
           price: number
           updated_at?: string | null
         }
         Update: {
+          checkout_url?: string | null
           created_at?: string | null
           description?: string | null
           duration_days?: number
           id?: string
           is_active?: boolean | null
-          kiwify_product_id?: string | null
           name?: string
           price?: number
           updated_at?: string | null

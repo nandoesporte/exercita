@@ -10,7 +10,7 @@ export type SubscriptionPlan = {
   description: string | null;
   price: number;
   duration_days: number;
-  kiwify_product_id: string | null;
+  checkout_url: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -62,21 +62,32 @@ export function useSubscriptionPlans() {
     queryFn: async () => {
       if (!user) return null;
       
+      // Primeiro busca o admin_id do usuário atual
+      const { data: adminData } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (!adminData) return null;
+      
       const { data, error } = await supabase
         .from('admin_subscriptions')
         .select(`
           *,
           subscription_plans(*)
         `)
-        .eq('admin_id', user.id)
-        .single();
+        .eq('admin_id', adminData.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
         
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching admin subscription:', error);
         return null;
       }
       
-      return data as AdminSubscription;
+      return data as AdminSubscription | null;
     },
     enabled: !!user
   });
@@ -146,16 +157,39 @@ export function useSubscriptionPlans() {
     }
   });
 
-  // Iniciar processo de assinatura (gera URL de checkout Kiwify)
+  // Iniciar processo de assinatura (usa URL de checkout direta do plano)
   const { mutate: subscribeToplan, isPending: isSubscribing } = useMutation({
     mutationFn: async (planId: string) => {
-      // Chama a edge function para criar checkout na Kiwify
-      const { data, error } = await supabase.functions.invoke('create-kiwify-checkout', {
-        body: { planId }
-      });
+      // Busca o plano para obter o checkout_url
+      const plan = plans.find(p => p.id === planId);
+      if (!plan || !plan.checkout_url) {
+        throw new Error('Plano não encontrado ou link de checkout não configurado');
+      }
       
+      // Cria registro de assinatura pendente
+      const { data: adminData } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+        
+      if (!adminData) {
+        throw new Error('Admin não encontrado');
+      }
+      
+      const { data, error } = await supabase
+        .from('admin_subscriptions')
+        .insert({
+          admin_id: adminData.id,
+          plan_id: planId,
+          status: 'pending',
+          payment_url: plan.checkout_url
+        })
+        .select()
+        .single();
+        
       if (error) throw error;
-      return data;
+      return { checkout_url: plan.checkout_url };
     },
     onSuccess: (data) => {
       if (data.checkout_url) {

@@ -15,7 +15,7 @@ type PlanFormData = {
   description: string;
   price: string;
   duration_days: string;
-  kiwify_product_id: string;
+  checkout_url: string;
   is_active: boolean;
 };
 
@@ -28,7 +28,7 @@ export function SubscriptionPlansManagement() {
     description: '',
     price: '',
     duration_days: '30',
-    kiwify_product_id: '',
+    checkout_url: '',
     is_active: true
   });
 
@@ -38,7 +38,7 @@ export function SubscriptionPlansManagement() {
       description: '',
       price: '',
       duration_days: '30',
-      kiwify_product_id: '',
+      checkout_url: '',
       is_active: true
     });
     setEditingPlan(null);
@@ -57,7 +57,7 @@ export function SubscriptionPlansManagement() {
       description: formData.description || null,
       price: parseFloat(formData.price),
       duration_days: parseInt(formData.duration_days),
-      kiwify_product_id: formData.kiwify_product_id || null,
+      checkout_url: formData.checkout_url || null,
       is_active: formData.is_active
     };
 
@@ -78,7 +78,7 @@ export function SubscriptionPlansManagement() {
       description: plan.description || '',
       price: plan.price.toString(),
       duration_days: plan.duration_days.toString(),
-      kiwify_product_id: plan.kiwify_product_id || '',
+      checkout_url: plan.checkout_url || '',
       is_active: plan.is_active
     });
     setIsDialogOpen(true);
@@ -178,12 +178,12 @@ export function SubscriptionPlansManagement() {
               </div>
               
               <div>
-                <Label htmlFor="kiwify_id">ID do Produto Kiwify</Label>
+                <Label htmlFor="checkout_url">Link do Checkout Kiwify</Label>
                 <Input
-                  id="kiwify_id"
-                  value={formData.kiwify_product_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, kiwify_product_id: e.target.value }))}
-                  placeholder="ID do produto na Kiwify"
+                  id="checkout_url"
+                  value={formData.checkout_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, checkout_url: e.target.value }))}
+                  placeholder="https://kiwify.app/checkout/..."
                 />
               </div>
               
@@ -242,9 +242,9 @@ export function SubscriptionPlansManagement() {
                 <p className="text-sm text-muted-foreground">
                   por {plan.duration_days} dias
                 </p>
-                {plan.kiwify_product_id && (
+                {plan.checkout_url && (
                   <p className="text-xs text-muted-foreground">
-                    ID Kiwify: {plan.kiwify_product_id}
+                    Link: {plan.checkout_url.substring(0, 30)}...
                   </p>
                 )}
                 <div className="flex items-center justify-between">
