@@ -1292,7 +1292,7 @@ export type Database = {
         Returns: boolean
       }
       toggle_user_admin_status: {
-        Args: { make_admin: boolean; user_id: string }
+        Args: { make_admin: boolean; target_user_id: string }
         Returns: Json
       }
     }
