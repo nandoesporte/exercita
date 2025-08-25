@@ -64,16 +64,23 @@ export function useUsersByAdmin() {
   });
 
   const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
+    queryKey: ['users-by-admin', 'v2', isSuperAdmin ? 'all' : adminData?.id], // Versão para forçar refresh
     queryFn: async () => {
-      console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
+      console.log('useUsersByAdmin: Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
       
       if (isSuperAdmin) {
         // Super admin gets all users with email data
         const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
         if (usersError) {
-          console.error('Error fetching users:', usersError);
+          console.error('useUsersByAdmin: Error fetching users:', usersError);
           throw usersError;
+        }
+
+        console.log('useUsersByAdmin: Raw users data from RPC:', usersData);
+
+        if (!usersData || !Array.isArray(usersData) || usersData.length === 0) {
+          console.log('useUsersByAdmin: No users found, returning empty array');
+          return [];
         }
 
         // Get all profiles data
@@ -82,11 +89,16 @@ export function useUsersByAdmin() {
           .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin');
 
         if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
+          console.error('useUsersByAdmin: Error fetching profiles:', profilesError);
           throw profilesError;
         }
 
-        console.log('Fetched profiles:', profiles?.length, 'users:', (usersData as any[])?.length);
+        console.log('useUsersByAdmin: Profiles from DB:', profiles?.length, 'profiles');
+
+        if (!profiles || profiles.length === 0) {
+          console.log('useUsersByAdmin: No profiles found, returning empty array');
+          return [];
+        }
 
         // Combine users and profiles data
         const combinedData = (profiles || []).map(profile => {
@@ -97,7 +109,7 @@ export function useUsersByAdmin() {
           };
         });
 
-        console.log('Combined data:', combinedData.length, 'users');
+        console.log('useUsersByAdmin: Combined data:', combinedData.length, 'users');
         return combinedData as UserProfile[];
       } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their users (no email access for security)
@@ -108,11 +120,17 @@ export function useUsersByAdmin() {
           .eq('is_admin', false); // Only show regular users, not other admins
 
         if (profilesError) {
-          console.error('Error fetching profiles for admin:', profilesError);
+          console.error('useUsersByAdmin: Error fetching profiles for admin:', profilesError);
           throw profilesError;
         }
 
-        console.log('Fetched profiles for admin:', profiles?.length, 'profiles');
+        console.log('useUsersByAdmin: Fetched profiles for admin:', profiles?.length, 'profiles');
+        
+        if (!profiles || profiles.length === 0) {
+          console.log('useUsersByAdmin: Admin has no users, returning empty array');
+          return [];
+        }
+        
         // For regular admins, we don't expose email addresses for security
         return (profiles || []).map(profile => ({
           ...profile,
@@ -120,9 +138,12 @@ export function useUsersByAdmin() {
         })) as UserProfile[];
       }
       
+      console.log('useUsersByAdmin: No valid conditions met, returning empty array');
       return [];
     },
     enabled: isSuperAdmin || (isAdmin && !!adminData?.id),
+    staleTime: 0, // Força recarregamento
+    gcTime: 0, // Não manter cache
   });
 
   const getUsersByAdmin = (adminId?: string) => {
