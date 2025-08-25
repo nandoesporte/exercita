@@ -66,7 +66,7 @@ export default function AdminManagement() {
       console.log('Toggling admin status for user:', userId, 'makeAdmin:', makeAdmin);
       
       const { data, error } = await supabase.rpc('toggle_user_admin_status', {
-        user_id: userId,
+        target_user_id: userId,
         make_admin: makeAdmin,
       });
 
