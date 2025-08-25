@@ -124,31 +124,16 @@ const Dashboard = () => {
 
   // Process user data for display based on admin permissions
   const recentUsers = React.useMemo(() => {
-    console.log('Dashboard: Processing users, userProfiles:', userProfiles?.length, 'isSuperAdmin:', isSuperAdmin);
-    
-    if (!userProfiles || userProfiles.length === 0) {
-      console.log('Dashboard: No userProfiles data');
-      return [];
-    }
+    if (!userProfiles) return [];
     
     // Get users for this admin (or all users if super admin)
     const relevantUsers = isSuperAdmin ? userProfiles : getUsersByAdmin(adminId);
-    console.log('Dashboard: Relevant users count:', relevantUsers.length);
-    
-    if (relevantUsers.length === 0) {
-      console.log('Dashboard: No relevant users found');
-      return [];
-    }
     
     return relevantUsers.slice(0, 5).map(profile => ({
       id: profile.id,
-      first_name: profile.first_name,
-      last_name: profile.last_name,
       email: profile.email || '',
       user: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Novo Usuário',
       time: profile.created_at,
-      created_at: profile.created_at,
-      is_admin: profile.is_admin || false,
       isActive: true, // Default to active since we don't have banned_until in profiles
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${profile.first_name || profile.email || 'User'}`,
     }));
@@ -444,19 +429,8 @@ const Dashboard = () => {
                       />
                     </div>
                     <div>
-                      <h3 className="font-medium text-sm">
-                        {user.first_name && user.last_name 
-                          ? `${user.first_name} ${user.last_name}`
-                          : user.email || 'Usuário'
-                        }
-                      </h3>
+                      <h3 className="font-medium text-sm">{user.user || 'Novo Usuário'}</h3>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
-                      {user.is_admin && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Shield className="h-3 w-3 text-primary" />
-                          <span className="text-xs text-primary">Admin</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-11 sm:ml-0">
@@ -486,10 +460,8 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center text-muted-foreground py-8">
-              <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Nenhum usuário encontrado</p>
-              <p className="text-xs mt-1">Os usuários aparecerão aqui quando cadastrados</p>
+            <div className="py-6 text-center text-muted-foreground">
+              Nenhum usuário encontrado.
             </div>
           )}
           

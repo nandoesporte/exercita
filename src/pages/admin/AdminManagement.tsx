@@ -3,14 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Users, Crown, Shield, User, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Users, Crown, Shield, User, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { clearAllCaches } from '@/utils/clearCache';
 
 // Tipo para usuários do sistema
 type UserWithProfile = {
@@ -27,48 +26,24 @@ type UserWithProfile = {
 export default function AdminManagement() {
   const queryClient = useQueryClient();
 
-  // Função para limpar todos os caches
-  const handleClearCache = () => {
-    clearAllCaches(queryClient);
-    toast.success('Cache limpo! Recarregando dados...');
-  };
-
   // Buscar todos os usuários do sistema
   const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
-    queryKey: ['all-users', 'v2'], // Adicionando versão para forçar cache refresh
+    queryKey: ['all-users'],
     queryFn: async () => {
-      console.log('AdminManagement: Executando get_all_users query...');
-      
       const { data, error } = await supabase.rpc('get_all_users');
       
-      if (error) {
-        console.error('AdminManagement: Erro ao buscar usuários:', error);
-        throw new Error(error.message);
-      }
-      
-      console.log('AdminManagement: Dados retornados de get_all_users:', data);
-      
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        console.log('AdminManagement: Nenhum usuário encontrado, retornando array vazio');
-        return [];
-      }
+      if (error) throw new Error(error.message);
       
       // Buscar perfis dos usuários para completar os dados
       const userProfiles = await Promise.all(
         (data as any[])?.map(async (user: any) => {
-          console.log('AdminManagement: Buscando perfil para usuário:', user.id);
-          
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name, is_admin')
             .eq('id', user.id)
             .single();
           
-          if (profileError) {
-            console.log('AdminManagement: Erro ao buscar perfil:', profileError);
-          }
-          
-          const userData = {
+          return {
             id: user.id,
             email: user.email,
             first_name: user.raw_user_meta_data?.first_name || profile?.first_name || '',
@@ -78,30 +53,20 @@ export default function AdminManagement() {
             last_sign_in_at: user.last_sign_in_at,
             banned_until: user.banned_until
           };
-          
-          console.log('AdminManagement: Usuário processado:', userData);
-          return userData;
         })
       );
       
-      console.log('AdminManagement: Total de usuários processados:', userProfiles.length);
       return userProfiles;
     },
-    staleTime: 0, // Forçar recarregamento
-    gcTime: 0, // Não manter cache
   });
 
   // Toggle status de admin do usuário
   const toggleUserAdminMutation = useMutation({
     mutationFn: async ({ userId, makeAdmin }: { userId: string, makeAdmin: boolean }) => {
-      console.log('Toggling admin status for user:', userId, 'makeAdmin:', makeAdmin);
-      
       const { data, error } = await supabase.rpc('toggle_user_admin_status', {
-        target_user_id: userId,
+        user_id: userId,
         make_admin: makeAdmin,
       });
-
-      console.log('Toggle response:', data, 'error:', error);
 
       if (error) throw new Error(error.message);
       
@@ -112,15 +77,10 @@ export default function AdminManagement() {
       return data;
     },
     onSuccess: (data) => {
-      // Invalidar múltiplos caches após mudança de admin
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      queryClient.invalidateQueries({ queryKey: ['current-admin-id'] });
       toast.success((data as any)?.message);
     },
     onError: (error: Error) => {
-      console.error('Toggle admin error:', error);
       toast.error(error.message);
     },
   });
@@ -191,31 +151,22 @@ export default function AdminManagement() {
               onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
               disabled={toggleUserAdminMutation.isPending || isDisabled}
             />
-            <div className="flex flex-col gap-1">
-              <Badge 
-                variant={user.is_admin ? "default" : "outline"}
-                className="flex items-center gap-1 w-fit"
-              >
-                {user.is_admin ? (
-                  <>
-                    <Shield className="w-3 h-3" />
-                    Admin
-                  </>
-                ) : (
-                  <>
-                    <User className="w-3 h-3" />
-                    Usuário
-                  </>
-                )}
-              </Badge>
-              {/* Show Super Admin badge if applicable */}
-              {user.is_admin && user.id === 'a898ae66-1bd6-4835-a826-d77b1e0c8fbb' && (
-                <Badge variant="secondary" className="flex items-center gap-1 w-fit text-xs">
-                  <Crown className="w-2 h-2" />
-                  Super Admin
-                </Badge>
+            <Badge 
+              variant={user.is_admin ? "default" : "outline"}
+              className="flex items-center gap-1"
+            >
+              {user.is_admin ? (
+                <>
+                  <Shield className="w-3 h-3" />
+                  Admin
+                </>
+              ) : (
+                <>
+                  <User className="w-3 h-3" />
+                  Usuário
+                </>
               )}
-            </div>
+            </Badge>
           </div>
         );
       }
@@ -250,40 +201,20 @@ export default function AdminManagement() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
-          {/* Botão para limpar cache */}
-          <Button
-            onClick={handleClearCache}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Limpar Cache
-          </Button>
-          
-          {/* Status Summary */}
-          <div className="flex gap-3 text-sm">
-            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
-              <Crown className="h-4 w-4 text-primary" />
-              <div>
-                <div className="font-bold">1</div>
-                <div className="text-xs text-muted-foreground">Super Admin</div>
-              </div>
+        {/* Status Summary */}
+        <div className="flex gap-3 text-sm">
+          <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <div>
+              <div className="font-bold">{usersData?.filter(u => u.is_admin).length || 0}</div>
+              <div className="text-xs text-muted-foreground">Admins</div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <ShieldCheck className="h-4 w-4 text-blue-600" />
-              <div>
-                <div className="font-bold">{(usersData?.filter(u => u.is_admin).length || 1) - 1}</div>
-                <div className="text-xs text-muted-foreground">Admins</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <div className="font-bold">{usersData?.filter(u => !u.is_admin).length || 0}</div>
-                <div className="text-xs text-muted-foreground">Usuários</div>
-              </div>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <div className="font-bold">{usersData?.filter(u => !u.is_admin).length || 0}</div>
+              <div className="text-xs text-muted-foreground">Usuários</div>
             </div>
           </div>
         </div>

@@ -9,7 +9,6 @@ interface UserProfile {
   admin_id: string | null;
   created_at: string;
   avatar_url: string | null;
-  is_admin: boolean;
   email?: string;
 }
 
@@ -64,86 +63,53 @@ export function useUsersByAdmin() {
   });
 
   const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['users-by-admin', 'v2', isSuperAdmin ? 'all' : adminData?.id], // Versão para forçar refresh
+    queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
     queryFn: async () => {
-      console.log('useUsersByAdmin: Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
+      console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
       
       if (isSuperAdmin) {
         // Super admin gets all users with email data
         const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
-        if (usersError) {
-          console.error('useUsersByAdmin: Error fetching users:', usersError);
-          throw usersError;
-        }
-
-        console.log('useUsersByAdmin: Raw users data from RPC:', usersData);
-
-        if (!usersData || !Array.isArray(usersData) || usersData.length === 0) {
-          console.log('useUsersByAdmin: No users found, returning empty array');
-          return [];
-        }
+        if (usersError) throw usersError;
 
         // Get all profiles data
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin');
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url');
 
-        if (profilesError) {
-          console.error('useUsersByAdmin: Error fetching profiles:', profilesError);
-          throw profilesError;
-        }
-
-        console.log('useUsersByAdmin: Profiles from DB:', profiles?.length, 'profiles');
-
-        if (!profiles || profiles.length === 0) {
-          console.log('useUsersByAdmin: No profiles found, returning empty array');
-          return [];
-        }
+        if (profilesError) throw profilesError;
 
         // Combine users and profiles data
-        const combinedData = (profiles || []).map(profile => {
+        const combinedData = profiles.map(profile => {
           const userData = (usersData as any[])?.find((u: any) => u.id === profile.id);
           return {
             ...profile,
-            email: userData?.email || `${profile.first_name || 'usuário'}@***`
+            email: userData?.email || null
           };
         });
 
-        console.log('useUsersByAdmin: Combined data:', combinedData.length, 'users');
         return combinedData as UserProfile[];
       } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their users (no email access for security)
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url')
           .eq('admin_id', adminData.id)
-          .eq('is_admin', false); // Only show regular users, not other admins
+          .neq('is_admin', true); // Exclude other admins from the list
 
-        if (profilesError) {
-          console.error('useUsersByAdmin: Error fetching profiles for admin:', profilesError);
-          throw profilesError;
-        }
+        if (profilesError) throw profilesError;
 
-        console.log('useUsersByAdmin: Fetched profiles for admin:', profiles?.length, 'profiles');
-        
-        if (!profiles || profiles.length === 0) {
-          console.log('useUsersByAdmin: Admin has no users, returning empty array');
-          return [];
-        }
-        
+        console.log('Fetched profiles for admin:', profiles.length, 'profiles');
         // For regular admins, we don't expose email addresses for security
-        return (profiles || []).map(profile => ({
+        return profiles.map(profile => ({
           ...profile,
           email: `${profile.first_name || 'usuário'}@***` // Masked email
         })) as UserProfile[];
       }
       
-      console.log('useUsersByAdmin: No valid conditions met, returning empty array');
       return [];
     },
-    enabled: isSuperAdmin || (isAdmin && !!adminData?.id),
-    staleTime: 0, // Força recarregamento
-    gcTime: 0, // Não manter cache
+    enabled: (isSuperAdmin || (isAdmin && !!adminData?.id)),
   });
 
   const getUsersByAdmin = (adminId?: string) => {
