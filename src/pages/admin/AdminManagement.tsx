@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Users, Crown, Shield, User, ShieldCheck } from 'lucide-react';
+import { Users, Crown, Shield, User, ShieldCheck, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { clearAllCaches } from '@/utils/clearCache';
 
 // Tipo para usuários do sistema
 type UserWithProfile = {
@@ -25,6 +26,12 @@ type UserWithProfile = {
 
 export default function AdminManagement() {
   const queryClient = useQueryClient();
+
+  // Função para limpar todos os caches
+  const handleClearCache = () => {
+    clearAllCaches(queryClient);
+    toast.success('Cache limpo! Recarregando dados...');
+  };
 
   // Buscar todos os usuários do sistema
   const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
@@ -243,27 +250,40 @@ export default function AdminManagement() {
           </p>
         </div>
         
-        {/* Status Summary */}
-        <div className="flex gap-3 text-sm">
-          <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
-            <Crown className="h-4 w-4 text-primary" />
-            <div>
-              <div className="font-bold">1</div>
-              <div className="text-xs text-muted-foreground">Super Admin</div>
+        <div className="flex items-center gap-3">
+          {/* Botão para limpar cache */}
+          <Button
+            onClick={handleClearCache}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Limpar Cache
+          </Button>
+          
+          {/* Status Summary */}
+          <div className="flex gap-3 text-sm">
+            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
+              <Crown className="h-4 w-4 text-primary" />
+              <div>
+                <div className="font-bold">1</div>
+                <div className="text-xs text-muted-foreground">Super Admin</div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-            <ShieldCheck className="h-4 w-4 text-blue-600" />
-            <div>
-              <div className="font-bold">{(usersData?.filter(u => u.is_admin).length || 1) - 1}</div>
-              <div className="text-xs text-muted-foreground">Admins</div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <ShieldCheck className="h-4 w-4 text-blue-600" />
+              <div>
+                <div className="font-bold">{(usersData?.filter(u => u.is_admin).length || 1) - 1}</div>
+                <div className="text-xs text-muted-foreground">Admins</div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <div className="font-bold">{usersData?.filter(u => !u.is_admin).length || 0}</div>
-              <div className="text-xs text-muted-foreground">Usuários</div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <div className="font-bold">{usersData?.filter(u => !u.is_admin).length || 0}</div>
+                <div className="text-xs text-muted-foreground">Usuários</div>
+              </div>
             </div>
           </div>
         </div>

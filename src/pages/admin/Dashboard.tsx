@@ -126,7 +126,7 @@ const Dashboard = () => {
   const recentUsers = React.useMemo(() => {
     console.log('Dashboard: Processing users, userProfiles:', userProfiles?.length, 'isSuperAdmin:', isSuperAdmin);
     
-    if (!userProfiles) {
+    if (!userProfiles || userProfiles.length === 0) {
       console.log('Dashboard: No userProfiles data');
       return [];
     }
@@ -134,6 +134,11 @@ const Dashboard = () => {
     // Get users for this admin (or all users if super admin)
     const relevantUsers = isSuperAdmin ? userProfiles : getUsersByAdmin(adminId);
     console.log('Dashboard: Relevant users count:', relevantUsers.length);
+    
+    if (relevantUsers.length === 0) {
+      console.log('Dashboard: No relevant users found');
+      return [];
+    }
     
     return relevantUsers.slice(0, 5).map(profile => ({
       id: profile.id,
