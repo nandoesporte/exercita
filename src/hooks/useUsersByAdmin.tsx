@@ -76,11 +76,8 @@ export function useUsersByAdmin() {
   const { data: userProfiles, isLoading: isLoadingUsers, error: usersError } = useQuery({
     queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
     queryFn: async () => {
-      console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
-      
       if (isSuperAdmin) {
         // Super admin: get all users (including admins for management)
-        console.log('Super admin: fetching all users');
         
         // Get all user profiles
         const { data: profiles, error: profilesError } = await supabase
@@ -92,13 +89,9 @@ export function useUsersByAdmin() {
           throw profilesError;
         }
 
-        console.log('Super admin - profiles found:', profiles?.length || 0);
-
         // Try to get emails via RPC
         try {
           const { data: usersWithEmails, error: rpcError } = await supabase.rpc('get_all_users');
-          
-          console.log('RPC get_all_users result:', { data: usersWithEmails, error: rpcError });
           
           if (!rpcError && usersWithEmails && Array.isArray(usersWithEmails)) {
             // Combine profile data with email data
@@ -110,7 +103,6 @@ export function useUsersByAdmin() {
               };
             }) || [];
 
-            console.log('Super admin - combined data with emails:', combinedData.length);
             return combinedData as UserProfile[];
           } else {
             console.warn('RPC failed or returned invalid data, using fallback:', rpcError);
@@ -125,12 +117,10 @@ export function useUsersByAdmin() {
           email: `${profile.first_name || 'usuário'}@***`
         })) as UserProfile[];
 
-        console.log('Super admin - fallback result:', fallbackResult.length, 'users');
         return fallbackResult;
         
       } else if (isAdmin && adminData?.id) {
         // Regular admin gets only their non-admin users
-        console.log('Regular admin: fetching users for admin_id:', adminData.id);
         
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
@@ -139,8 +129,6 @@ export function useUsersByAdmin() {
           .eq('is_admin', false); // Only non-admin users
 
         if (profilesError) throw profilesError;
-
-        console.log('Regular admin - fetched profiles:', profiles?.length || 0, 'profiles');
         
         return (profiles || []).map(profile => ({
           ...profile,
@@ -157,16 +145,14 @@ export function useUsersByAdmin() {
 
   // Add logging for debugging
   React.useEffect(() => {
-    console.log('useUsersByAdmin hook state:', {
-      isSuperAdmin,
-      isAdmin,
-      adminData,
-      enabled: isSuperAdmin || (isAdmin && !!adminData?.id),
-      userProfiles: userProfiles?.length || 0,
-      isLoading: isLoadingUsers,
-      error: usersError
-    });
-  }, [isSuperAdmin, isAdmin, adminData, userProfiles, isLoadingUsers, usersError]);
+    if (userProfiles && userProfiles.length > 0) {
+      console.log('useUsersByAdmin hook - users loaded:', {
+        total: userProfiles?.length || 0,
+        regularUsers: userProfiles.filter(u => !u.is_admin).length,
+        adminUsers: userProfiles.filter(u => u.is_admin).length
+      });
+    }
+  }, [userProfiles]);
 
   const getUsersByAdmin = (adminId?: string) => {
     if (!userProfiles) return [];
