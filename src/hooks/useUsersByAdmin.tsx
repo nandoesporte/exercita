@@ -11,6 +11,7 @@ interface UserProfile {
   created_at: string;
   avatar_url: string | null;
   email?: string;
+  is_admin?: boolean;
 }
 
 interface AdminUser {
@@ -78,14 +79,13 @@ export function useUsersByAdmin() {
       console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
       
       if (isSuperAdmin) {
-        // Super admin: get all non-admin users with emails
-        console.log('Super admin: fetching all non-admin users');
+        // Super admin: get all users (including admins for management)
+        console.log('Super admin: fetching all users');
         
-        // First get all non-admin profiles
+        // Get all user profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
-          .eq('is_admin', false);
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin');
 
         if (profilesError) {
           console.error('Error fetching profiles:', profilesError);
@@ -94,7 +94,7 @@ export function useUsersByAdmin() {
 
         console.log('Super admin - profiles found:', profiles?.length || 0);
 
-         // Try to get emails via RPC
+        // Try to get emails via RPC
         try {
           const { data: usersWithEmails, error: rpcError } = await supabase.rpc('get_all_users');
           
@@ -129,7 +129,7 @@ export function useUsersByAdmin() {
         return fallbackResult;
         
       } else if (isAdmin && adminData?.id) {
-        // Regular admin gets only their users (no email access for security)
+        // Regular admin gets only their non-admin users
         console.log('Regular admin: fetching users for admin_id:', adminData.id);
         
         const { data: profiles, error: profilesError } = await supabase
@@ -178,6 +178,16 @@ export function useUsersByAdmin() {
     return userProfiles;
   };
 
+  const getRegularUsers = () => {
+    if (!userProfiles) return [];
+    return userProfiles.filter(user => !user.is_admin);
+  };
+
+  const getAdminUsers = () => {
+    if (!userProfiles) return [];
+    return userProfiles.filter(user => user.is_admin);
+  };
+
   const getAdminsWithUserCount = () => {
     if (!adminUsers || !userProfiles) return [];
     
@@ -191,6 +201,8 @@ export function useUsersByAdmin() {
     adminUsers: getAdminsWithUserCount(),
     userProfiles,
     getUsersByAdmin,
+    getRegularUsers,
+    getAdminUsers,
     isLoading: isLoadingAdmins || isLoadingUsers,
     isSuperAdmin,
     isAdmin
