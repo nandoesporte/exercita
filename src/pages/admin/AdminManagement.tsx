@@ -63,10 +63,14 @@ export default function AdminManagement() {
   // Toggle status de admin do usuário
   const toggleUserAdminMutation = useMutation({
     mutationFn: async ({ userId, makeAdmin }: { userId: string, makeAdmin: boolean }) => {
+      console.log('Toggling admin status for user:', userId, 'makeAdmin:', makeAdmin);
+      
       const { data, error } = await supabase.rpc('toggle_user_admin_status', {
         user_id: userId,
         make_admin: makeAdmin,
       });
+
+      console.log('Toggle response:', data, 'error:', error);
 
       if (error) throw new Error(error.message);
       
@@ -78,9 +82,11 @@ export default function AdminManagement() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
       toast.success((data as any)?.message);
     },
     onError: (error: Error) => {
+      console.error('Toggle admin error:', error);
       toast.error(error.message);
     },
   });
@@ -151,22 +157,31 @@ export default function AdminManagement() {
               onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
               disabled={toggleUserAdminMutation.isPending || isDisabled}
             />
-            <Badge 
-              variant={user.is_admin ? "default" : "outline"}
-              className="flex items-center gap-1"
-            >
-              {user.is_admin ? (
-                <>
-                  <Shield className="w-3 h-3" />
-                  Admin
-                </>
-              ) : (
-                <>
-                  <User className="w-3 h-3" />
-                  Usuário
-                </>
+            <div className="flex flex-col gap-1">
+              <Badge 
+                variant={user.is_admin ? "default" : "outline"}
+                className="flex items-center gap-1 w-fit"
+              >
+                {user.is_admin ? (
+                  <>
+                    <Shield className="w-3 h-3" />
+                    Admin
+                  </>
+                ) : (
+                  <>
+                    <User className="w-3 h-3" />
+                    Usuário
+                  </>
+                )}
+              </Badge>
+              {/* Show Super Admin badge if applicable */}
+              {user.is_admin && user.id === 'a898ae66-1bd6-4835-a826-d77b1e0c8fbb' && (
+                <Badge variant="secondary" className="flex items-center gap-1 w-fit text-xs">
+                  <Crown className="w-2 h-2" />
+                  Super Admin
+                </Badge>
               )}
-            </Badge>
+            </div>
           </div>
         );
       }
@@ -204,9 +219,16 @@ export default function AdminManagement() {
         {/* Status Summary */}
         <div className="flex gap-3 text-sm">
           <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg">
-            <ShieldCheck className="h-4 w-4 text-primary" />
+            <Crown className="h-4 w-4 text-primary" />
             <div>
-              <div className="font-bold">{usersData?.filter(u => u.is_admin).length || 0}</div>
+              <div className="font-bold">1</div>
+              <div className="text-xs text-muted-foreground">Super Admin</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <ShieldCheck className="h-4 w-4 text-blue-600" />
+            <div>
+              <div className="font-bold">{(usersData?.filter(u => u.is_admin).length || 1) - 1}</div>
               <div className="text-xs text-muted-foreground">Admins</div>
             </div>
           </div>
