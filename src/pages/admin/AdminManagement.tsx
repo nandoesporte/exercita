@@ -28,22 +28,40 @@ export default function AdminManagement() {
 
   // Buscar todos os usuários do sistema
   const { data: usersData, isLoading: isLoadingUsers, error } = useQuery({
-    queryKey: ['all-users'],
+    queryKey: ['all-users', 'v2'], // Adicionando versão para forçar cache refresh
     queryFn: async () => {
+      console.log('AdminManagement: Executando get_all_users query...');
+      
       const { data, error } = await supabase.rpc('get_all_users');
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('AdminManagement: Erro ao buscar usuários:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('AdminManagement: Dados retornados de get_all_users:', data);
+      
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.log('AdminManagement: Nenhum usuário encontrado, retornando array vazio');
+        return [];
+      }
       
       // Buscar perfis dos usuários para completar os dados
       const userProfiles = await Promise.all(
         (data as any[])?.map(async (user: any) => {
-          const { data: profile } = await supabase
+          console.log('AdminManagement: Buscando perfil para usuário:', user.id);
+          
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('first_name, last_name, is_admin')
             .eq('id', user.id)
             .single();
           
-          return {
+          if (profileError) {
+            console.log('AdminManagement: Erro ao buscar perfil:', profileError);
+          }
+          
+          const userData = {
             id: user.id,
             email: user.email,
             first_name: user.raw_user_meta_data?.first_name || profile?.first_name || '',
@@ -53,11 +71,17 @@ export default function AdminManagement() {
             last_sign_in_at: user.last_sign_in_at,
             banned_until: user.banned_until
           };
+          
+          console.log('AdminManagement: Usuário processado:', userData);
+          return userData;
         })
       );
       
+      console.log('AdminManagement: Total de usuários processados:', userProfiles.length);
       return userProfiles;
     },
+    staleTime: 0, // Forçar recarregamento
+    gcTime: 0, // Não manter cache
   });
 
   // Toggle status de admin do usuário
@@ -81,8 +105,11 @@ export default function AdminManagement() {
       return data;
     },
     onSuccess: (data) => {
+      // Invalidar múltiplos caches após mudança de admin
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
       queryClient.invalidateQueries({ queryKey: ['users-by-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['current-admin-id'] });
       toast.success((data as any)?.message);
     },
     onError: (error: Error) => {
