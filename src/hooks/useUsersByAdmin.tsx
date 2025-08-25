@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminRole } from './useAdminRole';
@@ -11,7 +10,6 @@ interface UserProfile {
   created_at: string;
   avatar_url: string | null;
   email?: string;
-  is_admin?: boolean;
 }
 
 interface AdminUser {
@@ -19,15 +17,6 @@ interface AdminUser {
   name: string;
   email: string;
   userCount: number;
-}
-
-interface RpcUserData {
-  id: string;
-  email: string;
-  raw_user_meta_data: any;
-  created_at: string;
-  last_sign_in_at: string | null;
-  banned_until: string | null;
 }
 
 export function useUsersByAdmin() {
@@ -73,102 +62,54 @@ export function useUsersByAdmin() {
     enabled: isSuperAdmin,
   });
 
-  const { data: userProfiles, isLoading: isLoadingUsers, error: usersError } = useQuery({
+  const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
     queryFn: async () => {
-      console.log('useUsersByAdmin: Fetching data...', { isSuperAdmin, isAdmin, adminData });
+      console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
       
       if (isSuperAdmin) {
-        // Super admin: get all users (including admins for management)
-        
-        // Get all user profiles
+        // Super admin gets all users with email data
+        const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
+        if (usersError) throw usersError;
+
+        // Get all profiles data
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin');
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url');
 
-        if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
-          throw profilesError;
-        }
+        if (profilesError) throw profilesError;
 
-        console.log('useUsersByAdmin: Profiles fetched:', profiles?.length);
+        // Combine users and profiles data
+        const combinedData = profiles.map(profile => {
+          const userData = (usersData as any[])?.find((u: any) => u.id === profile.id);
+          return {
+            ...profile,
+            email: userData?.email || null
+          };
+        });
 
-        // Try to get emails via RPC
-        try {
-          const { data: usersWithEmails, error: rpcError } = await supabase.rpc('get_all_users');
-          
-          if (!rpcError && usersWithEmails && Array.isArray(usersWithEmails)) {
-            // Combine profile data with email data
-            const combinedData = profiles?.map(profile => {
-              const userWithEmail = usersWithEmails.find((u: any) => u.id === profile.id) as unknown as RpcUserData;
-              return {
-                ...profile,
-                email: userWithEmail?.email || `${profile.first_name || 'usuário'}@example.com`
-              };
-            }) || [];
-
-            console.log('useUsersByAdmin: Combined data created:', combinedData.length);
-            return combinedData as UserProfile[];
-          } else {
-            console.warn('RPC failed or returned invalid data, using fallback:', rpcError);
-          }
-        } catch (error) {
-          console.warn('RPC call failed, using fallback:', error);
-        }
-
-        // Fallback: return profiles with masked emails
-        const fallbackResult = (profiles || []).map(profile => ({
-          ...profile,
-          email: profile.first_name && profile.last_name 
-            ? `${profile.first_name.toLowerCase()}.${profile.last_name.toLowerCase()}@example.com`
-            : `usuario${profile.id.slice(0, 8)}@example.com`
-        })) as UserProfile[];
-
-        console.log('useUsersByAdmin: Fallback result:', fallbackResult.length);
-        return fallbackResult;
-        
+        return combinedData as UserProfile[];
       } else if (isAdmin && adminData?.id) {
-        // Regular admin gets only their users assigned to them
-        console.log('useUsersByAdmin: Regular admin fetching users for admin_id:', adminData.id);
-        
+        // Regular admin gets only their users (no email access for security)
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, admin_id, created_at, avatar_url, is_admin')
+          .select('id, first_name, last_name, admin_id, created_at, avatar_url')
           .eq('admin_id', adminData.id);
 
-        if (profilesError) {
-          console.error('Error fetching admin users:', profilesError);
-          throw profilesError;
-        }
-        
-        console.log('useUsersByAdmin: Regular admin profiles fetched:', profiles?.length);
-        
-        return (profiles || []).map(profile => ({
+        if (profilesError) throw profilesError;
+
+        console.log('Fetched profiles for admin:', profiles.length, 'profiles');
+        // For regular admins, we don't expose email addresses for security
+        return profiles.map(profile => ({
           ...profile,
-          email: profile.first_name && profile.last_name 
-            ? `${profile.first_name.toLowerCase()}.${profile.last_name.toLowerCase()}@example.com`
-            : `usuario${profile.id.slice(0, 8)}@example.com`
+          email: `${profile.first_name || 'usuário'}@***` // Masked email
         })) as UserProfile[];
       }
       
-      console.log('useUsersByAdmin: No valid condition met, returning empty array');
       return [];
     },
-    enabled: isSuperAdmin || (isAdmin && !!adminData?.id),
-    retry: 1,
-    staleTime: 30000, // Cache for 30 seconds
+    enabled: (isSuperAdmin || (isAdmin && !!adminData?.id)),
   });
-
-  // Add logging for debugging
-  React.useEffect(() => {
-    if (userProfiles && userProfiles.length > 0) {
-      console.log('useUsersByAdmin hook - users loaded:', {
-        total: userProfiles?.length || 0,
-        regularUsers: userProfiles.filter(u => !u.is_admin).length,
-        adminUsers: userProfiles.filter(u => u.is_admin).length
-      });
-    }
-  }, [userProfiles]);
 
   const getUsersByAdmin = (adminId?: string) => {
     if (!userProfiles) return [];
@@ -178,16 +119,6 @@ export function useUsersByAdmin() {
     }
     
     return userProfiles;
-  };
-
-  const getRegularUsers = () => {
-    if (!userProfiles) return [];
-    return userProfiles.filter(user => !user.is_admin);
-  };
-
-  const getAdminUsers = () => {
-    if (!userProfiles) return [];
-    return userProfiles.filter(user => user.is_admin);
   };
 
   const getAdminsWithUserCount = () => {
@@ -203,8 +134,6 @@ export function useUsersByAdmin() {
     adminUsers: getAdminsWithUserCount(),
     userProfiles,
     getUsersByAdmin,
-    getRegularUsers,
-    getAdminUsers,
     isLoading: isLoadingAdmins || isLoadingUsers,
     isSuperAdmin,
     isAdmin
