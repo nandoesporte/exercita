@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminRole } from './useAdminRole';
@@ -71,7 +72,7 @@ export function useUsersByAdmin() {
     enabled: isSuperAdmin,
   });
 
-  const { data: userProfiles, isLoading: isLoadingUsers } = useQuery({
+  const { data: userProfiles, isLoading: isLoadingUsers, error: usersError } = useQuery({
     queryKey: ['users-by-admin', isSuperAdmin ? 'all' : adminData?.id],
     queryFn: async () => {
       console.log('Fetching users - isSuperAdmin:', isSuperAdmin, 'adminData:', adminData);
@@ -149,8 +150,23 @@ export function useUsersByAdmin() {
       
       return [];
     },
-    enabled: (isSuperAdmin || (isAdmin && !!adminData?.id)),
+    enabled: isSuperAdmin || (isAdmin && !!adminData?.id),
+    retry: 3,
+    staleTime: 0, // Always refetch
   });
+
+  // Add logging for debugging
+  React.useEffect(() => {
+    console.log('useUsersByAdmin hook state:', {
+      isSuperAdmin,
+      isAdmin,
+      adminData,
+      enabled: isSuperAdmin || (isAdmin && !!adminData?.id),
+      userProfiles: userProfiles?.length || 0,
+      isLoading: isLoadingUsers,
+      error: usersError
+    });
+  }, [isSuperAdmin, isAdmin, adminData, userProfiles, isLoadingUsers, usersError]);
 
   const getUsersByAdmin = (adminId?: string) => {
     if (!userProfiles) return [];

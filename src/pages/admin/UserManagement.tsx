@@ -77,6 +77,13 @@ const UserManagement = () => {
   // Use the useUsersByAdmin hook instead of custom query
   const { userProfiles, getUsersByAdmin, isLoading: isLoadingUsers } = useUsersByAdmin();
   
+  // Add temporary debugging log
+  console.log('UserManagement - useUsersByAdmin result:', {
+    userProfiles: userProfiles?.length || 0,
+    isLoading: isLoadingUsers,
+    actualData: userProfiles
+  });
+  
   // Get users for the selected admin (or current admin's users)
   const usersData = React.useMemo(() => {
     console.log('UserManagement - Processing users data:', { 
