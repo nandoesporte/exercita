@@ -79,11 +79,16 @@ const UserManagement = () => {
   
   // Get users for the selected admin (or current admin's users)
   const usersData = React.useMemo(() => {
+    // If no userProfiles data, return empty array
+    if (!userProfiles || userProfiles.length === 0) {
+      return [];
+    }
+
     if (isSuperAdmin && selectedAdminFilter && selectedAdminFilter !== 'all') {
       // Filter by specific admin
       const filteredUsers = getUsersByAdmin(selectedAdminFilter).filter(user => !user.is_admin).map(profile => ({
         user_id: profile.id,
-        email: profile.email,
+        email: profile.email || `${profile.first_name || 'user'}@***`,
         raw_user_meta_data: {
           first_name: profile.first_name,
           last_name: profile.last_name,
@@ -99,10 +104,11 @@ const UserManagement = () => {
       return filteredUsers;
     }
     
-    // For super admin with no filter or regular admin, get their regular users
-    const regularUsers = getRegularUsers().map(profile => ({
+    // For super admin with no filter or regular admin, get all their users (not just regular users)
+    const allUsers = isSuperAdmin ? userProfiles : getUsersByAdmin();
+    const filteredUsers = allUsers.filter(user => !user.is_admin).map(profile => ({
       user_id: profile.id,
-      email: profile.email,
+      email: profile.email || `${profile.first_name || 'user'}@***`,
       raw_user_meta_data: {
         first_name: profile.first_name,
         last_name: profile.last_name,
@@ -116,8 +122,8 @@ const UserManagement = () => {
       is_admin: profile.is_admin || false,
     }));
     
-    return regularUsers;
-  }, [isSuperAdmin, selectedAdminFilter, userProfiles, getUsersByAdmin, getRegularUsers]);
+    return filteredUsers;
+  }, [isSuperAdmin, selectedAdminFilter, userProfiles, getUsersByAdmin]);
 
   const error = null; // Remove error handling since useUsersByAdmin handles it
 
