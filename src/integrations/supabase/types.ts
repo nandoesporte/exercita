@@ -773,6 +773,27 @@ export type Database = {
         }
         Relationships: []
       }
+      super_admins: {
+        Row: {
+          created_at: string | null
+          granted_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          granted_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          granted_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_gym_photos: {
         Row: {
           admin_id: string | null
@@ -1271,7 +1292,7 @@ export type Database = {
         Returns: boolean
       }
       toggle_user_admin_status: {
-        Args: { make_admin: boolean; user_id: string }
+        Args: { make_admin: boolean; target_user_id: string }
         Returns: Json
       }
     }
