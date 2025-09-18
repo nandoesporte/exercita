@@ -10,138 +10,12 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
-      admin_permissions: {
-        Row: {
-          admin_id: string
-          created_at: string
-          granted_by: string | null
-          id: string
-          permission: Database["public"]["Enums"]["user_permission"]
-        }
-        Insert: {
-          admin_id: string
-          created_at?: string
-          granted_by?: string | null
-          id?: string
-          permission: Database["public"]["Enums"]["user_permission"]
-        }
-        Update: {
-          admin_id?: string
-          created_at?: string
-          granted_by?: string | null
-          id?: string
-          permission?: Database["public"]["Enums"]["user_permission"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_permissions_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      admin_subscriptions: {
-        Row: {
-          admin_id: string
-          created_at: string | null
-          end_date: string | null
-          id: string
-          kiwify_customer_id: string | null
-          kiwify_order_id: string | null
-          payment_url: string | null
-          plan_id: string
-          start_date: string | null
-          status: string
-          updated_at: string | null
-        }
-        Insert: {
-          admin_id: string
-          created_at?: string | null
-          end_date?: string | null
-          id?: string
-          kiwify_customer_id?: string | null
-          kiwify_order_id?: string | null
-          payment_url?: string | null
-          plan_id: string
-          start_date?: string | null
-          status?: string
-          updated_at?: string | null
-        }
-        Update: {
-          admin_id?: string
-          created_at?: string | null
-          end_date?: string | null
-          id?: string
-          kiwify_customer_id?: string | null
-          kiwify_order_id?: string | null
-          payment_url?: string | null
-          plan_id?: string
-          start_date?: string | null
-          status?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_subscriptions_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admin_subscriptions_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      admins: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          email: string
-          id: string
-          is_active: boolean
-          name: string
-          status: string | null
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          email: string
-          id?: string
-          is_active?: boolean
-          name: string
-          status?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          email?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-          status?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       appointments: {
         Row: {
-          admin_id: string | null
           appointment_date: string
           created_at: string | null
           description: string | null
@@ -154,7 +28,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          admin_id?: string | null
           appointment_date: string
           created_at?: string | null
           description?: string | null
@@ -167,7 +40,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          admin_id?: string | null
           appointment_date?: string
           created_at?: string | null
           description?: string | null
@@ -181,13 +53,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "appointments_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "appointments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -198,7 +63,6 @@ export type Database = {
       }
       equipment_based_workouts: {
         Row: {
-          admin_id: string | null
           available_time: number | null
           created_at: string
           equipment_list: Json | null
@@ -210,7 +74,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          admin_id?: string | null
           available_time?: number | null
           created_at?: string
           equipment_list?: Json | null
@@ -222,7 +85,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          admin_id?: string | null
           available_time?: number | null
           created_at?: string
           equipment_list?: Json | null
@@ -235,13 +97,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "equipment_based_workouts_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "equipment_based_workouts_photo_analysis_id_fkey"
             columns: ["photo_analysis_id"]
             isOneToOne: false
@@ -252,7 +107,6 @@ export type Database = {
       }
       exercises: {
         Row: {
-          admin_id: string | null
           category_id: string | null
           created_at: string | null
           description: string | null
@@ -263,7 +117,6 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
-          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -274,7 +127,6 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
-          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -285,13 +137,6 @@ export type Database = {
           video_url?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "exercises_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "exercises_category_id_fkey"
             columns: ["category_id"]
@@ -326,47 +171,6 @@ export type Database = {
             columns: ["photo_id"]
             isOneToOne: false
             referencedRelation: "user_gym_photos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kiwify_webhook_logs: {
-        Row: {
-          admin_subscription_id: string | null
-          customer_id: string | null
-          event_type: string
-          id: string
-          order_id: string | null
-          payload: Json
-          processed_at: string | null
-          status: string | null
-        }
-        Insert: {
-          admin_subscription_id?: string | null
-          customer_id?: string | null
-          event_type: string
-          id?: string
-          order_id?: string | null
-          payload: Json
-          processed_at?: string | null
-          status?: string | null
-        }
-        Update: {
-          admin_subscription_id?: string | null
-          customer_id?: string | null
-          event_type?: string
-          id?: string
-          order_id?: string | null
-          payload?: Json
-          processed_at?: string | null
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kiwify_webhook_logs_admin_subscription_id_fkey"
-            columns: ["admin_subscription_id"]
-            isOneToOne: false
-            referencedRelation: "admin_subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -415,7 +219,6 @@ export type Database = {
       }
       orders: {
         Row: {
-          admin_id: string | null
           created_at: string | null
           id: string
           kiwify_order_id: string | null
@@ -425,7 +228,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           kiwify_order_id?: string | null
@@ -435,7 +237,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           kiwify_order_id?: string | null
@@ -444,22 +245,13 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "orders_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       payment_settings: {
         Row: {
           accept_card_payments: boolean | null
           accept_monthly_fee: boolean | null
           accept_pix_payments: boolean | null
-          admin_id: string | null
           created_at: string | null
           id: string
           monthly_fee_amount: number | null
@@ -469,7 +261,6 @@ export type Database = {
           accept_card_payments?: boolean | null
           accept_monthly_fee?: boolean | null
           accept_pix_payments?: boolean | null
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           monthly_fee_amount?: number | null
@@ -479,25 +270,15 @@ export type Database = {
           accept_card_payments?: boolean | null
           accept_monthly_fee?: boolean | null
           accept_pix_payments?: boolean | null
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           monthly_fee_amount?: number | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "payment_settings_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       personal_trainers: {
         Row: {
-          admin_id: string | null
           bio: string | null
           created_at: string | null
           credentials: string | null
@@ -509,7 +290,6 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
-          admin_id?: string | null
           bio?: string | null
           created_at?: string | null
           credentials?: string | null
@@ -521,7 +301,6 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
-          admin_id?: string | null
           bio?: string | null
           created_at?: string | null
           credentials?: string | null
@@ -532,19 +311,10 @@ export type Database = {
           updated_at?: string | null
           whatsapp?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "personal_trainers_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       pix_keys: {
         Row: {
-          admin_id: string | null
           created_at: string | null
           id: string
           is_primary: boolean | null
@@ -553,7 +323,6 @@ export type Database = {
           recipient_name: string
         }
         Insert: {
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           is_primary?: boolean | null
@@ -562,7 +331,6 @@ export type Database = {
           recipient_name: string
         }
         Update: {
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           is_primary?: boolean | null
@@ -570,57 +338,10 @@ export type Database = {
           key_value?: string
           recipient_name?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "pix_keys_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_categories: {
-        Row: {
-          admin_id: string | null
-          color: string | null
-          created_at: string | null
-          icon: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          admin_id?: string | null
-          color?: string | null
-          created_at?: string | null
-          icon?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          admin_id?: string | null
-          color?: string | null
-          created_at?: string | null
-          icon?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_categories_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       products: {
         Row: {
-          admin_id: string | null
           category_id: string | null
           created_at: string | null
           description: string | null
@@ -634,7 +355,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -648,7 +368,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          admin_id?: string | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -663,24 +382,16 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "products_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "product_categories"
+            referencedRelation: "workout_categories"
             referencedColumns: ["id"]
           },
         ]
       }
       profiles: {
         Row: {
-          admin_id: string | null
           avatar_url: string | null
           birthdate: string | null
           created_at: string | null
@@ -689,14 +400,12 @@ export type Database = {
           gender: string | null
           height: number | null
           id: string
-          instance_id: string | null
           is_admin: boolean | null
           last_name: string | null
           updated_at: string | null
           weight: number | null
         }
         Insert: {
-          admin_id?: string | null
           avatar_url?: string | null
           birthdate?: string | null
           created_at?: string | null
@@ -705,14 +414,12 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id: string
-          instance_id?: string | null
           is_admin?: boolean | null
           last_name?: string | null
           updated_at?: string | null
           weight?: number | null
         }
         Update: {
-          admin_id?: string | null
           avatar_url?: string | null
           birthdate?: string | null
           created_at?: string | null
@@ -721,82 +428,15 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id?: string
-          instance_id?: string | null
           is_admin?: boolean | null
           last_name?: string | null
           updated_at?: string | null
           weight?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      subscription_plans: {
-        Row: {
-          checkout_url: string | null
-          created_at: string | null
-          description: string | null
-          duration_days: number
-          id: string
-          is_active: boolean | null
-          name: string
-          price: number
-          updated_at: string | null
-        }
-        Insert: {
-          checkout_url?: string | null
-          created_at?: string | null
-          description?: string | null
-          duration_days?: number
-          id?: string
-          is_active?: boolean | null
-          name: string
-          price: number
-          updated_at?: string | null
-        }
-        Update: {
-          checkout_url?: string | null
-          created_at?: string | null
-          description?: string | null
-          duration_days?: number
-          id?: string
-          is_active?: boolean | null
-          name?: string
-          price?: number
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      super_admins: {
-        Row: {
-          created_at: string | null
-          granted_by: string | null
-          id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          granted_by?: string | null
-          id?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          granted_by?: string | null
-          id?: string
-          user_id?: string
         }
         Relationships: []
       }
       user_gym_photos: {
         Row: {
-          admin_id: string | null
           approved: boolean | null
           created_at: string | null
           description: string | null
@@ -807,7 +447,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          admin_id?: string | null
           approved?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -818,7 +457,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          admin_id?: string | null
           approved?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -828,51 +466,10 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_gym_photos_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_roles: {
-        Row: {
-          admin_id: string | null
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Insert: {
-          admin_id?: string | null
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Update: {
-          admin_id?: string | null
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_workout_history: {
         Row: {
-          admin_id: string | null
           calories_burned: number | null
           completed_at: string | null
           created_at: string | null
@@ -885,7 +482,6 @@ export type Database = {
           workout_id: string | null
         }
         Insert: {
-          admin_id?: string | null
           calories_burned?: number | null
           completed_at?: string | null
           created_at?: string | null
@@ -898,7 +494,6 @@ export type Database = {
           workout_id?: string | null
         }
         Update: {
-          admin_id?: string | null
           calories_burned?: number | null
           completed_at?: string | null
           created_at?: string | null
@@ -911,13 +506,6 @@ export type Database = {
           workout_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "user_workout_history_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "user_workout_history_user_id_fkey"
             columns: ["user_id"]
@@ -936,7 +524,6 @@ export type Database = {
       }
       workout_categories: {
         Row: {
-          admin_id: string | null
           color: string | null
           created_at: string | null
           icon: string | null
@@ -945,7 +532,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          admin_id?: string | null
           color?: string | null
           created_at?: string | null
           icon?: string | null
@@ -954,7 +540,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          admin_id?: string | null
           color?: string | null
           created_at?: string | null
           icon?: string | null
@@ -962,15 +547,7 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "workout_categories_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       workout_clone_history: {
         Row: {
@@ -1117,34 +694,24 @@ export type Database = {
       }
       workout_recommendations: {
         Row: {
-          admin_id: string | null
           created_at: string | null
           id: string
           user_id: string | null
           workout_id: string
         }
         Insert: {
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           user_id?: string | null
           workout_id: string
         }
         Update: {
-          admin_id?: string | null
           created_at?: string | null
           id?: string
           user_id?: string | null
           workout_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "workout_recommendations_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "workout_recommendations_workout_id_fkey"
             columns: ["workout_id"]
@@ -1156,7 +723,6 @@ export type Database = {
       }
       workouts: {
         Row: {
-          admin_id: string | null
           calories: number | null
           category_id: string | null
           created_at: string | null
@@ -1166,13 +732,11 @@ export type Database = {
           image_url: string | null
           is_featured: boolean | null
           is_recommended: boolean | null
-          level: Database["public"]["Enums"]["workout_level"]
+          level: Database["public"]["Enums"]["difficulty_level"]
           title: string
           updated_at: string | null
-          user_id: string | null
         }
         Insert: {
-          admin_id?: string | null
           calories?: number | null
           category_id?: string | null
           created_at?: string | null
@@ -1182,13 +746,11 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           is_recommended?: boolean | null
-          level: Database["public"]["Enums"]["workout_level"]
+          level: Database["public"]["Enums"]["difficulty_level"]
           title: string
           updated_at?: string | null
-          user_id?: string | null
         }
         Update: {
-          admin_id?: string | null
           calories?: number | null
           category_id?: string | null
           created_at?: string | null
@@ -1198,19 +760,11 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           is_recommended?: boolean | null
-          level?: Database["public"]["Enums"]["workout_level"]
+          level?: Database["public"]["Enums"]["difficulty_level"]
           title?: string
           updated_at?: string | null
-          user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "workouts_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "workouts_category_id_fkey"
             columns: ["category_id"]
@@ -1225,93 +779,67 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_add_pix_key: {
-        Args: {
-          p_is_primary?: boolean
-          p_key_type: string
-          p_key_value: string
-          p_recipient_name: string
-        }
-        Returns: Json
-      }
       admin_create_user: {
-        Args: { user_data: Json }
-        Returns: boolean
-      }
-      admin_delete_pix_key: {
-        Args: { p_pix_key_id: string }
+        Args: {
+          user_email: string
+          user_metadata?: Json
+          user_password: string
+        }
         Returns: Json
       }
       admin_delete_user: {
         Args: { user_id: string }
-        Returns: boolean
-      }
-      admin_enable_rls: {
-        Args: { p_table_name: string }
-        Returns: Json
-      }
-      admin_save_payment_settings: {
-        Args: {
-          p_accept_card: boolean
-          p_accept_monthly_fee: boolean
-          p_accept_pix: boolean
-          p_monthly_fee_amount: number
-        }
-        Returns: Json
-      }
-      admin_set_primary_pix_key: {
-        Args: { p_pix_key_id: string }
-        Returns: Json
+        Returns: undefined
       }
       clone_workout_for_user: {
-        Args: { target_user_id: string; workout_id: string }
-        Returns: boolean
+        Args: { source_workout_id: string; target_user_id: string }
+        Returns: string
       }
       debug_get_all_users: {
         Args: Record<PropertyKey, never>
-        Returns: Json
+        Returns: {
+          banned_until: string
+          created_at: string
+          email: string
+          last_sign_in_at: string
+          raw_user_meta_data: Json
+          user_id: string
+        }[]
       }
       get_all_users: {
         Args: Record<PropertyKey, never>
-        Returns: Json
+        Returns: {
+          banned_until: string
+          created_at: string
+          email: string
+          id: string
+          last_sign_in_at: string
+          raw_user_meta_data: Json
+        }[]
       }
       get_tables_without_rls: {
         Args: Record<PropertyKey, never>
+        Returns: {
+          has_rls: boolean
+          row_count: number
+          table_name: string
+        }[]
+      }
+      handle_kiwify_webhook: {
+        Args: { payload: Json }
         Returns: Json
       }
       is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      toggle_user_active_status: {
         Args: { user_id: string }
         Returns: boolean
       }
-      toggle_user_admin_status: {
-        Args: { make_admin: boolean; target_user_id: string }
-        Returns: Json
+      toggle_user_active_status: {
+        Args: { is_active: boolean; user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
-      user_permission:
-        | "manage_users"
-        | "manage_workouts"
-        | "manage_exercises"
-        | "manage_products"
-        | "manage_payments"
-        | "view_analytics"
-        | "manage_categories"
-        | "manage_store"
-        | "manage_gym_photos"
-        | "manage_schedule"
-        | "manage_appointments"
-        | "manage_payment_methods"
-      user_role: "admin" | "trainer" | "user"
-      workout_level: "beginner" | "intermediate" | "advanced"
+      difficulty_level: "beginner" | "intermediate" | "advanced" | "all_levels"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1439,22 +967,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_permission: [
-        "manage_users",
-        "manage_workouts",
-        "manage_exercises",
-        "manage_products",
-        "manage_payments",
-        "view_analytics",
-        "manage_categories",
-        "manage_store",
-        "manage_gym_photos",
-        "manage_schedule",
-        "manage_appointments",
-        "manage_payment_methods",
-      ],
-      user_role: ["admin", "trainer", "user"],
-      workout_level: ["beginner", "intermediate", "advanced"],
+      difficulty_level: ["beginner", "intermediate", "advanced", "all_levels"],
     },
   },
 } as const
