@@ -3,8 +3,8 @@ import ExerciseManagement from './ExerciseManagement';
 
 export default function ProtectedExerciseManagement() {
   return (
-    <PermissionGuard permission="manage_exercises">
-      <ExerciseManagement />
-    </PermissionGuard>
+      <PermissionGuard>
+        <ExerciseManagement />
+      </PermissionGuard>
   );
 }

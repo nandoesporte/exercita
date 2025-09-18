@@ -1,10 +1,21 @@
-import { PermissionGuard } from '@/components/admin/PermissionGuard';
-import ScheduleManagement from './ScheduleManagement';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function ProtectedScheduleManagement() {
+const ProtectedScheduleManagement = () => {
   return (
-    <PermissionGuard permission="manage_schedule">
-      <ScheduleManagement />
-    </PermissionGuard>
+    <div className="container mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Gerenciamento de Horários</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Sistema de horários simplificado para fisioterapia.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};
+
+export default ProtectedScheduleManagement;

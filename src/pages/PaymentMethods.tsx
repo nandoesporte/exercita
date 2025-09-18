@@ -62,12 +62,7 @@ const PaymentMethods = () => {
           />
           
           {/* PIX Key Section */}
-          <PixKeySection 
-            savedPixKey={savedPixKey}
-            setSavedPixKey={setSavedPixKey}
-            savedPixKeyType={savedPixKeyType}
-            setSavedPixKeyType={setSavedPixKeyType}
-          />
+           <PixKeySection />
           
           {/* Credit Card Section */}
           <CreditCardSection 
