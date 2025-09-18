@@ -64,7 +64,7 @@ export const CloneWorkoutDialog = ({ workoutId, workoutTitle, onClose }: CloneWo
       const { data, error } = await supabase.rpc(
         'clone_workout_for_user',
         {
-          workout_id: workoutId,
+          source_workout_id: workoutId,
           target_user_id: selectedUserId
         }
       );

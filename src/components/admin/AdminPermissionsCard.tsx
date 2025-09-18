@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AVAILABLE_PERMISSIONS } from "@/hooks/useAdminPermissions";
-import type { Database } from '@/integrations/supabase/types';
 
-type UserPermission = Database['public']['Enums']['user_permission'];
+type UserPermission = string;
 
 interface AdminWithPermissions {
   id: string;

@@ -25,9 +25,7 @@ export function useAdminPermissionsContext() {
   
   // Return the actual context values
   return {
-    hasPermission: context.hasPermission,
     isLoading: context.isLoading,
-    permissions: context.permissions,
     adminId: context.adminId,
     isSuperAdmin: context.isSuperAdmin,
     isAdmin: context.isAdmin,

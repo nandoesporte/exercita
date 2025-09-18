@@ -61,6 +61,81 @@ export type Database = {
           },
         ]
       }
+      daily_symptoms: {
+        Row: {
+          created_at: string
+          date: string
+          fatigue_level: number | null
+          id: string
+          notes: string | null
+          pain_level: Database["public"]["Enums"]["pain_level"]
+          stiffness_level: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          fatigue_level?: number | null
+          id?: string
+          notes?: string | null
+          pain_level: Database["public"]["Enums"]["pain_level"]
+          stiffness_level?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          fatigue_level?: number | null
+          id?: string
+          notes?: string | null
+          pain_level?: Database["public"]["Enums"]["pain_level"]
+          stiffness_level?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      educational_content: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_published: boolean | null
+          target_conditions:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          target_conditions?:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          target_conditions?:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       equipment_based_workouts: {
         Row: {
           available_time: number | null
@@ -105,34 +180,103 @@ export type Database = {
           },
         ]
       }
+      exercise_progress: {
+        Row: {
+          completed_reps: number | null
+          completed_sets: number | null
+          created_at: string
+          difficulty_rating: number | null
+          exercise_id: string
+          id: string
+          notes: string | null
+          pain_during_exercise: Database["public"]["Enums"]["pain_level"] | null
+          session_date: string
+          user_id: string
+        }
+        Insert: {
+          completed_reps?: number | null
+          completed_sets?: number | null
+          created_at?: string
+          difficulty_rating?: number | null
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          pain_during_exercise?:
+            | Database["public"]["Enums"]["pain_level"]
+            | null
+          session_date?: string
+          user_id: string
+        }
+        Update: {
+          completed_reps?: number | null
+          completed_sets?: number | null
+          created_at?: string
+          difficulty_rating?: number | null
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          pain_during_exercise?:
+            | Database["public"]["Enums"]["pain_level"]
+            | null
+          session_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_progress_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           category_id: string | null
+          contraindications: string | null
           created_at: string | null
           description: string | null
+          exercise_type: Database["public"]["Enums"]["exercise_type"] | null
           id: string
           image_url: string | null
           name: string
+          precautions: string | null
+          target_conditions:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
           updated_at: string | null
           video_url: string | null
         }
         Insert: {
           category_id?: string | null
+          contraindications?: string | null
           created_at?: string | null
           description?: string | null
+          exercise_type?: Database["public"]["Enums"]["exercise_type"] | null
           id?: string
           image_url?: string | null
           name: string
+          precautions?: string | null
+          target_conditions?:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
           updated_at?: string | null
           video_url?: string | null
         }
         Update: {
           category_id?: string | null
+          contraindications?: string | null
           created_at?: string | null
           description?: string | null
+          exercise_type?: Database["public"]["Enums"]["exercise_type"] | null
           id?: string
           image_url?: string | null
           name?: string
+          precautions?: string | null
+          target_conditions?:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
           updated_at?: string | null
           video_url?: string | null
         }
@@ -394,44 +538,99 @@ export type Database = {
         Row: {
           avatar_url: string | null
           birthdate: string | null
+          conditions: Database["public"]["Enums"]["patient_condition"][] | null
           created_at: string | null
+          current_mobility: Database["public"]["Enums"]["mobility_level"] | null
           first_name: string | null
           fitness_goal: string | null
           gender: string | null
           height: number | null
           id: string
+          initial_pain_level: Database["public"]["Enums"]["pain_level"] | null
           is_admin: boolean | null
           last_name: string | null
+          medical_restrictions: string | null
+          physiotherapist_notes: string | null
           updated_at: string | null
           weight: number | null
         }
         Insert: {
           avatar_url?: string | null
           birthdate?: string | null
+          conditions?: Database["public"]["Enums"]["patient_condition"][] | null
           created_at?: string | null
+          current_mobility?:
+            | Database["public"]["Enums"]["mobility_level"]
+            | null
           first_name?: string | null
           fitness_goal?: string | null
           gender?: string | null
           height?: number | null
           id: string
+          initial_pain_level?: Database["public"]["Enums"]["pain_level"] | null
           is_admin?: boolean | null
           last_name?: string | null
+          medical_restrictions?: string | null
+          physiotherapist_notes?: string | null
           updated_at?: string | null
           weight?: number | null
         }
         Update: {
           avatar_url?: string | null
           birthdate?: string | null
+          conditions?: Database["public"]["Enums"]["patient_condition"][] | null
           created_at?: string | null
+          current_mobility?:
+            | Database["public"]["Enums"]["mobility_level"]
+            | null
           first_name?: string | null
           fitness_goal?: string | null
           gender?: string | null
           height?: number | null
           id?: string
+          initial_pain_level?: Database["public"]["Enums"]["pain_level"] | null
           is_admin?: boolean | null
           last_name?: string | null
+          medical_restrictions?: string | null
+          physiotherapist_notes?: string | null
           updated_at?: string | null
           weight?: number | null
+        }
+        Relationships: []
+      }
+      therapy_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          session_date: string
+          session_type: string
+          status: string
+          therapist_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_date: string
+          session_type?: string
+          status?: string
+          therapist_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_date?: string
+          session_type?: string
+          status?: string
+          therapist_name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -727,12 +926,17 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
+          difficulty_progression: number | null
           duration: number
           id: string
           image_url: string | null
           is_featured: boolean | null
           is_recommended: boolean | null
           level: Database["public"]["Enums"]["difficulty_level"]
+          requires_supervision: boolean | null
+          target_conditions:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
           title: string
           updated_at: string | null
         }
@@ -741,12 +945,17 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          difficulty_progression?: number | null
           duration: number
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
           is_recommended?: boolean | null
           level: Database["public"]["Enums"]["difficulty_level"]
+          requires_supervision?: boolean | null
+          target_conditions?:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
           title: string
           updated_at?: string | null
         }
@@ -755,12 +964,17 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          difficulty_progression?: number | null
           duration?: number
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
           is_recommended?: boolean | null
           level?: Database["public"]["Enums"]["difficulty_level"]
+          requires_supervision?: boolean | null
+          target_conditions?:
+            | Database["public"]["Enums"]["patient_condition"][]
+            | null
           title?: string
           updated_at?: string | null
         }
@@ -840,6 +1054,39 @@ export type Database = {
     }
     Enums: {
       difficulty_level: "beginner" | "intermediate" | "advanced" | "all_levels"
+      exercise_type:
+        | "fortalecimento"
+        | "alongamento"
+        | "mobilizacao"
+        | "respiratorio"
+        | "equilibrio"
+        | "coordenacao"
+        | "resistencia"
+      mobility_level: "baixa" | "media" | "alta"
+      pain_level:
+        | "0"
+        | "1"
+        | "2"
+        | "3"
+        | "4"
+        | "5"
+        | "6"
+        | "7"
+        | "8"
+        | "9"
+        | "10"
+      patient_condition:
+        | "lombalgia"
+        | "cervicalgia"
+        | "pos_cirurgia"
+        | "tendinite"
+        | "artrose"
+        | "lesao_joelho"
+        | "lesao_ombro"
+        | "acidente_trabalho"
+        | "avc_reabilitacao"
+        | "fraturas"
+        | "outros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -968,6 +1215,30 @@ export const Constants = {
   public: {
     Enums: {
       difficulty_level: ["beginner", "intermediate", "advanced", "all_levels"],
+      exercise_type: [
+        "fortalecimento",
+        "alongamento",
+        "mobilizacao",
+        "respiratorio",
+        "equilibrio",
+        "coordenacao",
+        "resistencia",
+      ],
+      mobility_level: ["baixa", "media", "alta"],
+      pain_level: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      patient_condition: [
+        "lombalgia",
+        "cervicalgia",
+        "pos_cirurgia",
+        "tendinite",
+        "artrose",
+        "lesao_joelho",
+        "lesao_ombro",
+        "acidente_trabalho",
+        "avc_reabilitacao",
+        "fraturas",
+        "outros",
+      ],
     },
   },
 } as const
