@@ -40,7 +40,7 @@ const Symptoms = () => {
         .upsert({
           user_id: user.id,
           date: new Date().toISOString().split('T')[0],
-          pain_level: painLevel.toString(),
+          pain_level: painLevel.toString() as '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10',
           stiffness_level: stiffnessLevel,
           fatigue_level: fatigueLevel,
           notes: notes || null

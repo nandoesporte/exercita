@@ -1,284 +1,220 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { 
-  User, Settings, Calendar, Clock, LogOut,
-  HelpCircle, Bell, UserPlus, ChevronRight, Camera
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/hooks/useAuth';
-import { format } from 'date-fns';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import PaymentTabs from '@/components/profile/PaymentTabs';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
 
 const Profile = () => {
-  const { profile, isLoading, uploadProfileImage, pixKey, isLoadingPixKey, refreshProfile, getDisplayAvatarUrl } = useProfile();
-  const { signOut, user } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isImageHovered, setIsImageHovered] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  
-  // Get admin name - only run once when profile.admin_id is available
-  const { data: adminData, isLoading: isLoadingAdmin } = useQuery({
-    queryKey: ['admin', profile?.admin_id],
-    queryFn: async () => {
-      if (!profile?.admin_id) return null;
-      const { data, error } = await supabase
-        .from('admins')
-        .select('name')
-        .eq('id', profile.admin_id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!profile?.admin_id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  const { profile, isLoading, updateProfile, isUpdating, uploadProfileImage, isUploading, pixKey } = useProfile();
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    height: '',
+    weight: '',
+    birthdate: '',
+    gender: '',
+    conditions: [] as string[],
+    fitness_goal: '',
+    medical_restrictions: '',
+    physiotherapist_notes: ''
   });
-  
-  // Force refresh profile data ONCE when component mounts
-  useEffect(() => {
-    if (user?.id && !profile) {
-      console.log('Profile component mounted, refreshing profile data');
-      refreshProfile();
+
+  React.useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        height: profile.height?.toString() || '',
+        weight: profile.weight?.toString() || '',
+        birthdate: profile.birthdate || '',
+        gender: profile.gender || '',
+        conditions: profile.conditions || [],
+        fitness_goal: profile.fitness_goal || '',
+        medical_restrictions: profile.medical_restrictions || '',
+        physiotherapist_notes: profile.physiotherapist_notes || ''
+      });
     }
-  }, [user?.id, profile, refreshProfile]);
-  
-  const formatDate = (date: Date | null) => {
-    if (!date) return '';
-    return format(date, 'MMMM yyyy');
+  }, [profile]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const updateData = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      height: formData.height ? parseFloat(formData.height) : null,
+      weight: formData.weight ? parseFloat(formData.weight) : null,
+      birthdate: formData.birthdate,
+      gender: formData.gender,
+      conditions: formData.conditions as ('lombalgia' | 'cervicalgia' | 'pos_cirurgia' | 'tendinite' | 'artrose' | 'lesao_joelho' | 'lesao_ombro' | 'acidente_trabalho' | 'avc_reabilitacao' | 'fraturas' | 'outros')[],
+      fitness_goal: formData.fitness_goal,
+      medical_restrictions: formData.medical_restrictions,
+      physiotherapist_notes: formData.physiotherapist_notes
+    };
+
+    updateProfile(updateData);
   };
 
-  const userData = {
-    name: profile?.first_name && profile?.last_name 
-      ? `${profile.first_name} ${profile.last_name}` 
-      : user?.email || 'User',
-    email: user?.email || '',
-    avatar: getDisplayAvatarUrl(profile?.avatar_url),
-    memberSince: user?.created_at 
-      ? formatDate(new Date(user.created_at)) 
-      : 'Unknown',
-    workoutsCompleted: 0,
-    favoriteWorkout: 'Unknown',
-  };
-  
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadProfileImage(file);
+    }
   };
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      toast("Formato inválido. Por favor selecione uma imagem válida (JPEG, PNG, or GIF)");
-      return;
-    }
-    
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      toast("Arquivo muito grande. A imagem deve ter menos de 5MB");
-      return;
-    }
-    
-    // Reset error state when uploading new image
-    setImageError(false);
-    
-    try {
-      console.log('Starting profile image upload');
-      // Upload the image
-      await uploadProfileImage(file);
-      
-      // Let's wait before refreshing to ensure the image is processed
-      console.log('Upload successful, refreshing profile data');
-      setTimeout(() => {
-        refreshProfile();
-      }, 1000);
-    } catch (error) {
-      console.error('Erro ao fazer upload:', error);
-      toast("Erro ao fazer upload da imagem. Tente novamente.");
-    }
-  };
-  
-  const handleImageLoadError = () => {
-    console.error('Error loading profile image');
-    setImageError(true);
-  };
-  
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-orange"></div>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen">Carregando perfil...</div>;
   }
 
   return (
-    <main className="container">
-      <section className="mobile-section">
-        {/* User Info */}
-        <div className="flex items-center mb-8">
-          <div 
-            className="relative mr-4"
-            onMouseEnter={() => setIsImageHovered(true)}
-            onMouseLeave={() => setIsImageHovered(false)}
-          >
-            <Avatar 
-              className="h-20 w-20 cursor-pointer border-2 border-fitness-orange"
-              onClick={handleImageClick}
-            >
-              <AvatarImage 
-                src={userData.avatar || undefined} 
-                alt={userData.name} 
-                className="object-cover" 
-                onError={handleImageLoadError}
-              />
-              <AvatarFallback className="bg-fitness-darkGray text-xl">
-                {userData.name.substring(0, 1)}
+    <div className="container mx-auto p-6 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">Perfil do Paciente</h1>
+      
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle>Foto do Perfil</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-4">
+            <Avatar className="w-32 h-32">
+              <AvatarImage src={profile?.avatar_url || undefined} />
+              <AvatarFallback>
+                {profile?.first_name?.[0]}{profile?.last_name?.[0]}
               </AvatarFallback>
             </Avatar>
-            
-            {isImageHovered && (
-              <div 
-                className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full"
-                onClick={handleImageClick}
+            <div className="relative">
+              <input
+                type="file"
+                id="avatar-upload"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isUploading}
+                onClick={() => document.getElementById('avatar-upload')?.click()}
               >
-                <Camera className="text-white h-6 w-6" />
+                <Camera className="w-4 h-4 mr-2" />
+                {isUploading ? 'Enviando...' : 'Alterar Foto'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Informações Pessoais</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="first_name">Nome</Label>
+                  <Input
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="last_name">Sobrenome</Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                  />
+                </div>
               </div>
-            )}
-            
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-bold">{userData.name}</h2>
-            <p className="text-muted-foreground">{userData.email}</p>
-            <p className="text-sm mt-1">Membro desde {userData.memberSince}</p>
-          </div>
-        </div>
-        
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-8 w-full">
-          <Link
-            to="/account"
-            className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full hover:bg-fitness-dark/50 transition-colors cursor-pointer"
-          >
-            <div className="text-2xl font-bold text-fitness-orange">
-              {profile?.height ? `${profile?.height} cm` : 'N/A'}
-            </div>
-            <p className="text-sm text-gray-500">Altura</p>
-          </Link>
-          <div className="fitness-card p-4 text-center bg-fitness-darkGray shadow-lg w-full">
-            <div className="text-2xl font-bold text-fitness-orange">
-              {profile?.weight ? `${profile?.weight} kg` : 'N/A'}
-            </div>
-            <p className="text-sm text-gray-500">Peso atual</p>
-          </div>
-        </div>
-        
-        {/* Payment Tabs - New Component */}
-        <PaymentTabs pixKey={pixKey} isLoadingPixKey={isLoadingPixKey} />
-        
-        {/* Menu Items */}
-        <div className="space-y-2 rounded-xl overflow-hidden bg-fitness-darkGray divide-y divide-gray-700/50">
-          <Link
-            to="/account"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <User size={20} className="mr-3 text-fitness-orange" />
-              <span>Informações da Conta</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/settings"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <Settings size={20} className="mr-3 text-fitness-orange" />
-              <span>Configurações</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/workout-history"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <Calendar size={20} className="mr-3 text-fitness-orange" />
-              <span>Histórico de Treinos</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/reminders"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <Clock size={20} className="mr-3 text-fitness-orange" />
-              <span>Lembretes</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/notifications"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <Bell size={20} className="mr-3 text-fitness-orange" />
-              <span>Preferências de Notificações</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/invite"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <UserPlus size={20} className="mr-3 text-fitness-orange" />
-              <span>Convidar Amigos</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <Link
-            to="/help"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-fitness-dark/50 active:bg-fitness-dark transition-colors"
-          >
-            <div className="flex items-center">
-              <HelpCircle size={20} className="mr-3 text-fitness-orange" />
-              <span>Central de Ajuda</span>
-            </div>
-            <ChevronRight size={18} className="text-gray-400" />
-          </Link>
-          
-          <button
-            onClick={signOut}
-            className="w-full flex items-center px-4 py-4 text-red-400 hover:bg-red-900/20 active:bg-red-900/30 transition-colors mt-4"
-          >
-            <LogOut size={20} className="mr-3" />
-            <span>Sair</span>
-          </button>
-        </div>
-      </section>
-    </main>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="height">Altura (cm)</Label>
+                  <Input
+                    id="height"
+                    type="number"
+                    value={formData.height}
+                    onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="weight">Peso (kg)</Label>
+                  <Input
+                    id="weight"
+                    type="number"
+                    value={formData.weight}
+                    onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="birthdate">Data de Nascimento</Label>
+                  <Input
+                    id="birthdate"
+                    type="date"
+                    value={formData.birthdate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, birthdate: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="fitness_goal">Objetivo Terapêutico</Label>
+                <Textarea
+                  id="fitness_goal"
+                  value={formData.fitness_goal}
+                  onChange={(e) => setFormData(prev => ({ ...prev, fitness_goal: e.target.value }))}
+                  placeholder="Ex: Reduzir dor lombar, melhorar mobilidade..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="medical_restrictions">Restrições Médicas</Label>
+                <Textarea
+                  id="medical_restrictions"
+                  value={formData.medical_restrictions}
+                  onChange={(e) => setFormData(prev => ({ ...prev, medical_restrictions: e.target.value }))}
+                  placeholder="Ex: Não pode carregar peso, evitar impacto..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="physiotherapist_notes">Observações do Fisioterapeuta</Label>
+                <Textarea
+                  id="physiotherapist_notes"
+                  value={formData.physiotherapist_notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, physiotherapist_notes: e.target.value }))}
+                  placeholder="Anotações do profissional..."
+                />
+              </div>
+
+              <Button type="submit" disabled={isUpdating} className="w-full">
+                {isUpdating ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {pixKey && (
+          <Card className="md:col-span-3">
+            <CardHeader>
+              <CardTitle>Informações de Pagamento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p><strong>Chave PIX:</strong> {pixKey.key_value}</p>
+                <p><strong>Tipo:</strong> {pixKey.key_type}</p>
+                <p><strong>Nome:</strong> {pixKey.recipient_name}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 };
 
