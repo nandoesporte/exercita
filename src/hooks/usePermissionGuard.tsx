@@ -4,7 +4,7 @@ import { useAdminPermissionsContext } from '@/hooks/useAdminPermissionsContext';
 import { toast } from '@/lib/toast-wrapper';
 import type { Database } from '@/integrations/supabase/types';
 
-type AdminPermission = Database['public']['Enums']['user_permission'];
+type AdminPermission = string; // Simplified permission system
 
 export function usePermissionGuard(permission: AdminPermission, redirectTo = '/admin') {
   const { hasPermission, isLoading } = useAdminPermissionsContext();

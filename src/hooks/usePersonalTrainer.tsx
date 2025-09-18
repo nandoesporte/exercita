@@ -11,7 +11,7 @@ interface PersonalTrainer {
   whatsapp: string;
   photo_url: string | null;
   is_primary: boolean;
-  admin_id: string | null;
+  admin_id?: string | null;
 }
 
 interface TrainerFormData {

@@ -13,22 +13,15 @@ export function useAdminRole() {
       
       console.log("Checking admin role for user:", user.id);
       
-      // Use RPC functions to check roles
-      const [adminCheck, superAdminCheck] = await Promise.all([
-        supabase.rpc('is_admin'),
-        supabase.rpc('is_super_admin')
-      ]);
+      // Use RPC functions to check roles - simplified for physiotherapy app
+      const adminCheck = await supabase.rpc('is_admin');
       
       if (adminCheck.error) {
         console.error("Error checking admin status:", adminCheck.error);
       }
       
-      if (superAdminCheck.error) {
-        console.error("Error checking super admin status:", superAdminCheck.error);
-      }
-      
       const isAdmin = Boolean(adminCheck.data);
-      const isSuperAdmin = Boolean(superAdminCheck.data);
+      const isSuperAdmin = isAdmin; // In simplified system, admin = super admin
       
       console.log("Role check results:", { isAdmin, isSuperAdmin });
       

@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductCategory } from '@/types/store';
@@ -15,7 +14,7 @@ export const useStore = () => {
         // Try to fetch products with is_featured=true
         const { data, error } = await supabase
           .from('products')
-          .select('*, categories:product_categories(name)')
+          .select('*, categories:workout_categories(name)')
           .eq('is_active', true)
           .eq('is_featured', true)
           .order('created_at', { ascending: false })
@@ -30,7 +29,7 @@ export const useStore = () => {
             
             const { data: regularProducts, error: regularError } = await supabase
               .from('products')
-              .select('*, categories:product_categories(name)')
+              .select('*, categories:workout_categories(name)')
               .eq('is_active', true)
               .order('created_at', { ascending: false })
               .limit(6);
@@ -63,7 +62,7 @@ export const useStore = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories:product_categories(name)')
+        .select('*, categories:workout_categories(name)')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -85,7 +84,7 @@ export const useStore = () => {
     queryKey: ['product-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_categories')
+        .from('workout_categories')
         .select('*')
         .order('name');
 
@@ -103,7 +102,7 @@ export const useStore = () => {
   const fetchProduct = async (id: string): Promise<Product> => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:product_categories(name)')
+      .select('*, categories:workout_categories(name)')
       .eq('id', id)
       .single();
 

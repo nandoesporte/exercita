@@ -423,6 +423,7 @@ export type Database = {
       }
       personal_trainers: {
         Row: {
+          admin_id: string | null
           bio: string | null
           created_at: string | null
           credentials: string | null
@@ -434,6 +435,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          admin_id?: string | null
           bio?: string | null
           created_at?: string | null
           credentials?: string | null
@@ -445,6 +447,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          admin_id?: string | null
           bio?: string | null
           created_at?: string | null
           credentials?: string | null
@@ -1045,6 +1048,10 @@ export type Database = {
       }
       is_admin: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       toggle_user_active_status: {
